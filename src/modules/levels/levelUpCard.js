@@ -9,16 +9,16 @@ const {
 const assetsDirectory = path.join(__dirname, "..", "..", "..", "assets");
 const customFontPath = path.join(assetsDirectory, "font.otf");
 
-const regularFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze Gothic");
-const boldFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze Gothic Bold");
+const regularFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy Gothic");
+const boldFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy Gothic Bold");
 
 function getFontFamily(weight = "regular") {
   if (weight === "bold" && boldFontRegistered) {
-    return "Sokaze Gothic Bold";
+    return "Murphy Gothic Bold";
   }
 
   if (regularFontRegistered) {
-    return "Sokaze Gothic";
+    return "Murphy Gothic";
   }
 
   return "serif";
@@ -190,7 +190,7 @@ async function createLevelUpCard(member, previousLevelInfo, nextLevelInfo, confi
   drawText(context, member, previousLevelInfo, nextLevelInfo, config);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-level-up.png"
+    name: "murphy-level-up.png"
   });
 }
 

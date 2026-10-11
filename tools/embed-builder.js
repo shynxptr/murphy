@@ -1,7 +1,7 @@
-const AUTOSAVE_KEY = "sokaze_embed_builder_autosave_v2";
+const AUTOSAVE_KEY = "murphy_embed_builder_autosave_v2";
 const AUTOSAVE_DELAY = 450;
 const REQUEST_TIMEOUT_MS = 15000;
-const RECENT_TARGETS_KEY = "sokaze_embed_builder_recent_targets_v1";
+const RECENT_TARGETS_KEY = "murphy_embed_builder_recent_targets_v1";
 
 const state = {
   channels: [],
@@ -1802,7 +1802,7 @@ function renderPreview() {
       <div class="discord-avatar"></div>
       <div>
         <div class="discord-author">
-          Sokaze Assistant
+          Murphy
           <span class="discord-meta">Today at ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
         </div>
         ${messageContent}

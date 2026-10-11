@@ -16,4 +16,11 @@ loadSlashCommands(client);
 loadEvents(client);
 startEmbedBuilderServer(client);
 
+process.on("unhandledRejection", (error) => {
+  if (error?.code === 10062) {
+    return;
+  }
+  console.error("Unhandled promise rejection:", error);
+});
+
 client.login(client.config.token);

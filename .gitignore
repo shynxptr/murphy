@@ -1,6 +1,8 @@
 node_modules
 .env
 npm-debug.log*
-data/*.json
-!data/.gitkeep
+data/.bot-runtime.lock
+*.log
+scratch_*.txt
+checkChannels.js
 assets/idcard-preview.png

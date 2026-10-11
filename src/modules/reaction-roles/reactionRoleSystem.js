@@ -1,7 +1,10 @@
 const {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChannelType,
   EmbedBuilder,
+  MessageFlags,
   parseEmoji,
   PermissionFlagsBits,
   StringSelectMenuBuilder
@@ -15,26 +18,36 @@ const {
 } = require("../../services/reactionRoleStore");
 
 const ROLE_PANEL_SELECT_PREFIX = "rolepanel:select:";
+const ROLE_PANEL_BUTTON_PREFIX = "rolepanel:btn:";
 const ROLE_PANEL_OPTION_LIMIT = 25;
 const GAME_ROLE_PANEL_PRESET_KEY = "game-self-role";
 const GAME_ROLE_PANEL_OPTIONS = [
-  { emoji: "<:Bloodstrike:1484573138410012732>", label: "Blood Strike", roleId: "1484571536622092319", description: "" },
-  { emoji: "<:Roblox:1484573236829229197>", label: "Roblox", roleId: "1483828827640561735", description: "" },
-  { emoji: "<:GTA5:1484572255295115355>", label: "GTA V", roleId: "1483830806450409674", description: "" },
-  { emoji: "<:WIldRift:1484572328317816894>", label: "League Of Legend", roleId: "1483829133220905001", description: "" },
-  { emoji: "<:AmongUs:1484573104402464769>", label: "Among Us", roleId: "1483829507843559554", description: "" },
-  { emoji: "<:FreeFire:1484572125615624295>", label: "Free Fire", roleId: "1483828185064804464", description: "" },
-  { emoji: "<:mobilelegend:1484571623808962771>", label: "Mobile Legend", roleId: "1483828579111403530", description: "" },
-  { emoji: "<:PUBG:1484575124156973156>", label: "PUBG", roleId: "1483831229483843726", description: "" },
-  { emoji: "<:DotA2:1484575182294094003>", label: "Dota 2", roleId: "1483829808269103224", description: "" },
-  { emoji: "<:eFootball:1484575057240920284>", label: "Efootball", roleId: "1483830228114739334", description: "" },
-  { emoji: "<:minecraft:1484571584441094194>", label: "Minecraft", roleId: "1483828964068823100", description: "" },
-  { emoji: "<:genshin:1484575982701514903>", label: "Genshin Impact", roleId: "1483829009195470878", description: "" },
-  { emoji: "<:Growtopia:1484576028004188350>", label: "Growtopia", roleId: "1483830864151314513", description: "" },
-  { emoji: "<:valorant:1484571699205771314>", label: "Valorant", roleId: "1483828670266212422", description: "" },
-  { emoji: "<:HonorofKings:1484576518981292233>", label: "Honor Of Kings", roleId: "1483831109752979536", description: "" },
-  { emoji: "<:CODM:1484576573259649165>", label: "Call Of Duty Mobile", roleId: "1484571400009154642", description: "" },
-  { emoji: "<:WhereWindsMeet:1484576747100831744>", label: "Wheres The Wind Meet", roleId: "1483830903099883571", description: "" }
+  { emoji: "<:Roblox:1558554328917348514>", label: "Roblox", roleId: "1558554146838159381", description: "" },
+  { emoji: "<:freefire:1558552954083217506>", label: "Free Fire", roleId: "1558551982137147483", description: "" },
+  { emoji: "<:gtav:1558553707904237698>", label: "GTA V", roleId: "1558551703714922636", description: "" },
+  { emoji: "<:hok:1558553735104299080>", label: "Honor Of Kings", roleId: "1558552233648595095", description: "" },
+  { emoji: "<:mcgg:1558553762799292456>", label: "Magic Chess", roleId: "1558552131634593873", description: "" },
+  { emoji: "<:ml:1558553805862207541>", label: "Mobile Legend", roleId: "1558552442566869023", description: "" },
+  { emoji: "<:pubg:1558553855250272357>", label: "PUBG Mobile", roleId: "1558551795968770068", description: "" },
+  { emoji: "<:valorant:1558553921746767893>", label: "Valorant", roleId: "1558551865506005113", description: "" }
+];
+const DOMISILI_ROLE_PANEL_PRESET_KEY = "domisili-self-role";
+const DOMISILI_ROLE_PANEL_OPTIONS = [
+  { emoji: "📍", label: "Jawa", roleId: "1558663018739540118", description: "" },
+  { emoji: "📍", label: "Kalimantan", roleId: "1558664072227192862", description: "" },
+  { emoji: "📍", label: "Sumatera", roleId: "1558664150727663647", description: "" },
+  { emoji: "📍", label: "Sulawesi", roleId: "1558664337915383858", description: "" },
+  { emoji: "📍", label: "Bali", roleId: "1558664455192182834", description: "" },
+  { emoji: "📍", label: "Maluku", roleId: "1558664492236410900", description: "" },
+  { emoji: "📍", label: "Papua", roleId: "1558664634393821194", description: "" },
+  { emoji: "📍", label: "Bangka Belitung", roleId: "1558664691050356816", description: "" },
+  { emoji: "📍", label: "Kepulauan Riau", roleId: "1558664752539111424", description: "" },
+  { emoji: "🌐", label: "International", roleId: "1558664809082257558", description: "" }
+];
+const AGE_ROLE_PANEL_PRESET_KEY = "age-self-role";
+const AGE_ROLE_PANEL_OPTIONS = [
+  { emoji: "🌱", label: "18-", roleId: "1558668942279708722", description: "" },
+  { emoji: "🔞", label: "18+", roleId: "1558668994997784586", description: "" }
 ];
 
 function hasRolePanelPermission(member) {
@@ -112,6 +125,7 @@ function createReactionRolePanel({
   channelId,
   mode,
   behavior = "sync",
+  componentType = "select",
   title,
   description,
   placeholder,
@@ -125,6 +139,7 @@ function createReactionRolePanel({
     channelId,
     mode,
     behavior,
+    componentType,
     title,
     description,
     placeholder,
@@ -198,27 +213,61 @@ function buildRoleSummary(panel, guild) {
 }
 
 function buildRolePanelMessage(panel, guild) {
+  const isButton = panel.componentType === "button";
+  const shouldShowSummary = !panel.hideSummary;
+  const descriptionText = shouldShowSummary && panel.options.length
+    ? [panel.description, "", buildRoleSummary(panel, guild)].join("\n").trim()
+    : panel.description;
+
   const embed = new EmbedBuilder()
     .setColor("#111827")
     .setTitle(panel.title)
-    .setDescription(
-      [
-        panel.description,
-        "",
-        buildRoleSummary(panel, guild)
-      ].join("\n").trim()
-    )
+    .setDescription(descriptionText || "Pilih role kamu di bawah ini.")
     .setFooter({
-      text: panel.behavior === "toggle"
-        ? "Mode toggle | Pilih role untuk ambil, pilih lagi untuk melepas."
-        : panel.mode === "single"
-          ? "Mode: single select"
-          : "Mode: multi select | Pilih semua role yang ingin kamu simpan."
+      text: isButton
+        ? (panel.mode === "single"
+          ? "Mode: single select | Klik tombol untuk memilih role."
+          : "Mode: button toggle | Klik tombol untuk mengambil atau melepas role.")
+        : (panel.behavior === "toggle"
+          ? "Mode toggle | Pilih role untuk ambil, pilih lagi untuk melepas."
+          : panel.mode === "single"
+            ? "Mode: single select"
+            : "Mode: multi select | Pilih semua role yang ingin kamu simpan.")
     })
     .setTimestamp();
 
   if (panel.imageUrl) {
     embed.setImage(panel.imageUrl);
+  }
+
+  if (isButton) {
+    const buttons = panel.options.map((option) => {
+      const button = new ButtonBuilder()
+        .setCustomId(`${ROLE_PANEL_BUTTON_PREFIX}${panel.id}:${option.roleId}`)
+        .setLabel(option.label)
+        .setStyle(ButtonStyle.Secondary);
+
+      const emoji = option.emojiData || parseRoleOptionEmoji(option.emoji);
+      if (emoji) {
+        button.setEmoji(emoji);
+      }
+
+      return button;
+    });
+
+    let maxPerRow = 5;
+    if (buttons.length === 6) maxPerRow = 3;
+    else if (buttons.length === 7 || buttons.length === 8) maxPerRow = 4;
+
+    const actionRows = [];
+    for (let i = 0; i < buttons.length; i += maxPerRow) {
+      actionRows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + maxPerRow)));
+    }
+
+    return {
+      embeds: [embed],
+      components: actionRows
+    };
   }
 
   const menu = new StringSelectMenuBuilder()
@@ -262,10 +311,10 @@ async function syncRolePanelMessage(client, panel) {
 
   const channel = guild.channels.cache.get(panel.channelId) || await guild.channels.fetch(panel.channelId).catch(() => null);
 
-  if (!channel || channel.type !== ChannelType.GuildText) {
+  if (!channel || !channel.isTextBased() || channel.isDMBased()) {
     return {
       ok: false,
-      reason: "Channel panel tidak valid."
+      reason: "Channel panel tidak valid atau tidak dapat menerima pesan."
     };
   }
 
@@ -306,7 +355,7 @@ async function deleteRolePanelMessage(client, panel) {
     ? guild.channels.cache.get(panel.channelId) || await guild.channels.fetch(panel.channelId).catch(() => null)
     : null;
 
-  if (!channel || channel.type !== ChannelType.GuildText) {
+  if (!channel || !channel.isTextBased() || channel.isDMBased()) {
     return;
   }
 
@@ -410,7 +459,7 @@ async function handleRolePanelSelect(interaction) {
   if (!panel) {
     await interaction.reply({
       content: "Panel role ini tidak ditemukan lagi.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return true;
   }
@@ -421,13 +470,18 @@ async function handleRolePanelSelect(interaction) {
   if (!targetMember) {
     await interaction.reply({
       content: "Gagal membaca data member kamu. Coba lagi sebentar.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return true;
   }
 
   const configuredRoleIds = panel.options.map((option) => option.roleId);
   const selectedRoleIds = interaction.values.filter((value) => configuredRoleIds.includes(value));
+
+  if (!configuredRoleIds.every((id) => interaction.guild.roles.cache.has(id))) {
+    await interaction.guild.roles.fetch().catch(() => null);
+  }
+
   const missingRoleIds = configuredRoleIds.filter((roleId) => !interaction.guild.roles.cache.has(roleId));
   const involvedRoles = configuredRoleIds
     .map((roleId) => interaction.guild.roles.cache.get(roleId))
@@ -439,7 +493,7 @@ async function handleRolePanelSelect(interaction) {
         "Beberapa role di panel ini sudah tidak ada lagi.",
         `Role ID bermasalah: ${missingRoleIds.map((roleId) => `\`${roleId}\``).join(", ")}`
       ].join("\n"),
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return true;
   }
@@ -452,7 +506,7 @@ async function handleRolePanelSelect(interaction) {
         "Beberapa role di panel ini tidak bisa dikelola bot saat ini:",
         unmanageableRoles.map((role) => role.name).join(", ")
       ].join("\n"),
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return true;
   }
@@ -497,12 +551,115 @@ async function handleRolePanelSelect(interaction) {
           text: panel.behavior === "toggle"
             ? "Mode toggle: pilih role untuk ambil, pilih lagi role yang sama untuk melepas."
             : panel.mode === "multi"
-            ? "Mode multi-select: pilih semua role yang ingin kamu simpan di panel ini."
-            : "Mode single-select: hanya satu role dari panel ini yang bisa aktif."
+              ? "Mode multi-select: pilih semua role yang ingin kamu simpan di panel ini."
+              : "Mode single-select: hanya satu role dari panel ini yang bisa aktif."
         })
         .setTimestamp()
     ],
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
+  });
+
+  return true;
+}
+
+async function handleRolePanelButton(interaction) {
+  if (!interaction.customId.startsWith(ROLE_PANEL_BUTTON_PREFIX)) {
+    return false;
+  }
+
+  const parts = interaction.customId.slice(ROLE_PANEL_BUTTON_PREFIX.length).split(":");
+  const panelId = parts[0];
+  const roleId = parts[1];
+
+  const panel = getGuildPanel(interaction.guildId, panelId);
+  if (!panel) {
+    await interaction.reply({
+      content: "Panel role ini tidak ditemukan lagi.",
+      flags: MessageFlags.Ephemeral
+    });
+    return true;
+  }
+
+  const targetMember = interaction.guild.members.cache.get(interaction.user.id)
+    || await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+
+  if (!targetMember) {
+    await interaction.reply({
+      content: "Gagal membaca data member kamu. Coba lagi sebentar.",
+      flags: MessageFlags.Ephemeral
+    });
+    return true;
+  }
+
+  let role = interaction.guild.roles.cache.get(roleId);
+  if (!role) {
+    await interaction.guild.roles.fetch().catch(() => null);
+    role = interaction.guild.roles.cache.get(roleId);
+  }
+
+  if (!role) {
+    await interaction.reply({
+      content: "Role untuk tombol ini sudah tidak ditemukan di server.",
+      flags: MessageFlags.Ephemeral
+    });
+    return true;
+  }
+
+  if (!isRoleManageable(role, interaction.guild)) {
+    await interaction.reply({
+      content: `Role <@&${role.id}> tidak dapat dikelola oleh bot. Pastikan posisi role bot berada di atas role tersebut.`,
+      flags: MessageFlags.Ephemeral
+    });
+    return true;
+  }
+
+  const hasRole = targetMember.roles.cache.has(role.id);
+  const isSingle = panel.mode === "single";
+
+  const addedRoles = [];
+  const removedRoles = [];
+
+  if (hasRole) {
+    const removed = await targetMember.roles.remove(role).catch(() => null);
+    if (removed) {
+      removedRoles.push(role);
+    }
+  } else {
+    if (isSingle) {
+      const configuredRoleIds = panel.options.map((opt) => opt.roleId).filter((id) => id !== role.id);
+      for (const otherId of configuredRoleIds) {
+        if (targetMember.roles.cache.has(otherId)) {
+          const otherRole = interaction.guild.roles.cache.get(otherId);
+          if (otherRole) {
+            const removed = await targetMember.roles.remove(otherRole).catch(() => null);
+            if (removed) {
+              removedRoles.push(otherRole);
+            }
+          }
+        }
+      }
+    }
+
+    const added = await targetMember.roles.add(role).catch(() => null);
+    if (added) {
+      addedRoles.push(role);
+    }
+  }
+
+  await interaction.reply({
+    embeds: [
+      new EmbedBuilder()
+        .setColor("#111827")
+        .setTitle("Role Updated")
+        .setDescription(buildRoleAssignmentSummary(addedRoles, removedRoles))
+        .setFooter({
+          text: isSingle
+            ? "Mode single: hanya satu role yang aktif."
+            : "Mode toggle: tekan tombol lagi untuk melepas role."
+        })
+        .setTimestamp()
+    ],
+    flags: MessageFlags.Ephemeral
   });
 
   return true;
@@ -514,8 +671,10 @@ async function upsertGameRolePanel(guild, channelId) {
   const unmanageableRoles = [];
   const options = [];
 
+  await guild.roles.fetch().catch(() => null);
+
   for (const entry of GAME_ROLE_PANEL_OPTIONS) {
-    const role = guild.roles.cache.get(entry.roleId) || await guild.roles.fetch(entry.roleId).catch(() => null);
+    const role = guild.roles.cache.get(entry.roleId);
 
     if (!role) {
       missingRoles.push(entry.label);
@@ -555,10 +714,11 @@ async function upsertGameRolePanel(guild, channelId) {
     channelId,
     mode: "multi",
     behavior: "toggle",
+    componentType: "button",
     title: "Game Self Role",
     description: [
-      "Pilih role game kamu dari dropdown di bawah.",
-      "Pilih lagi role yang sama kalau mau melepas."
+      "Pilih role game kamu dengan menekan tombol di bawah.",
+      "Klik lagi tombol yang sama untuk melepas role."
     ].join("\n"),
     placeholder: "Pilih game kamu di sini",
     presetKey: GAME_ROLE_PANEL_PRESET_KEY,
@@ -593,8 +753,182 @@ async function upsertGameRolePanel(guild, channelId) {
   };
 }
 
+async function upsertDomisiliRolePanel(guild, channelId) {
+  const existing = getGuildPanels(guild.id).find((panel) => panel.presetKey === DOMISILI_ROLE_PANEL_PRESET_KEY) || null;
+  const missingRoles = [];
+  const unmanageableRoles = [];
+  const options = [];
+
+  await guild.roles.fetch().catch(() => null);
+
+  for (const entry of DOMISILI_ROLE_PANEL_OPTIONS) {
+    const role = guild.roles.cache.get(entry.roleId);
+
+    if (!role) {
+      missingRoles.push(entry.label);
+      continue;
+    }
+
+    if (!isRoleManageable(role, guild)) {
+      unmanageableRoles.push(role.name);
+      continue;
+    }
+
+    options.push({
+      roleId: role.id,
+      label: entry.label,
+      description: entry.description,
+      emoji: entry.emoji,
+      emojiData: parseRoleOptionEmoji(entry.emoji)
+    });
+  }
+
+  if (missingRoles.length) {
+    return {
+      ok: false,
+      reason: `Role domisili ini tidak ditemukan: ${missingRoles.join(", ")}`
+    };
+  }
+
+  if (unmanageableRoles.length) {
+    return {
+      ok: false,
+      reason: `Role domisili ini belum bisa dikelola bot: ${unmanageableRoles.join(", ")}`
+    };
+  }
+
+  const payload = {
+    guildId: guild.id,
+    channelId,
+    mode: "single",
+    behavior: "sync",
+    componentType: "select",
+    title: "Role Domisili",
+    description: "Pilih role daerahmu di bawah ini.",
+    placeholder: "Pilih role daerahmu",
+    presetKey: DOMISILI_ROLE_PANEL_PRESET_KEY,
+    presetTag: "domisili-self-role",
+    options
+  };
+
+  if (!existing) {
+    const created = createReactionRolePanel({
+      ...payload,
+      createdBy: guild.client.user?.id || "system"
+    });
+
+    return {
+      ok: true,
+      panel: updatePanel(created.id, (current) => ({
+        ...current,
+        options
+      }))
+    };
+  }
+
+  const updated = updateReactionRolePanel(guild.id, existing.id, (current) => ({
+    ...current,
+    ...payload,
+    messageId: current.messageId || ""
+  }));
+
+  return {
+    ok: true,
+    panel: updated
+  };
+}
+
+async function upsertAgeRolePanel(guild, channelId) {
+  const existing = getGuildPanels(guild.id).find((panel) => panel.presetKey === AGE_ROLE_PANEL_PRESET_KEY) || null;
+  const missingRoles = [];
+  const unmanageableRoles = [];
+  const options = [];
+
+  await guild.roles.fetch().catch(() => null);
+
+  for (const entry of AGE_ROLE_PANEL_OPTIONS) {
+    const role = guild.roles.cache.get(entry.roleId);
+
+    if (!role) {
+      missingRoles.push(entry.label);
+      continue;
+    }
+
+    if (!isRoleManageable(role, guild)) {
+      unmanageableRoles.push(role.name);
+      continue;
+    }
+
+    options.push({
+      roleId: role.id,
+      label: entry.label,
+      description: entry.description,
+      emoji: entry.emoji,
+      emojiData: parseRoleOptionEmoji(entry.emoji)
+    });
+  }
+
+  if (missingRoles.length) {
+    return {
+      ok: false,
+      reason: `Role age ini tidak ditemukan: ${missingRoles.join(", ")}`
+    };
+  }
+
+  if (unmanageableRoles.length) {
+    return {
+      ok: false,
+      reason: `Role age ini belum bisa dikelola bot: ${unmanageableRoles.join(", ")}`
+    };
+  }
+
+  const payload = {
+    guildId: guild.id,
+    channelId,
+    mode: "single",
+    behavior: "toggle",
+    componentType: "button",
+    hideSummary: true,
+    title: "Age Role",
+    description: "Pilih rentang usiamu dengan menekan tombol di bawah.",
+    placeholder: "Pilih usia kamu",
+    presetKey: AGE_ROLE_PANEL_PRESET_KEY,
+    presetTag: "age-self-role",
+    options
+  };
+
+  if (!existing) {
+    const created = createReactionRolePanel({
+      ...payload,
+      createdBy: guild.client.user?.id || "system"
+    });
+
+    return {
+      ok: true,
+      panel: updatePanel(created.id, (current) => ({
+        ...current,
+        options
+      }))
+    };
+  }
+
+  const updated = updateReactionRolePanel(guild.id, existing.id, (current) => ({
+    ...current,
+    ...payload,
+    messageId: current.messageId || ""
+  }));
+
+  return {
+    ok: true,
+    panel: updated
+  };
+}
+
 module.exports = {
+  AGE_ROLE_PANEL_PRESET_KEY,
+  DOMISILI_ROLE_PANEL_PRESET_KEY,
   GAME_ROLE_PANEL_PRESET_KEY,
+  ROLE_PANEL_BUTTON_PREFIX,
   ROLE_PANEL_OPTION_LIMIT,
   buildRolePanelDetailEmbed,
   buildRolePanelsEmbed,
@@ -604,6 +938,7 @@ module.exports = {
   extractRoleId,
   getGuildPanel,
   getGuildPanels,
+  handleRolePanelButton,
   handleRolePanelSelect,
   hasRolePanelPermission,
   isRoleManageable,
@@ -612,6 +947,8 @@ module.exports = {
   parseRoleOptionEmoji,
   splitPipeSegments,
   syncRolePanelMessage,
+  upsertAgeRolePanel,
+  upsertDomisiliRolePanel,
   upsertGameRolePanel,
   updateReactionRolePanel
 };

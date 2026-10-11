@@ -306,7 +306,7 @@ function drawQuoteText(context, quoteText, displayName, username) {
 function drawWatermark(context, width, height) {
   context.fillStyle = "rgba(255, 255, 255, 0.18)";
   context.font = `9px "${getFontFamily()}"`;
-  context.fillText("Sokaze", width - 68, height - 20);
+  context.fillText("Murphy", width - 98, height - 20);
 }
 
 async function createQuoteCard(user, quoteText) {
@@ -333,7 +333,7 @@ async function createQuoteCard(user, quoteText) {
   drawWatermark(context, width, height);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-quote.png"
+    name: "murphy-quote.png"
   });
 }
 

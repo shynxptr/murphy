@@ -5,29 +5,29 @@ const { Canvas, GlobalFonts, loadImage } = require("@napi-rs/canvas");
 const { readLayoutConfig } = require("./idCardLayout");
 
 const assetsDirectory = path.join(__dirname, "..", "..", "..", "assets");
-const templatePath = path.join(assetsDirectory, "template_idcard.png");
+const templatePath = path.join(assetsDirectory, "idcard.png");
 const customFontPath = path.join(assetsDirectory, "font.otf");
 
-const customRegularRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze ID Font");
-const customBoldRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze ID Font Bold");
-const timesRegularRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\times.ttf", "Sokaze Times");
-const timesBoldRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\timesbd.ttf", "Sokaze Times Bold");
+const customRegularRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy ID Font");
+const customBoldRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy ID Font Bold");
+const timesRegularRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\times.ttf", "Murphy Times");
+const timesBoldRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\timesbd.ttf", "Murphy Times Bold");
 
 function getFontFamily(weight = "regular") {
   if (weight === "bold" && customBoldRegistered) {
-    return "Sokaze ID Font Bold";
+    return "Murphy ID Font Bold";
   }
 
   if (customRegularRegistered) {
-    return "Sokaze ID Font";
+    return "Murphy ID Font";
   }
 
   if (weight === "bold" && timesBoldRegistered) {
-    return "Sokaze Times Bold";
+    return "Murphy Times Bold";
   }
 
   if (timesRegularRegistered) {
-    return "Sokaze Times";
+    return "Murphy Times";
   }
 
   return "serif";
@@ -64,35 +64,61 @@ function fitText(context, value, maxWidth, fallback = "-") {
 }
 
 function wrapText(context, text, maxWidth) {
-  const tokens = String(text || "-").split(/\s+/).filter(Boolean);
-
-  if (!tokens.length) {
-    return ["-"];
-  }
-
+  const rawLines = String(text || "-").split(/\r?\n/);
   const lines = [];
-  let current = tokens.shift();
 
-  for (const token of tokens) {
-    const nextValue = `${current} ${token}`;
+  for (const rawLine of rawLines) {
+    const tokens = rawLine.trim().split(/\s+/).filter(Boolean);
 
-    if (context.measureText(nextValue).width <= maxWidth) {
-      current = nextValue;
+    if (!tokens.length) {
+      lines.push("");
       continue;
     }
 
-    lines.push(current);
-    current = token;
+    let current = "";
+
+    for (let token of tokens) {
+      while (context.measureText(token).width > maxWidth && token.length > 1) {
+        let sliceIdx = token.length - 1;
+        while (sliceIdx > 1 && context.measureText(token.slice(0, sliceIdx)).width > maxWidth) {
+          sliceIdx--;
+        }
+        const part = token.slice(0, sliceIdx);
+        token = token.slice(sliceIdx);
+
+        if (current) {
+          lines.push(current);
+          current = "";
+        }
+        lines.push(part);
+      }
+
+      if (!current) {
+        current = token;
+      } else {
+        const nextValue = `${current} ${token}`;
+
+        if (context.measureText(nextValue).width <= maxWidth) {
+          current = nextValue;
+        } else {
+          lines.push(current);
+          current = token;
+        }
+      }
+    }
+
+    if (current) {
+      lines.push(current);
+    }
   }
 
-  lines.push(current);
-  return lines;
+  return lines.length ? lines : ["-"];
 }
 
 function fitWrappedText(context, text, maxWidth, maxHeight, {
-  startFontSize = 28,
-  minFontSize = 18,
-  lineHeightFactor = 1.2
+  startFontSize = 68,
+  minFontSize = 42,
+  lineHeightFactor = 1.25
 } = {}) {
   const largestFont = Math.max(startFontSize, minFontSize);
   const smallestFont = Math.min(startFontSize, minFontSize);
@@ -307,7 +333,7 @@ async function renderIdCardBuffer(options = {}) {
   drawFieldValue(context, options.city || layout.previewData.city || "Jakarta", layout.fields.city, scaleX, scaleY);
   drawBio(
     context,
-    options.bio || layout.previewData.bio || "Menetap di Sokaze sambil ngobrol, dengerin musik, dan nemenin teman-teman sampai malam.",
+    options.bio || layout.previewData.bio || "Menetap di Murphy sambil ngobrol, dengerin musik, dan nemenin teman-teman sampai malam.",
     layout.fields.bio,
     scaleX,
     scaleY

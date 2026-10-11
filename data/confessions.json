@@ -1,0 +1,31 @@
+{
+  "lastId": 2,
+  "entries": {
+    "1": {
+      "id": "1",
+      "guildId": "1536009463582949396",
+      "authorId": "856414742942973962",
+      "authorTag": "zoelmuntahberak",
+      "type": "confession",
+      "target": "atmin",
+      "content": "fuck u admin, 404 is back",
+      "createdAt": "2026-08-29T17:15:11.611Z",
+      "parentId": null,
+      "publicMessageId": "1543308048251093104",
+      "threadId": ""
+    },
+    "2": {
+      "id": "2",
+      "guildId": "1536009463582949396",
+      "authorId": "856414742942973962",
+      "authorTag": "zoelian_ptr",
+      "type": "confession",
+      "target": "etmint",
+      "content": "katanya 404, sekarang murphy. wong kalahan mas?",
+      "createdAt": "2026-10-11T09:28:15.640Z",
+      "parentId": null,
+      "publicMessageId": "1558773218662154375",
+      "threadId": ""
+    }
+  }
+}

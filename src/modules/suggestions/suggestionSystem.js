@@ -119,18 +119,18 @@ function buildSuggestionPanelEmbed(guild) {
   return new EmbedBuilder()
     .setColor("#111214")
     .setAuthor({
-      name: "Sokaze Suggestions",
+      name: "Murphy Suggestions",
       iconURL
     })
     .setTitle("Suggestion Panel")
     .setDescription([
-      "Punya ide atau masukan buat Sokaze?",
+      "Punya ide atau masukan buat Murphy?",
       "Klik tombol di bawah untuk kirim saran lewat modal.",
       `Semua suggestion akan masuk ke ${destination}.`,
       "User bisa vote, dan staff bisa review status suggestion."
     ].join("\n"))
     .setFooter({
-      text: `${guild.name} • Sokaze Suggestion System`,
+      text: `${guild.name} • Murphy Suggestion System`,
       iconURL
     })
     .setTimestamp();
@@ -211,7 +211,7 @@ function buildSuggestionStatusEmbed(guild) {
       }
     )
     .setFooter({
-      text: `${guild.name} • Sokaze Suggestion System`
+      text: `${guild.name} • Murphy Suggestion System`
     })
     .setTimestamp();
 }

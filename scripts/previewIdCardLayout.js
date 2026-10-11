@@ -8,7 +8,7 @@ async function main() {
     name: "Sokaa",
     age: "20 Tahun",
     city: "Bandung",
-    bio: "Suka ngobrol santai, dengerin musik malam, dan nemenin teman-teman di Sokaze sampai larut sambil bikin suasana tetap hidup."
+    bio: "Suka ngobrol santai, dengerin musik malam, dan nemenin teman-teman di 404! Collective sampai larut sambil bikin suasana tetap hidup."
   });
 
   console.log(`Preview generated: ${outputPath}`);

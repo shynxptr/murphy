@@ -13,7 +13,6 @@ const {
 } = require("../modules/leaderboards/leaderboardSystem");
 const { handleStreakMessage } = require("../modules/streak/streakSystem");
 const { handleStickyMessage } = require("../modules/sticky/stickySystem");
-const { handleIdCardPanelMessage } = require("../modules/idcard/idCardSystem");
 const { handleCustomRoleTicketMessage } = require("../modules/custom-roles/customRoleSystem");
 const {
   clearAfkFromMessage,
@@ -35,7 +34,6 @@ module.exports = {
 
     if (message.author.bot) {
       await handleStickyMessage(message, client);
-      await handleIdCardPanelMessage(message, client);
       return;
     }
 
@@ -54,7 +52,6 @@ module.exports = {
       }
 
       await handleStickyMessage(message, client);
-      await handleIdCardPanelMessage(message, client);
       return;
     }
 
@@ -101,7 +98,6 @@ module.exports = {
       await handleAutoThreadMessage(message, client);
       await handleCountingMessage(message, client);
       await handleStickyMessage(message, client);
-      await handleIdCardPanelMessage(message, client);
       return;
     }
 
@@ -109,7 +105,6 @@ module.exports = {
 
     if (!command) {
       await handleStickyMessage(message, client);
-      await handleIdCardPanelMessage(message, client);
       return;
     }
 
@@ -146,6 +141,5 @@ module.exports = {
     }
 
     await handleStickyMessage(message, client);
-    await handleIdCardPanelMessage(message, client);
   }
 };

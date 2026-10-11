@@ -1,8 +1,13 @@
+const { MessageFlags } = require("discord.js");
 const {
   CLOSE_TICKET_BUTTON_ID,
   createTicketChannel,
   closeTicketChannel,
-  TICKET_TYPE_PREFIX
+  handleTicketClaimButton,
+  handleTicketApproveButton,
+  TICKET_TYPE_PREFIX,
+  VERIF_CLAIM_BUTTON_ID,
+  VERIF_APPROVE_BUTTON_ID
 } = require("../modules/tickets/ticketSystem");
 const {
   handleTicketFeedbackButton,
@@ -44,6 +49,7 @@ const {
   handleModerationModalSubmit
 } = require("../modules/moderation/moderationSystem");
 const {
+  handleRolePanelButton,
   handleRolePanelSelect
 } = require("../modules/reaction-roles/reactionRoleSystem");
 const {
@@ -57,10 +63,6 @@ const {
 const {
   handlePrivateRoomButton: handlePrivateRoomPanelButton
 } = require("../modules/private-rooms/privateRoomSystem");
-const {
-  handleIdCardButton,
-  handleIdCardModalSubmit
-} = require("../modules/idcard/idCardSystem");
 const {
   handleStickyModalSubmit
 } = require("../modules/sticky/stickySystem");
@@ -81,6 +83,12 @@ const {
   withScopedAdminAccess
 } = require("../utils/adminAccess");
 const { buildBotPermissionAccessState } = require("../utils/botPermissions");
+const {
+  buildAdminTargetsEmbed,
+  buildInviteEmbed,
+  getInviterMetrics
+} = require("../modules/invites/inviteTracker");
+const { handleVoicePingButton } = require("../modules/admin/sendvoicerules");
 
 module.exports = {
   name: "interactionCreate",
@@ -168,6 +176,10 @@ module.exports = {
     }
 
     if (interaction.isButton()) {
+      if (await handleRolePanelButton(interaction, client)) {
+        return;
+      }
+
       if (await handleTicketFeedbackButton(interaction, client)) {
         return;
       }
@@ -181,10 +193,6 @@ module.exports = {
       }
 
       if (await handleSuggestionButton(interaction, client)) {
-        return;
-      }
-
-      if (await handleIdCardButton(interaction, client)) {
         return;
       }
 
@@ -251,31 +259,63 @@ module.exports = {
       }
 
       if (interaction.customId.startsWith(TICKET_TYPE_PREFIX)) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
         const result = await createTicketChannel(interaction, client, interaction.customId);
 
         if (!result.ok) {
-          await interaction.reply({
-            content: result.reason,
-            ephemeral: true
-          });
+          await interaction.editReply({
+            content: result.reason
+          }).catch(() => null);
           return;
         }
 
-        await interaction.reply({
-          content: `Ticket berhasil dibuka di ${result.channel}.`,
-          ephemeral: true
-        });
+        await interaction.editReply({
+          content: `Ticket berhasil dibuka di ${result.channel}.`
+        }).catch(() => null);
+        return;
+      }
+
+      if (interaction.customId === VERIF_CLAIM_BUTTON_ID) {
+        await handleTicketClaimButton(interaction, client);
+        return;
+      }
+
+      if (interaction.customId === VERIF_APPROVE_BUTTON_ID) {
+        await handleTicketApproveButton(interaction, client);
         return;
       }
 
       if (interaction.customId === CLOSE_TICKET_BUTTON_ID) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
         const result = await closeTicketChannel(interaction, client);
 
         if (!result.ok) {
-          await interaction.editReply(result.reason);
+          await interaction.editReply(result.reason).catch(() => null);
           return;
         }
+      }
+
+      if (interaction.customId.startsWith("invite_refresh:")) {
+        const targetUserId = interaction.customId.slice("invite_refresh:".length);
+        let targetUser = client.users.cache.get(targetUserId);
+        if (!targetUser) {
+          targetUser = await client.users.fetch(targetUserId).catch(() => interaction.user);
+        }
+        const isSelf = targetUser.id === interaction.user.id;
+        const metrics = getInviterMetrics(interaction.guild.id, targetUser.id);
+        const embed = buildInviteEmbed(targetUser, metrics, isSelf);
+        await interaction.update({ embeds: [embed] }).catch(() => null);
+        return;
+      }
+
+      if (interaction.customId === "invite_targets_refresh") {
+        const embed = await buildAdminTargetsEmbed(interaction.guild);
+        await interaction.update({ embeds: [embed] }).catch(() => null);
+        return;
+      }
+
+      if (await handleVoicePingButton(interaction)) {
+        return;
       }
 
       return;
@@ -306,10 +346,6 @@ module.exports = {
     }
 
     if (await handleDonationModalSubmit(interaction, client)) {
-      return;
-    }
-
-    if (await handleIdCardModalSubmit(interaction, client)) {
       return;
     }
 

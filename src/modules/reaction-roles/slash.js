@@ -1,6 +1,7 @@
 const {
   ChannelType,
   EmbedBuilder,
+  MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder
 } = require("discord.js");
@@ -18,6 +19,8 @@ const {
   isValidHttpUrl,
   parseRoleOptionEmoji,
   syncRolePanelMessage,
+  upsertAgeRolePanel,
+  upsertDomisiliRolePanel,
   upsertGameRolePanel,
   updateReactionRolePanel
 } = require("./reactionRoleSystem");
@@ -38,10 +41,20 @@ function buildErrorEmbed(description) {
     .setTimestamp();
 }
 
+async function sendInteractionResponse(interaction, payload) {
+  if (interaction.deferred || interaction.replied) {
+    return await interaction.editReply(payload).catch(() => null);
+  }
+
+  return await interaction.reply({
+    ...payload,
+    flags: MessageFlags.Ephemeral
+  }).catch(() => null);
+}
+
 async function replyError(interaction, description) {
-  await interaction.reply({
-    embeds: [buildErrorEmbed(description)],
-    ephemeral: true
+  await sendInteractionResponse(interaction, {
+    embeds: [buildErrorEmbed(description)]
   });
 }
 
@@ -52,7 +65,7 @@ function getPanelId(interaction) {
 function getTextChannel(interaction) {
   const channel = interaction.options.getChannel("channel") || interaction.channel;
 
-  if (!channel || channel.type !== ChannelType.GuildText) {
+  if (!channel || !channel.isTextBased() || channel.isDMBased()) {
     return null;
   }
 
@@ -71,7 +84,7 @@ async function handleCreate(interaction) {
   const channel = getTextChannel(interaction);
 
   if (!channel) {
-    await replyError(interaction, "Channel target harus berupa text channel biasa.");
+    await replyError(interaction, "Channel target harus berupa text channel atau thread/post forum yang valid.");
     return;
   }
 
@@ -86,6 +99,7 @@ async function handleCreate(interaction) {
     guildId: interaction.guildId,
     channelId: channel.id,
     mode: interaction.options.getString("mode", true),
+    componentType: interaction.options.getString("component_type") || "select",
     title: interaction.options.getString("title", true).trim(),
     description: interaction.options.getString("description", true).trim(),
     placeholder: interaction.options.getString("placeholder", true).trim(),
@@ -93,7 +107,7 @@ async function handleCreate(interaction) {
     createdBy: interaction.user.id
   });
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed(
         "Role Panel Created",
@@ -105,8 +119,7 @@ async function handleCreate(interaction) {
           "Langkah berikutnya: tambahkan opsi role lalu kirim panel."
         ].join("\n")
       )
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -135,9 +148,8 @@ async function handleEdit(interaction, client) {
     }
   }
 
-  await interaction.reply({
-    embeds: [buildSuccessEmbed("Role Panel Updated", `Panel #${panelId} berhasil diperbarui.`)],
-    ephemeral: true
+  await sendInteractionResponse(interaction, {
+    embeds: [buildSuccessEmbed("Role Panel Updated", `Panel #${panelId} berhasil diperbarui.`)]
   });
 }
 
@@ -198,11 +210,10 @@ async function handleAddOption(interaction, client) {
     }
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed("Role Option Added", `Role ${role} berhasil ditambahkan ke panel #${panelId}.`)
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -244,11 +255,10 @@ async function handleRemoveOption(interaction, client) {
     }
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed("Role Option Removed", `Role ${role} berhasil dihapus dari panel #${panelId}.`)
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -275,11 +285,10 @@ async function handleSetMode(interaction, client) {
     }
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed("Role Panel Mode Updated", `Mode panel #${panelId} diubah ke \`${updated.mode}\`.`)
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -299,11 +308,10 @@ async function handleSend(interaction, client) {
     return;
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed("Role Panel Sent", `Panel #${panelId} berhasil dikirim ke <#${result.panel.channelId}>.`)
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -311,7 +319,7 @@ async function handleSendGamePanel(interaction, client) {
   const channel = getTextChannel(interaction);
 
   if (!channel) {
-    await replyError(interaction, "Channel target harus berupa text channel biasa.");
+    await replyError(interaction, "Channel target harus berupa text channel atau thread/post forum yang valid.");
     return;
   }
 
@@ -329,7 +337,7 @@ async function handleSendGamePanel(interaction, client) {
     return;
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed(
         "Game Self Role Panel Sent",
@@ -339,8 +347,79 @@ async function handleSendGamePanel(interaction, client) {
           "Behavior: `toggle`"
         ].join("\n")
       )
-    ],
-    ephemeral: true
+    ]
+  });
+}
+
+async function handleSendDomisiliPanel(interaction, client) {
+  const channel = getTextChannel(interaction);
+
+  if (!channel) {
+    await replyError(interaction, "Channel target harus berupa text channel atau thread/post forum yang valid.");
+    return;
+  }
+
+  const upserted = await upsertDomisiliRolePanel(interaction.guild, channel.id);
+
+  if (!upserted.ok) {
+    await replyError(interaction, upserted.reason);
+    return;
+  }
+
+  const result = await syncRolePanelMessage(client, upserted.panel);
+
+  if (!result.ok) {
+    await replyError(interaction, result.reason);
+    return;
+  }
+
+  await sendInteractionResponse(interaction, {
+    embeds: [
+      buildSuccessEmbed(
+        "Domisili Role Panel Sent",
+        [
+          `Panel role domisili berhasil dikirim ke <#${result.panel.channelId}>.`,
+          `Panel ID: **#${result.panel.id}**`,
+          "Mode: `single` (dropdown limit 1 role)"
+        ].join("\n")
+      )
+    ]
+  });
+}
+
+async function handleSendAgePanel(interaction, client) {
+  const channel = getTextChannel(interaction);
+
+  if (!channel) {
+    await replyError(interaction, "Channel target harus berupa text channel atau thread/post forum yang valid.");
+    return;
+  }
+
+  const upserted = await upsertAgeRolePanel(interaction.guild, channel.id);
+
+  if (!upserted.ok) {
+    await replyError(interaction, upserted.reason);
+    return;
+  }
+
+  const result = await syncRolePanelMessage(client, upserted.panel);
+
+  if (!result.ok) {
+    await replyError(interaction, result.reason);
+    return;
+  }
+
+  await sendInteractionResponse(interaction, {
+    embeds: [
+      buildSuccessEmbed(
+        "Age Role Panel Sent",
+        [
+          `Panel role age berhasil dikirim ke <#${result.panel.channelId}>.`,
+          `Panel ID: **#${result.panel.id}**`,
+          "Tampilan: `Button (Tombol 18- / 18+)`"
+        ].join("\n")
+      )
+    ]
   });
 }
 
@@ -355,16 +434,14 @@ async function handleList(interaction) {
       return;
     }
 
-    await interaction.reply({
-      embeds: [buildRolePanelDetailEmbed(interaction.guild, panel)],
-      ephemeral: true
+    await sendInteractionResponse(interaction, {
+      embeds: [buildRolePanelDetailEmbed(interaction.guild, panel)]
     });
     return;
   }
 
-  await interaction.reply({
-    embeds: [buildRolePanelsEmbed(interaction.guild, getGuildPanels(interaction.guildId))],
-    ephemeral: true
+  await sendInteractionResponse(interaction, {
+    embeds: [buildRolePanelsEmbed(interaction.guild, getGuildPanels(interaction.guildId))]
   });
 }
 
@@ -380,9 +457,8 @@ async function handleDelete(interaction, client) {
   await deleteRolePanelMessage(client, panel);
   deleteReactionRolePanel(interaction.guildId, panelId);
 
-  await interaction.reply({
-    embeds: [buildSuccessEmbed("Role Panel Deleted", `Panel #${panelId} berhasil dihapus.`)],
-    ephemeral: true
+  await sendInteractionResponse(interaction, {
+    embeds: [buildSuccessEmbed("Role Panel Deleted", `Panel #${panelId} berhasil dihapus.`)]
   });
 }
 
@@ -417,7 +493,7 @@ async function handleSetImage(interaction, client) {
     }
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed(
         "Role Panel Image Updated",
@@ -425,8 +501,7 @@ async function handleSetImage(interaction, client) {
           ? `Header image untuk panel #${panelId} berhasil diatur.\n${nextImageUrl}`
           : `Header image untuk panel #${panelId} berhasil dihapus.`
       )
-    ],
-    ephemeral: true
+    ]
   });
 }
 
@@ -479,7 +554,7 @@ async function handleSetEmoji(interaction, client) {
     }
   }
 
-  await interaction.reply({
+  await sendInteractionResponse(interaction, {
     embeds: [
       buildSuccessEmbed(
         "Role Option Emoji Updated",
@@ -487,8 +562,42 @@ async function handleSetEmoji(interaction, client) {
           ? `Emoji opsi role di panel #${panelId} berhasil dihapus.`
           : `Emoji opsi role di panel #${panelId} berhasil diatur ke ${emojiInput}.`
       )
-    ],
-    ephemeral: true
+    ]
+  });
+}
+
+async function handleSetType(interaction, client) {
+  const panelId = getPanelId(interaction);
+  const panel = getGuildPanel(interaction.guildId, panelId);
+
+  if (!panel) {
+    await replyError(interaction, "Panel tidak ditemukan di server ini.");
+    return;
+  }
+
+  const componentType = interaction.options.getString("component_type", true);
+
+  const updated = updateReactionRolePanel(interaction.guildId, panelId, (current) => ({
+    ...current,
+    componentType
+  }));
+
+  if (updated.messageId) {
+    const syncResult = await syncRolePanelMessage(client, updated);
+
+    if (!syncResult.ok) {
+      await replyError(interaction, syncResult.reason);
+      return;
+    }
+  }
+
+  await sendInteractionResponse(interaction, {
+    embeds: [
+      buildSuccessEmbed(
+        "Role Panel Type Updated",
+        `Tampilan panel #${panelId} diubah menjadi \`${componentType === "button" ? "Button (Tombol)" : "Dropdown (Select Menu)"}\`.`
+      )
+    ]
   });
 }
 
@@ -524,11 +633,27 @@ const slashData = new SlashCommandBuilder()
         option
           .setName("channel")
           .setDescription("Channel target panel")
-          .addChannelTypes(ChannelType.GuildText)
+          .addChannelTypes(
+            ChannelType.GuildText,
+            ChannelType.GuildAnnouncement,
+            ChannelType.PublicThread,
+            ChannelType.PrivateThread,
+            ChannelType.AnnouncementThread
+          )
           .setRequired(false)
       )
       .addStringOption((option) =>
         option.setName("image_url").setDescription("Header image/banner panel").setMaxLength(1000).setRequired(false)
+      )
+      .addStringOption((option) =>
+        option
+          .setName("component_type")
+          .setDescription("Pilih tampilan button atau dropdown (default: dropdown)")
+          .addChoices(
+            { name: "Button (Tombol)", value: "button" },
+            { name: "Dropdown (Select Menu)", value: "select" }
+          )
+          .setRequired(false)
       )
   )
   .addSubcommand((subcommand) =>
@@ -608,12 +733,54 @@ const slashData = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName("send-game-panel")
-      .setDescription("Kirim panel self role game bawaan Sokaze")
+      .setDescription("Kirim panel self role game bawaan Murphy")
       .addChannelOption((option) =>
         option
           .setName("channel")
           .setDescription("Channel target panel")
-          .addChannelTypes(ChannelType.GuildText)
+          .addChannelTypes(
+            ChannelType.GuildText,
+            ChannelType.GuildAnnouncement,
+            ChannelType.PublicThread,
+            ChannelType.PrivateThread,
+            ChannelType.AnnouncementThread
+          )
+          .setRequired(false)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("send-domisili-panel")
+      .setDescription("Kirim panel role domisili Murphy (dropdown single select)")
+      .addChannelOption((option) =>
+        option
+          .setName("channel")
+          .setDescription("Channel target panel")
+          .addChannelTypes(
+            ChannelType.GuildText,
+            ChannelType.GuildAnnouncement,
+            ChannelType.PublicThread,
+            ChannelType.PrivateThread,
+            ChannelType.AnnouncementThread
+          )
+          .setRequired(false)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("send-age-panel")
+      .setDescription("Kirim panel role age (tombol 18- dan 18+)")
+      .addChannelOption((option) =>
+        option
+          .setName("channel")
+          .setDescription("Channel target panel")
+          .addChannelTypes(
+            ChannelType.GuildText,
+            ChannelType.GuildAnnouncement,
+            ChannelType.PublicThread,
+            ChannelType.PrivateThread,
+            ChannelType.AnnouncementThread
+          )
           .setRequired(false)
       )
   )
@@ -657,6 +824,24 @@ const slashData = new SlashCommandBuilder()
       .addStringOption((option) =>
         option.setName("emoji").setDescription("Emoji baru atau ketik off").setMaxLength(100).setRequired(true)
       )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("set-type")
+      .setDescription("Ubah tampilan panel antara dropdown atau button")
+      .addIntegerOption((option) =>
+        option.setName("panel_id").setDescription("ID panel").setRequired(true)
+      )
+      .addStringOption((option) =>
+        option
+          .setName("component_type")
+          .setDescription("Tipe tampilan panel")
+          .addChoices(
+            { name: "Button (Tombol)", value: "button" },
+            { name: "Dropdown (Select Menu)", value: "select" }
+          )
+          .setRequired(true)
+      )
   );
 
 module.exports = {
@@ -672,6 +857,10 @@ module.exports = {
     if (permissionError) {
       await replyError(interaction, permissionError);
       return;
+    }
+
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
     }
 
     const subcommand = interaction.options.getSubcommand();
@@ -711,6 +900,16 @@ module.exports = {
       return;
     }
 
+    if (subcommand === "send-domisili-panel") {
+      await handleSendDomisiliPanel(interaction, client);
+      return;
+    }
+
+    if (subcommand === "send-age-panel") {
+      await handleSendAgePanel(interaction, client);
+      return;
+    }
+
     if (subcommand === "list") {
       await handleList(interaction);
       return;
@@ -728,6 +927,11 @@ module.exports = {
 
     if (subcommand === "set-emoji") {
       await handleSetEmoji(interaction, client);
+      return;
+    }
+
+    if (subcommand === "set-type") {
+      await handleSetType(interaction, client);
     }
   }
 };

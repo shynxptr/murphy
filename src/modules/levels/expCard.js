@@ -12,18 +12,18 @@ const obscuraBackgroundPath = path.join(assetsDirectory, "profile-obscura-bg.png
 const noctisBackgroundPath = path.join(assetsDirectory, "profile-noctis-bg.png");
 const eclipseBackgroundPath = path.join(assetsDirectory, "profile-eclipse-bg.png");
 
-const regularFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze Gothic");
-const boldFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Sokaze Gothic Bold");
+const regularFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy Gothic");
+const boldFontRegistered = GlobalFonts.registerFromPath(customFontPath, "Murphy Gothic Bold");
 const fallbackRegularRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeui.ttf", "Segoe UI");
 const fallbackBoldRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeuib.ttf", "Segoe UI Bold");
 
 function getFontFamily(weight = "regular") {
   if (weight === "bold" && boldFontRegistered) {
-    return "Sokaze Gothic Bold";
+    return "Murphy Gothic Bold";
   }
 
   if (regularFontRegistered) {
-    return "Sokaze Gothic";
+    return "Murphy Gothic";
   }
 
   if (weight === "bold" && fallbackBoldRegistered) {
@@ -416,7 +416,7 @@ async function createExpCard(member, levelInfo, configOverride = null) {
   drawProgress(context, levelInfo, config);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-exp-card.png"
+    name: "murphy-exp-card.png"
   });
 }
 

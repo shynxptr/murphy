@@ -18,7 +18,7 @@ const { createProfileCard } = require("./profileCard");
 
 const slashData = new SlashCommandBuilder()
   .setName("profile")
-  .setDescription("Lihat dan atur profile card Sokaze")
+  .setDescription("Lihat dan atur profile card Murphy")
   .setDMPermission(false)
   .addSubcommand((subcommand) =>
     subcommand

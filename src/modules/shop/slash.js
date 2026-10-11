@@ -16,7 +16,7 @@ const { getMemberLevelInfo } = require("../levels/levelSystem");
 
 const slashData = new SlashCommandBuilder()
   .setName("shop")
-  .setDescription(`Lihat saldo ${GAZECOIN_NAME} dan belanja reward Sokaze`)
+  .setDescription(`Lihat saldo ${GAZECOIN_NAME} dan belanja reward Murphy`)
   .setDMPermission(false)
   .addSubcommand((subcommand) =>
     subcommand

@@ -12,7 +12,7 @@ const {
 
 const port = Number.parseInt(process.env.IDCARD_LAYOUT_PORT || "3217", 10);
 const htmlPath = path.join(__dirname, "..", "tools", "idcard-layout-dashboard.html");
-const templatePath = path.join(__dirname, "..", "assets", "template_idcard.png");
+const templatePath = path.join(__dirname, "..", "assets", "idcard.png");
 const fontPath = path.join(__dirname, "..", "assets", "font.otf");
 
 function sendJson(response, statusCode, payload) {

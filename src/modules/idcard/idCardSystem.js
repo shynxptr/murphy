@@ -77,7 +77,7 @@ function buildIdCardButtonRow() {
 function buildPanelEmbed(guild) {
   return new EmbedBuilder()
     .setColor("#111214")
-    .setTitle("Sokaze ID Card")
+    .setTitle("Murphy ID Card")
     .setDescription([
       `Silakan ambil ID card untuk mendapatkan role <@&${ID_CARD_REWARD_ROLE_ID}>.`,
       "Klik tombol di bawah untuk membuat ID card kamu.",
@@ -85,7 +85,7 @@ function buildPanelEmbed(guild) {
       "Data yang akan diisi: `Nama`, `Umur`, `Asal Kota`, dan `Bio`."
     ].join("\n"))
     .setFooter({
-      text: `${guild.name} • Sokaze Assistant`
+      text: `${guild.name} • Murphy`
     })
     .setTimestamp();
 }

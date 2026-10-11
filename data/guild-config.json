@@ -1,0 +1,109 @@
+{
+  "1536009463582949396": {
+    "customRoles": {
+      "donorRoleId": "",
+      "panelChannelId": "",
+      "panelMessageId": "",
+      "ticketCategoryId": "1542521856160960522",
+      "anchorRoleId": "",
+      "customizeCooldownDays": 7
+    },
+    "tickets": {
+      "categoryId": "1542521856160960522",
+      "partnershipCategoryId": "1542552991909814323",
+      "logChannelId": "",
+      "feedbackChannelId": "1543154266468778094",
+      "pingRoleIdsByType": {},
+      "supportRoleId": "",
+      "panelChannelId": "1542549784697638922",
+      "partnershipPanelChannelId": "1543157049339158548",
+      "commandListChannelId": "",
+      "partnershipEnabled": true,
+      "panelAccentColor": "#111111",
+      "verifStaffRoleId": "1558778004425932890",
+      "verifGirlRoleId": "1558511957500497920",
+      "verifUnverifiedRoleId": "1558510979380412446"
+    },
+    "welcome": {
+      "channelId": "1536009464031870996",
+      "publicChannelId": "1542726294758756382",
+      "accentColor": "#111111",
+      "rulesChannelId": "1542511956609728553",
+      "introChannelId": "1543307273718464542"
+    },
+    "confessions": {
+      "channelId": "1542728353654644828",
+      "logChannelId": "",
+      "panelChannelId": "1542728353654644828",
+      "accentColor": "#111111"
+    },
+    "idCardPanel": {
+      "channelId": "1543307273718464542",
+      "messageId": "1544352353413627926",
+      "lastBumpAt": "1788272693939",
+      "cooldownSeconds": 30
+    },
+    "counting": {
+      "channelId": "1543154641783619584",
+      "startNumber": 1
+    },
+    "autoThread": {
+      "channelIds": [
+        "1542727665042202685",
+        "1542728583070482502"
+      ],
+      "archiveDurationMinutes": 1440,
+      "promptText": "Tulis komentar di sini."
+    },
+    "leaderboards": {
+      "channelId": "1542546855207116963",
+      "chatChannelId": "1482505425973936180",
+      "lastAutoRefreshDate": "2026-10-11",
+      "lastAutoRefreshHour": "2026-10-11-22",
+      "temporaryResponseSeconds": 90,
+      "messageIds": {
+        "chat": "1558747270395068437",
+        "voice": "1558747273641328683",
+        "booster": "1558747277844021313",
+        "donator": "1558747280998277157"
+      }
+    },
+    "streak": {
+      "channelId": "1543154796805230632",
+      "botChannelId": "1543154796805230632",
+      "notificationChannelId": "",
+      "rewardRoleId": "1483797982720561292",
+      "topChannelId": "1542546855207116963",
+      "topMessageId": "1558747266037326213",
+      "topLastUpdatedDate": "2026-10-11",
+      "topLastUpdatedHour": "2026-10-11-22",
+      "temporaryResponseSeconds": 90,
+      "timezone": "Asia/Jakarta"
+    },
+    "levels": {
+      "thresholds": {
+        "1": 0,
+        "2": 800,
+        "3": 2500,
+        "4": 6500,
+        "5": 14000
+      },
+      "xpRewards": {
+        "chat": 8,
+        "voice": 15,
+        "streak": 20
+      },
+      "chatCooldownMinutes": 5,
+      "voiceIntervalMinutes": 20,
+      "minimumChatLength": 10,
+      "announceChannelId": "1558832428666069032",
+      "roleIds": {
+        "1": "",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": ""
+      }
+    }
+  }
+}

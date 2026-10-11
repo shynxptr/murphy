@@ -303,7 +303,7 @@ function getDefaultTitle(level) {
 
   return {
     key: `level-${level}`,
-    label: `${LEVEL_META[level]?.name || "Sokaze Member"}`
+    label: `${LEVEL_META[level]?.name || "Murphy Member"}`
   };
 }
 

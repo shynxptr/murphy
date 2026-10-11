@@ -31,12 +31,12 @@ function buildSettingsReply(interaction) {
 
 const slashData = new SlashCommandBuilder()
   .setName("level")
-  .setDescription("Lihat atau atur level member Sokaze")
+  .setDescription("Lihat atau atur level member Murphy")
   .setDMPermission(false)
   .addSubcommand((subcommand) =>
     subcommand
       .setName("guide")
-      .setDescription("Lihat panduan tier level dan benefit Sokaze")
+      .setDescription("Lihat panduan tier level dan benefit Murphy")
   )
   .addSubcommand((subcommand) =>
     subcommand

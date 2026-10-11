@@ -93,7 +93,7 @@ function drawShell(context, width, height) {
 function drawHeader(context, config, entryCount) {
   context.fillStyle = "#ffffff";
   context.font = `bold 20px "${getFontFamily("bold")}"`;
-  context.fillText(config.kicker || "SOKAZE LEADERBOARD", 92, 92);
+  context.fillText(config.kicker || "MURPHY LEADERBOARD", 92, 92);
 
   context.font = `bold 38px "${getFontFamily("bold")}"`;
   context.fillText(fitText(context, config.title, 620), 92, 134);
@@ -296,12 +296,12 @@ async function createLeaderboardCard(config) {
 
   drawFooter(
     context,
-    config.footerLeft || "Sokaze Assistant",
+    config.footerLeft || "Murphy",
     config.footerRight || "Leaderboard Board"
   );
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: config.fileName || "sokaze-leaderboard.png"
+    name: config.fileName || "murphy-leaderboard.png"
   });
 }
 

@@ -33,6 +33,7 @@ const DEFAULT_STREAK_SETTINGS = {
   topChannelId: "",
   topMessageId: "",
   topLastUpdatedDate: "",
+  topLastUpdatedHour: "",
   temporaryResponseSeconds: 90,
   timezone: "Asia/Jakarta"
 };
@@ -141,7 +142,8 @@ function setStreakTopChannel(guildId, channelId) {
       ...(current.streak || {}),
       topChannelId: channelId,
       topMessageId: "",
-      topLastUpdatedDate: ""
+      topLastUpdatedDate: "",
+      topLastUpdatedHour: ""
     }
   }));
 }
@@ -221,6 +223,24 @@ function formatDateKey(date, timezone) {
 
 function getTodayDateKey(timezone) {
   return formatDateKey(new Date(), timezone);
+}
+
+function formatHourKey(date, timezone) {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}-${values.hour || "00"}`;
+}
+
+function getTodayHourKey(timezone) {
+  return formatHourKey(new Date(), timezone);
 }
 
 function shiftDateKey(dateKey, days) {
@@ -351,13 +371,13 @@ function buildStreakBoardCardEmbed(guild, targetMember, data, attachmentName) {
   const embed = new EmbedBuilder()
     .setColor("#38bdf8")
     .setAuthor({
-      name: "Sokaze Streak Board",
+      name: "Murphy Streak Board",
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTitle(`Streak Board - ${targetMember.user.username}`)
     .setDescription(`Ringkasan partner streak milik ${targetMember}.`)
     .setFooter({
-      text: `Sokaze Assistant • Halaman ${data.page}/${data.totalPages} • Total partner: ${data.totalPartners}`,
+      text: `Murphy • Halaman ${data.page}/${data.totalPages} • Total partner: ${data.totalPartners}`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -373,12 +393,11 @@ function buildStreakTopBoardEmbed(guild, data, attachmentName) {
   const embed = new EmbedBuilder()
     .setColor("#f97316")
     .setAuthor({
-      name: "Sokaze Top Streak",
+      name: "Murphy Top Streak",
       iconURL: getGuildIconUrl(guild) || undefined
     })
-    .setDescription("Papan streak server yang diperbarui otomatis setiap hari.")
     .setFooter({
-      text: `Sokaze Assistant | Total pair: ${data.totalPairs}`,
+      text: `Murphy | Total pair: ${data.totalPairs}`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -398,13 +417,13 @@ async function buildStreakInfoFallbackEmbed(guild, client, targetMember, request
     return new EmbedBuilder()
       .setColor("#38bdf8")
       .setAuthor({
-        name: "Sokaze Streak Board",
+        name: "Murphy Streak Board",
         iconURL: getGuildIconUrl(guild) || undefined
       })
       .setTitle(`Streak Info - ${targetMember.user.username}`)
       .setDescription("Belum ada partner streak yang aktif untuk user ini.")
       .setFooter({
-        text: "Sokaze Assistant • Halaman 1/1 • Total partner: 0",
+        text: "Murphy • Halaman 1/1 • Total partner: 0",
         iconURL: getGuildIconUrl(guild) || undefined
       })
       .setTimestamp();
@@ -419,13 +438,13 @@ async function buildStreakInfoFallbackEmbed(guild, client, targetMember, request
   return new EmbedBuilder()
     .setColor("#38bdf8")
     .setAuthor({
-      name: "Sokaze Streak Board",
+      name: "Murphy Streak Board",
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTitle(`Streak Info - ${targetMember.user.username}`)
     .setDescription(lines.join("\n"))
     .setFooter({
-      text: `Sokaze Assistant • Halaman ${data.page}/${data.totalPages} • Total partner: ${data.totalPartners}`,
+      text: `Murphy • Halaman ${data.page}/${data.totalPages} • Total partner: ${data.totalPartners}`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -853,7 +872,7 @@ async function refreshStreakTopBoardForGuild(guild, client, options = {}) {
       return false;
     }
 
-    const todayDateKey = getTodayDateKey(settings.timezone);
+    const todayHourKey = getTodayHourKey(settings.timezone);
     const force = Boolean(options.force);
 
     const channel = guild.channels.cache.get(topChannelId) || await guild.channels.fetch(topChannelId).catch(() => null);
@@ -868,7 +887,7 @@ async function refreshStreakTopBoardForGuild(guild, client, options = {}) {
       boardMessage = await channel.messages.fetch(settings.topMessageId).catch(() => null);
     }
 
-    if (!force && boardMessage && settings.topLastUpdatedDate === todayDateKey) {
+    if (!force && boardMessage && settings.topLastUpdatedHour === todayHourKey) {
       return false;
     }
 
@@ -898,7 +917,8 @@ async function refreshStreakTopBoardForGuild(guild, client, options = {}) {
 
     updateStreakTopBoardState(guild.id, {
       topMessageId: boardMessage.id,
-      topLastUpdatedDate: todayDateKey
+      topLastUpdatedDate: todayHourKey.slice(0, 10),
+      topLastUpdatedHour: todayHourKey
     });
 
     return true;
@@ -1124,8 +1144,22 @@ async function handleStreakCommand(message, client, targetId) {
   const settings = getStreakSettings(message.guild.id, client);
   const commandChannelId = getStreakCommandChannelId(settings);
 
-  if (!commandChannelId || message.channel.id !== commandChannelId) {
-    return false;
+  if (!commandChannelId) {
+    await replyWithTemporaryMessage(
+      message,
+      "Channel streak belum diset oleh admin. Jalankan `fsetstreakchannel [#channel]` terlebih dahulu.",
+      client
+    );
+    return true;
+  }
+
+  if (message.channel.id !== commandChannelId) {
+    await replyWithTemporaryMessage(
+      message,
+      `Command streak hanya aktif di channel <#${commandChannelId}>.`,
+      client
+    );
+    return true;
   }
 
   if (message.author.id === targetId) {
@@ -1249,10 +1283,6 @@ async function handleStreakMessage(message, client, options = {}) {
   const settings = getStreakSettings(message.guild.id, client);
   const commandChannelId = getStreakCommandChannelId(settings);
 
-  if (!commandChannelId || message.channel.id !== commandChannelId) {
-    return false;
-  }
-
   if (options.hasPrefixedCommand) {
     return false;
   }
@@ -1266,6 +1296,29 @@ async function handleStreakMessage(message, client, options = {}) {
 
   if (rawInfoRequest) {
     return sendStreakInfo(message, client, rawInfoRequest);
+  }
+
+  if (message.content.trim().toLowerCase() === "streak") {
+    if (!commandChannelId) {
+      await replyWithTemporaryMessage(
+        message,
+        "Channel streak belum diset oleh admin. Jalankan `fsetstreakchannel [#channel]` terlebih dahulu.",
+        client
+      );
+      return true;
+    }
+    if (message.channel.id === commandChannelId) {
+      await replyWithTemporaryMessage(
+        message,
+        "Format penggunaan: `streak @user` atau `fstreak @user`.",
+        client
+      );
+      return true;
+    }
+  }
+
+  if (!commandChannelId || message.channel.id !== commandChannelId) {
+    return false;
   }
 
   if (await handlePendingAcceptance(message, client, settings)) {
@@ -1319,6 +1372,7 @@ module.exports = {
   formatStatusLine,
   getStreakSettings,
   getStreakTier,
+  handleStreakCommand,
   handleStreakMessage,
   refreshStreakTopBoardForGuild,
   replyWithTemporaryMessage,

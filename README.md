@@ -1,6 +1,6 @@
-# Sokaze Bot
+# Murphy Bot (404! Collective)
 
-Bot Discord berbasis JavaScript dengan sistem command prefix `sk`.
+Bot Discord berbasis JavaScript dengan sistem command prefix `f`.
 
 ## Setup
 
@@ -11,54 +11,54 @@ Bot Discord berbasis JavaScript dengan sistem command prefix `sk`.
 
 ## Command awal
 
-- `skping`
-- `skhelp`
-- `skquote [teks]`
-- `sksetwelcome #channel`
-- `sksetrules #channel`
-- `sksetintro #channel`
-- `sksetaccent #111111`
-- `sktestwelcome`
-- `sksetpublicchat #channel`
-- `sktestpublicwelcome`
-- `sksetticketcategory <category_id>`
-- `sksetpartnershipcategory <category_id>`
-- `sksetticketsupport @role`
-- `sksetticketlog #channel`
-- `sksendticketpanel #channel`
-- `sksendpartnershippanel #channel`
-- `sktogglepartnership <on|off>`
-- `sksendticketcommands #channel`
-- `sksetconfessionchannel #channel`
-- `sksetconfessionlog #channel`
-- `sksendconfessionpanel #channel`
-- `sksetnamepanel #channel`
-- `sksetnamereview #channel`
-- `sksetnamelog #channel`
-- `sksetnameroles @role [@role2]`
-- `sksendnamepanel #channel`
-- `sksetcounting #channel [start_number]`
-- `skresetcounting`
-- `skcountingstatus`
-- `sksetmodlog #channel`
-- `skmodpanel @user`
-- `skwarn @user [alasan]`
-- `skwarnings @user`
-- `skclearwarnings @user [alasan]`
-- `sktimeout @user <durasi> [alasan]`
-- `skuntimeout @user [alasan]`
-- `skkick @user [alasan]`
-- `skban @user [alasan]`
-- `skunban <user_id> [alasan]`
-- `skpurge <1-100>`
-- `sksupport`
-- `skiklan`
-- `skverifikasi`
-- `sklapor`
-- `skmedia`
-- `skpartnership`
-- `skpartnershiphelp`
-- `sktickethelp`
+- `fping`
+- `fhelp`
+- `fquote [teks]`
+- `fsetwelcome #channel`
+- `fsetrules #channel`
+- `fsetintro #channel`
+- `fsetaccent #111111`
+- `ftestwelcome`
+- `fsetpublicchat #channel`
+- `ftestpublicwelcome`
+- `fsetticketcategory <category_id>`
+- `fsetpartnershipcategory <category_id>`
+- `fsetticketsupport @role`
+- `fsetticketlog #channel`
+- `fsendticketpanel #channel`
+- `fsendpartnershippanel #channel`
+- `ftogglepartnership <on|off>`
+- `fsendticketcommands #channel`
+- `fsetconfessionchannel #channel`
+- `fsetconfessionlog #channel`
+- `fsendconfessionpanel #channel`
+- `fsetnamepanel #channel`
+- `fsetnamereview #channel`
+- `fsetnamelog #channel`
+- `fsetnameroles @role [@role2]`
+- `fsendnamepanel #channel`
+- `fsetcounting #channel [start_number]`
+- `fresetcounting`
+- `fcountingstatus`
+- `fsetmodlog #channel`
+- `fmodpanel @user`
+- `fwarn @user [alasan]`
+- `fwarnings @user`
+- `fclearwarnings @user [alasan]`
+- `ftimeout @user <durasi> [alasan]`
+- `funtimeout @user [alasan]`
+- `fkick @user [alasan]`
+- `fban @user [alasan]`
+- `funban <user_id> [alasan]`
+- `fpurge <1-100>`
+- `fsupport`
+- `fiklan`
+- `fverifikasi`
+- `flapor`
+- `fmedia`
+- `fpartnership`
+- `fpartnershiphelp`
+- `ftickethelp`
 
 ## Welcome Theme
 
@@ -94,95 +94,95 @@ Isi `.env` dengan:
 
 Atau atur langsung dari Discord dengan command admin:
 
-- `sksetwelcome #channel`
-- `sksetrules #channel`
-- `sksetintro #channel`
-- `sksetaccent #111111`
-- `sktestwelcome [#channel]`
-- `sksetpublicchat #channel`
-- `sktestpublicwelcome [#channel]`
-- `sksetticketcategory <category_id>`
-- `sksetpartnershipcategory <category_id>`
-- `sksetticketsupport @role`
-- `sksetticketlog #channel`
-- `sksendticketpanel #channel`
-- `sksendpartnershippanel #channel`
-- `sktogglepartnership <on|off>`
-- `sksendticketcommands #channel`
-- `sksetconfessionchannel #channel`
-- `sksetconfessionlog #channel`
-- `sksendconfessionpanel #channel`
-- `sksetnamepanel #channel`
-- `sksetnamereview #channel`
-- `sksetnamelog #channel`
-- `sksetnameroles @role [@role2]`
-- `sksendnamepanel #channel`
-- `sksetcounting #channel [start_number]`
-- `skresetcounting`
-- `skcountingstatus`
-- `sksetmodlog #channel`
-- `skmodpanel @user`
-- `skwarn @user [alasan]`
-- `skwarnings @user`
-- `skclearwarnings @user [alasan]`
-- `sktimeout @user <durasi> [alasan]`
-- `skuntimeout @user [alasan]`
-- `skkick @user [alasan]`
-- `skban @user [alasan]`
-- `skunban <user_id> [alasan]`
-- `skpurge <1-100>`
-- `sksupport`
-- `skiklan`
-- `skverifikasi`
-- `sklapor`
-- `skmedia`
-- `skpartnership`
-- `skpartnershiphelp`
-- `sktickethelp`
+- `fsetwelcome #channel`
+- `fsetrules #channel`
+- `fsetintro #channel`
+- `fsetaccent #111111`
+- `ftestwelcome [#channel]`
+- `fsetpublicchat #channel`
+- `ftestpublicwelcome [#channel]`
+- `fsetticketcategory <category_id>`
+- `fsetpartnershipcategory <category_id>`
+- `fsetticketsupport @role`
+- `fsetticketlog #channel`
+- `fsendticketpanel #channel`
+- `fsendpartnershippanel #channel`
+- `ftogglepartnership <on|off>`
+- `fsendticketcommands #channel`
+- `fsetconfessionchannel #channel`
+- `fsetconfessionlog #channel`
+- `fsendconfessionpanel #channel`
+- `fsetnamepanel #channel`
+- `fsetnamereview #channel`
+- `fsetnamelog #channel`
+- `fsetnameroles @role [@role2]`
+- `fsendnamepanel #channel`
+- `fsetcounting #channel [start_number]`
+- `fresetcounting`
+- `fcountingstatus`
+- `fsetmodlog #channel`
+- `fmodpanel @user`
+- `fwarn @user [alasan]`
+- `fwarnings @user`
+- `fclearwarnings @user [alasan]`
+- `ftimeout @user <durasi> [alasan]`
+- `funtimeout @user [alasan]`
+- `fkick @user [alasan]`
+- `fban @user [alasan]`
+- `funban <user_id> [alasan]`
+- `fpurge <1-100>`
+- `fsupport`
+- `fiklan`
+- `fverifikasi`
+- `flapor`
+- `fmedia`
+- `fpartnership`
+- `fpartnershiphelp`
+- `ftickethelp`
 
 ## Ticket Flow
 
-1. Set category ticket dengan `sksetticketcategory`
-2. Jika partnership dipisah, set category khusus dengan `sksetpartnershipcategory`
-3. Set role support dengan `sksetticketsupport`
-4. Opsional set log channel dengan `sksetticketlog`
-5. Kirim panel umum dengan `sksendticketpanel #channel`
-6. Kirim panel partnership dengan `sksendpartnershippanel #channel`
-7. Kirim daftar command staff dengan `sksendticketcommands #channel`
+1. Set category ticket dengan `fsetticketcategory`
+2. Jika partnership dipisah, set category khusus dengan `fsetpartnershipcategory`
+3. Set role support dengan `fsetticketsupport`
+4. Opsional set log channel dengan `fsetticketlog`
+5. Kirim panel umum dengan `fsendticketpanel #channel`
+6. Kirim panel partnership dengan `fsendpartnershippanel #channel`
+7. Kirim daftar command staff dengan `fsendticketcommands #channel`
 8. User pilih tombol kategori ticket untuk membuat channel ticket pribadi
 
 ## Confession Flow
 
-1. Set channel confession dengan `sksetconfessionchannel`
-2. Set channel log admin dengan `sksetconfessionlog`
-3. Kirim panel confession dengan `sksendconfessionpanel #channel`
+1. Set channel confession dengan `fsetconfessionchannel`
+2. Set channel log admin dengan `fsetconfessionlog`
+3. Kirim panel confession dengan `fsendconfessionpanel #channel`
 4. User klik tombol untuk kirim confession via modal
 5. Bot publish confession anonim, buat thread, dan sediakan tombol balas anonim
 6. Semua confession dan reply anonim dicatat ke channel log admin
 
 ## Counting Flow
 
-1. Set channel counting dengan `sksetcounting #channel [start_number]`
+1. Set channel counting dengan `fsetcounting #channel [start_number]`
 2. Member harus kirim angka murni sesuai urutan
 3. User yang sama tidak boleh dua kali berturut-turut
 4. Jika salah, pesan akan dihapus dan counting direset ke angka awal
-5. Cek status dengan `skcountingstatus`
+5. Cek status dengan `fcountingstatus`
 
 ## Moderation Flow
 
-1. Set channel log moderasi dengan `sksetmodlog`
-2. Buka panel moderasi modern dengan `skmodpanel @user`
+1. Set channel log moderasi dengan `fsetmodlog`
+2. Buka panel moderasi modern dengan `fmodpanel @user`
 3. Gunakan tombol panel untuk `warn`, `timeout`, `kick`, `ban`, `clear warns`, atau lihat `cases`
-4. Gunakan command cepat seperti `skwarn`, `sktimeout`, `skkick`, `skban`, dan `skpurge` jika butuh aksi langsung
+4. Gunakan command cepat seperti `fwarn`, `ftimeout`, `fkick`, `fban`, dan `fpurge` jika butuh aksi langsung
 5. Semua aksi moderasi akan tercatat sebagai case di `data/moderation.json` dan dikirim ke mod log jika channel sudah diatur
 
 ## Name Request Flow
 
-1. Set panel channel dengan `sksetnamepanel`
-2. Set review channel dengan `sksetnamereview`
-3. Set log channel dengan `sksetnamelog`
-4. Set protected role dengan `sksetnameroles`
-5. Kirim panel dengan `sksendnamepanel #channel`
+1. Set panel channel dengan `fsetnamepanel`
+2. Set review channel dengan `fsetnamereview`
+3. Set log channel dengan `fsetnamelog`
+4. Set protected role dengan `fsetnameroles`
+5. Kirim panel dengan `fsendnamepanel #channel`
 6. User submit nama via modal
 7. Bot validasi nama agar tidak NSFW dan tidak menyerupai admin/staff
 8. Staff approve/reject dari review channel
@@ -190,8 +190,8 @@ Atau atur langsung dari Discord dengan command admin:
 
 ## Quote Flow
 
-1. Gunakan `skquote [teks]` untuk membuat quote dari teks sendiri
-2. Atau reply pesan seseorang lalu ketik `skquote`
+1. Gunakan `fquote [teks]` untuk membuat quote dari teks sendiri
+2. Atau reply pesan seseorang lalu ketik `fquote`
 3. Bot akan membuat quote image dengan background abstrak dari avatar user yang dikutip
 
 Setting per server disimpan di `data/guild-config.json`.

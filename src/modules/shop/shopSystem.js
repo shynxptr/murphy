@@ -209,7 +209,7 @@ function buildShopCatalogEmbed(snapshot, gazecoinDisplay = GAZECOIN_SHORT) {
 
   return new EmbedBuilder()
     .setColor("#111214")
-    .setTitle(`${gazecoinDisplay} Sokaze Shop`)
+    .setTitle(`${gazecoinDisplay} Murphy Shop`)
     .setDescription(
       [
         `Tier kamu: **${snapshot.levelInfo.code} ${snapshot.levelInfo.name}**`,
@@ -508,7 +508,7 @@ async function sendVoiceGazecoinSummary(member, client) {
   const durationLabel = formatDurationShort(Date.now() - startedAt);
   const embed = new EmbedBuilder()
     .setColor("#111214")
-    .setTitle("Sokaze Voice Summary")
+    .setTitle("Murphy Voice Summary")
     .setDescription(
       [
         `${gazecoin} Kamu mengumpulkan **${entry.voiceSessionEarned} ${GAZECOIN_NAME}** dari sesi voice terakhir.`,

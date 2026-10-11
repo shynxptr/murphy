@@ -4,7 +4,7 @@ const { refreshMusicBoardForGuild } = require("../music/musicBoardSystem");
 
 module.exports = {
   name: "refreshmusicboard",
-  description: "Paksa refresh Sokaze Music List.",
+  description: "Paksa refresh Murphy Music List.",
   aliases: ["updatemusicboard", "musicboardrefresh"],
   category: "admin",
   usage: "refreshmusicboard",

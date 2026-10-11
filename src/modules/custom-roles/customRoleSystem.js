@@ -279,7 +279,7 @@ function buildCustomRolePanelEmbed(guild) {
       ].join("\n")
     )
     .setFooter({
-      text: `${guild.name} - Sokaze Custom Role`,
+      text: `${guild.name} - Murphy Custom Role`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -324,7 +324,7 @@ function buildCustomRoleTicketEmbed(guild, member, state, entitlement) {
       ].join("\n")
     )
     .setFooter({
-      text: `${guild.name} - Sokaze Custom Role`,
+      text: `${guild.name} - Murphy Custom Role`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -386,7 +386,7 @@ function buildCustomRoleStatusEmbed(guild) {
       }
     )
     .setFooter({
-      text: `${guild.name} - Sokaze Custom Role`,
+      text: `${guild.name} - Murphy Custom Role`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();

@@ -23,6 +23,7 @@ const DEFAULT_LEADERBOARD_SETTINGS = {
   channelId: "",
   chatChannelId: "1482505425973936180",
   lastAutoRefreshDate: "",
+  lastAutoRefreshHour: "",
   temporaryResponseSeconds: 90,
   messageIds: {
     chat: "",
@@ -39,38 +40,38 @@ const BOARD_META = {
   chat: {
     key: "chat",
     title: "Top Chat",
-    kicker: "SOKAZE TOP CHAT",
+    kicker: "MURPHY TOP CHAT",
     subtitle: "Leaderboard chat valid dari channel general yang ditrack.",
     accentColor: "#38bdf8",
     footerRight: "Chat Tracker",
-    fileName: "sokaze-top-chat.png"
+    fileName: "murphy-top-chat.png"
   },
   voice: {
     key: "voice",
     title: "Top Voice",
-    kicker: "SOKAZE TOP VOICE",
+    kicker: "MURPHY TOP VOICE",
     subtitle: "Akumulasi waktu voice dari semua room, termasuk AFK dan mute/deafen.",
     accentColor: "#a855f7",
     footerRight: "Voice Tracker",
-    fileName: "sokaze-top-voice.png"
+    fileName: "murphy-top-voice.png"
   },
   booster: {
     key: "booster",
     title: "Top Booster",
-    kicker: "SOKAZE TOP BOOSTER",
+    kicker: "MURPHY TOP BOOSTER",
     subtitle: "Booster aktif dengan durasi boost terlama di server.",
     accentColor: "#ec4899",
     footerRight: "Booster Board",
-    fileName: "sokaze-top-booster.png"
+    fileName: "murphy-top-booster.png"
   },
   donator: {
     key: "donator",
     title: "Top Donatur",
-    kicker: "SOKAZE TOP DONATUR",
+    kicker: "MURPHY TOP DONATUR",
     subtitle: "Leaderboard akumulasi donasi yang dicatat admin dan bot.",
     accentColor: "#f59e0b",
     footerRight: "Donatur Board",
-    fileName: "sokaze-top-donatur.png"
+    fileName: "murphy-top-donatur.png"
   }
 };
 
@@ -120,6 +121,7 @@ function setLeaderboardChannel(guildId, channelId) {
     ...current,
     channelId,
     lastAutoRefreshDate: "",
+    lastAutoRefreshHour: "",
     messageIds: {
       chat: "",
       voice: "",
@@ -258,6 +260,23 @@ function formatDateKey(date, timezone) {
 
 function getTodayDateKey(timezone) {
   return formatDateKey(new Date(), timezone);
+}
+
+function formatHourKey(date, timezone) {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}-${values.hour || "00"}`;
+}
+
+function getTodayHourKey(timezone) {
+  return formatHourKey(new Date(), timezone);
 }
 
 function getUpdatedLabel(timezone) {
@@ -404,7 +423,7 @@ async function buildBoardPayload(guild, boardKey, timezone) {
     ...meta,
     updatedLabel: getUpdatedLabel(timezone),
     entries,
-    footerLeft: "Sokaze Assistant"
+    footerLeft: "Murphy"
   });
 
   const embed = new EmbedBuilder()
@@ -414,7 +433,7 @@ async function buildBoardPayload(guild, boardKey, timezone) {
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setFooter({
-      text: "Sokaze Assistant",
+      text: "Murphy",
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp()
@@ -509,7 +528,7 @@ async function refreshLeaderboardHubForGuild(guild, client, options = {}) {
   }
 
   const timezone = client.config.streak.timezone || "Asia/Jakarta";
-  const todayDateKey = getTodayDateKey(timezone);
+  const todayHourKey = getTodayHourKey(timezone);
   const force = Boolean(options.force);
 
   await refreshStreakTopBoardForGuild(guild, client, { force }).catch(() => null);
@@ -518,7 +537,7 @@ async function refreshLeaderboardHubForGuild(guild, client, options = {}) {
 
   for (const boardKey of AUTO_BOARD_KEYS) {
     const shouldRefresh = force
-      || settings.lastAutoRefreshDate !== todayDateKey
+      || settings.lastAutoRefreshHour !== todayHourKey
       || !await boardMessageExists(guild, client, boardKey);
 
     if (!shouldRefresh) {
@@ -544,7 +563,8 @@ async function refreshLeaderboardHubForGuild(guild, client, options = {}) {
   if (refreshedAny || force) {
     updateLeaderboardSettings(guild.id, (current) => ({
       ...current,
-      lastAutoRefreshDate: todayDateKey
+      lastAutoRefreshDate: todayHourKey.slice(0, 10),
+      lastAutoRefreshHour: todayHourKey
     }));
   }
 

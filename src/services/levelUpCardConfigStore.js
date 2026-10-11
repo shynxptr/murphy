@@ -40,7 +40,7 @@ const DEFAULT_LEVEL_UP_CARD_CONFIG = Object.freeze({
   },
   badge: {
     enabled: true,
-    text: "SOKAZE",
+    text: "MURPHY",
     x: 332,
     y: 16,
     width: 75,

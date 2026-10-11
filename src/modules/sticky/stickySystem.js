@@ -15,7 +15,7 @@ const {
   upsertSticky
 } = require("../../services/stickyStore");
 
-const DEFAULT_STICKY_TITLE = "Sokaze Sticky Note";
+const DEFAULT_STICKY_TITLE = "Murphy Sticky Note";
 const DEFAULT_COOLDOWN_SECONDS = 20;
 const MIN_COOLDOWN_SECONDS = 5;
 const MAX_COOLDOWN_SECONDS = 300;
@@ -47,7 +47,7 @@ function buildStickyEmbed(guild, sticky) {
   return new EmbedBuilder()
     .setColor("#111214")
     .setAuthor({
-      name: "Sokaze Sticky",
+      name: "Murphy Sticky",
       iconURL: iconURL || undefined
     })
     .setTitle(sticky.title || DEFAULT_STICKY_TITLE)
@@ -79,7 +79,7 @@ function buildStickyListEmbed(guild, entries) {
     .setColor("#111214")
     .setTitle("Sticky Notes")
     .setFooter({
-      text: `${guild.name} • Sokaze Sticky`
+      text: `${guild.name} • Murphy Sticky`
     })
     .setTimestamp();
 

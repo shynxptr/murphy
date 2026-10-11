@@ -1,21 +1,23 @@
-const { createTemplateCommand } = require("./templateUtils");
+const {
+  buildVerifikasiGirlEmbed,
+  buildVerifikasiGirlActionRow
+} = require("./ticketSystem");
 
-module.exports = createTemplateCommand({
+module.exports = {
   name: "verifikasi",
-  description: "Kirim template layanan untuk verifikasi girl.",
-  title: "Layanan Verifikasi Girl",
-  introLines: [
-    "Halo, terima kasih sudah membuka tiket verifikasi.",
-    "Sebelum proses dimulai, mohon pastikan kamu sudah siap untuk ditemani admin perempuan.",
-    "Silakan kirim beberapa hal berikut ya:"
-  ],
-  formLines: [
-    "1. Nama panggilan kamu",
-    "2. Konfirmasi bahwa kamu siap mengikuti proses verifikasi",
-    "3. Hal lain yang perlu diketahui admin, jika ada"
-  ],
-  closingLines: [
-    "Jika sudah siap, silakan masuk ke channel <#1483510210239926506> untuk proses verifikasi.",
-    "Setelah itu, mohon tunggu admin yang bertugas dan jangan spam chat selama proses verifikasi berjalan."
-  ]
-});
+  description: "Kirim panel instruksi verifikasi girl dengan tombol action.",
+  category: "tickets",
+  usage: "verifikasi",
+  async execute(message, args, client) {
+    const topic = message.channel.topic || "";
+    const ownerId = topic.match(/^ticket-owner:(\d+)/)?.[1];
+    const targetUser = ownerId
+      ? (await message.guild.members.fetch(ownerId).catch(() => null))?.user || message.author
+      : message.mentions.users.first() || message.author;
+
+    await message.channel.send({
+      embeds: [buildVerifikasiGirlEmbed(targetUser)],
+      components: [buildVerifikasiGirlActionRow()]
+    });
+  }
+};

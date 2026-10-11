@@ -53,7 +53,7 @@ const DEFAULT_EXP_CARD_CONFIG = Object.freeze({
   },
   badge: {
     enabled: true,
-    text: "SOKAZE",
+    text: "MURPHY",
     x: 512,
     y: 10,
     width: 74,

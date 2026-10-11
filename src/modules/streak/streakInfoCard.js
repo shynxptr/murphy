@@ -168,7 +168,7 @@ function drawProfileHeader(context, targetMember, metrics, avatar) {
 
   context.fillStyle = "#ffffff";
   context.font = `bold 17px "${getFontFamily("bold")}"`;
-  context.fillText("SOKAZE STREAK", 194, 88);
+  context.fillText("MURPHY STREAK", 194, 88);
 
   context.fillStyle = "#f4f4f5";
   context.font = `bold 34px "${getFontFamily("bold")}"`;
@@ -180,7 +180,7 @@ function drawProfileHeader(context, targetMember, metrics, avatar) {
 
   context.fillStyle = "#8b9098";
   context.font = `15px "${getFontFamily()}"`;
-  context.fillText("Bond tracker yang nyala di server Sokaze.", 194, 182);
+  context.fillText("Bond tracker yang nyala di server Murphy.", 194, 182);
 
   const chips = [
     { label: `Partner ${metrics.totalPartners}`, color: "rgba(56, 189, 248, 0.16)", border: "rgba(56, 189, 248, 0.35)" },
@@ -422,7 +422,7 @@ function drawFooter(context, totalPartners) {
 
   context.textAlign = "right";
   context.fillStyle = "#8f96a0";
-  context.fillText("Sokaze Bond Tracker", 920, 706);
+  context.fillText("Murphy Bond Tracker", 920, 706);
   context.textAlign = "start";
 }
 
@@ -480,7 +480,7 @@ async function createStreakInfoCard({ targetMember, entries, page, totalPages, t
   drawFooter(context, totalPartners);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-infostreak.png"
+    name: "murphy-infostreak.png"
   });
 }
 

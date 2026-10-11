@@ -99,7 +99,10 @@ async function handleAutoThreadMessage(message, client) {
     return false;
   }
 
-  if (message.channel.type !== ChannelType.GuildText) {
+  if (
+    message.channel.type !== ChannelType.GuildText &&
+    message.channel.type !== ChannelType.GuildAnnouncement
+  ) {
     return false;
   }
 

@@ -25,9 +25,9 @@ function getTicketTypeKey(channel) {
 function buildFeedbackPromptEmbed(guild) {
   return new EmbedBuilder()
     .setColor("#111214")
-    .setTitle("Terima Kasih Sudah Menggunakan Loket Sokaze")
+    .setTitle("Terima Kasih Sudah Menggunakan Loket Murphy")
     .setDescription([
-      "Terima kasih sudah menggunakan fitur tiket di Sokaze.",
+      "Terima kasih sudah menggunakan fitur tiket di Murphy.",
       "",
       "Kalau kamu puas dengan pelayanan staff atau admin yang membantu kamu, silakan beri rating lewat tombol di bawah ini.",
       "Nama staff/admin yang dinilai akan kamu isi sendiri di form feedback."
@@ -102,9 +102,9 @@ function buildStarRating(rating) {
 function buildFeedbackResultEmbed({ guild, author, ticketType, staffName, rating, feedback }) {
   return new EmbedBuilder()
     .setColor("#111214")
-    .setTitle("Feedback Loket Sokaze")
+    .setTitle("Feedback Loket Murphy")
     .setDescription([
-      "Terima kasih sudah menggunakan loket Sokaze.",
+      "Terima kasih sudah menggunakan loket Murphy.",
       "",
       `**Nama Staff/Admin**`,
       staffName,

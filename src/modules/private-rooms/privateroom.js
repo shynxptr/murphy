@@ -143,6 +143,6 @@ module.exports = {
       return;
     }
 
-    await message.reply("Gunakan `sk privateroom create`, `status`, `invite @user`, `remove @user`, `close`, `sendpanel [#channel]`, `setcategory #category`, atau `adminstatus`.");
+    await message.reply("Gunakan `f privateroom create`, `status`, `invite @user`, `remove @user`, `close`, `sendpanel [#channel]`, `setcategory #category`, atau `adminstatus`.");
   }
 };

@@ -440,7 +440,7 @@ async function renderPreviewSheet() {
 
   context.fillStyle = "#fafafa";
   context.font = "bold 42px Segoe UI";
-  context.fillText("Sokaze Streak Emoji Tiers", 56, 72);
+  context.fillText("404! Collective Streak Emoji Tiers", 56, 72);
 
   context.fillStyle = "#a1a1aa";
   context.font = "22px Segoe UI";

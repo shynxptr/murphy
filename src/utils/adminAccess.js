@@ -78,17 +78,25 @@ async function hasConfiguredAdminAccess(member, client) {
     return true;
   }
 
+  if (member.id === member.guild.ownerId || member.permissions?.has(PermissionFlagsBits.Administrator)) {
+    return true;
+  }
+
   return isConfiguredGuildAdmin(member.guild.id, member.id);
 }
 
 async function buildAdminAccessState(member, client) {
   const botOwner = await isBotOwner(member?.id, client);
+  const isGuildOwner = Boolean(member?.guild && member.id === member.guild.ownerId);
+  const isGuildAdmin = Boolean(member?.permissions && typeof member.permissions.has === "function" && member.permissions.has(PermissionFlagsBits.Administrator));
   const configuredAdmin = Boolean(member?.guild?.id && member?.id && isConfiguredGuildAdmin(member.guild.id, member.id));
 
   return {
     botOwner,
     configuredAdmin,
-    hasAccess: botOwner || configuredAdmin
+    isGuildOwner,
+    isGuildAdmin,
+    hasAccess: botOwner || configuredAdmin || isGuildOwner || isGuildAdmin
   };
 }
 

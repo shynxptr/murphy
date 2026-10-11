@@ -1,20 +1,19 @@
 {
-  "name": "sokaze-bot",
+  "name": "murphy-bot",
   "version": "1.0.0",
-  "description": "Discord bot for the Sokaze server using a prefix command system.",
+  "description": "Discord bot Murphy server using a prefix command system.",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "generate:streak-emojis": "node scripts/generateStreakEmojis.js",
     "generate:temp-voice-emojis": "node scripts/generateTempVoiceEmojis.js",
-    "generate:temp-voice-panel": "node scripts/generateTempVoicePanel.js",
-    "idcard:layout": "node scripts/idCardLayoutDashboard.js"
+    "generate:temp-voice-panel": "node scripts/generateTempVoicePanel.js"
   },
   "keywords": [
     "discord",
     "bot",
-    "sokaze"
+    "murphy"
   ],
   "author": "",
   "license": "MIT",

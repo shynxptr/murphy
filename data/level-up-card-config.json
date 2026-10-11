@@ -1,0 +1,50 @@
+{
+  "width": 420,
+  "height": 120,
+  "borderRadius": 28,
+  "background": {
+    "baseStart": "#212529",
+    "baseMid": "#2a2f34",
+    "baseEnd": "#1a1e22",
+    "auraLeft": "rgba(84, 92, 104, 0.42)",
+    "auraRight": "rgba(128, 139, 150, 0.24)",
+    "border": "rgba(255,255,255,0.07)"
+  },
+  "avatar": {
+    "x": 20,
+    "y": 15,
+    "size": 88,
+    "ringStart": "#d7dce0",
+    "ringEnd": "#6a7078",
+    "ringWidth": 4
+  },
+  "title": {
+    "text": "Level-up!",
+    "centerX": 227,
+    "y": 53,
+    "size": 61,
+    "color": "#fffaf4"
+  },
+  "levels": {
+    "centerX": 228,
+    "y": 98,
+    "size": 49,
+    "color": "#ece7df",
+    "separator": "•"
+  },
+  "badge": {
+    "enabled": true,
+    "text": "MURPHY",
+    "x": 332,
+    "y": 16,
+    "width": 75,
+    "height": 24,
+    "radius": 12,
+    "fill": "rgba(255,255,255,0.08)",
+    "border": "rgba(255,255,255,0.08)",
+    "textColor": "#d6dbe0",
+    "textSize": 16,
+    "textCenterX": 369,
+    "textCenterY": 28
+  }
+}

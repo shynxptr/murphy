@@ -28,7 +28,7 @@ function buildStaffRecruitmentPanel(client, guildId) {
         .setTitle("Recruitment Staff")
         .setDescription(
           [
-            "Kalau kamu ingin bergabung sebagai bagian dari tim Sokaze, isi form recruitment melalui tombol di bawah.",
+            "Kalau kamu ingin bergabung sebagai bagian dari tim Murphy, isi form recruitment melalui tombol di bawah.",
             "Pastikan semua data diisi dengan jujur, jelas, dan rapi agar tim bisa meninjau pendaftaranmu dengan lebih mudah."
           ].join("\n")
         )
@@ -92,7 +92,7 @@ function buildStaffRecruitmentModal() {
           .setRequired(true)
           .setMaxLength(1000)
           .setStyle(TextInputStyle.Paragraph)
-          .setPlaceholder("Jelaskan alasan kamu ingin bergabung menjadi staff Sokaze.")
+          .setPlaceholder("Jelaskan alasan kamu ingin bergabung menjadi staff Murphy.")
       )
     );
 }

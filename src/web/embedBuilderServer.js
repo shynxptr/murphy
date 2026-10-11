@@ -41,7 +41,7 @@ const {
   saveLevelUpCardConfig
 } = require("../services/levelUpCardConfigStore");
 
-const SESSION_COOKIE_NAME = "sokaze_embed_session";
+const SESSION_COOKIE_NAME = "murphy_embed_session";
 const sessions = new Map();
 const staticAssetCache = new Map();
 

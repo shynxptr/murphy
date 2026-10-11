@@ -1,4 +1,6 @@
-const { ChannelType, EmbedBuilder } = require("discord.js");
+const { ChannelType, EmbedBuilder, AttachmentBuilder } = require("discord.js");
+const fs = require("node:fs");
+const path = require("node:path");
 const { getEffectiveGuildSettings } = require("../../utils/guildSettings");
 const { createWelcomeCard } = require("./welcomeCard");
 
@@ -8,65 +10,49 @@ function buildChannelLine(channelId, fallbackLabel) {
 
 function buildPublicWelcomeText(member, client) {
   const { welcome } = getEffectiveGuildSettings(member.guild.id, client);
-  const introChannel = buildChannelLine(welcome.introChannelId, "`channel intro belum diatur`");
   const rulesChannel = buildChannelLine(welcome.rulesChannelId, "`rules belum diatur`");
-  const rolesChannel = "<#1482480655039201485>";
-  const guideChannel = "<#1482496677255450687>";
+  const rolesChannel = "<#1558526617071128686>";
 
   const variants = [
     [
-      `Selamat datang di Sokaze, ${member}.`,
-      "Biar langkahmu rapi, mulai dari sini:",
-      `- Rules: ${rulesChannel}`,
-      `- Roles: ${rolesChannel}`,
-      `- Intro: ${introChannel}`,
+      `Halo ${member}! Selamat datang di **Murphy**! 🎉`,
+      "Senang banget kamu bisa bergabung di sini. Biar makin seru, yuk langsung cek channel ini:",
+      `✨ **Roles:** ${rolesChannel}`,
+      `📜 **Rules:** ${rulesChannel}`,
       "",
-      "**Hope you feel at home here.**"
+      "**Semoga betah & happy chatting di sini ya! ✨**"
     ].join("\n"),
     [
-      `${member}, gerbang Sokaze sudah terbuka buatmu.`,
-      "Jangan skip yang ini:",
-      `- Guide: ${guideChannel}`,
-      `- Rules: ${rulesChannel}`,
-      `- Roles: ${rolesChannel}`,
+      `Welcome to **Murphy**, ${member}! 👋`,
+      "Halo! Selamat bergabung di komunitas kita. Biar makin akrab, yuk cek poin penting ini:",
+      `🎭 **Pick Roles:** ${rolesChannel}`,
+      `📋 **Baca Rules:** ${rulesChannel}`,
       "",
-      "**Hope you feel at home here.**"
+      "**Feel free to chat and make yourself at home! 💖**"
     ].join("\n"),
     [
-      `Halo ${member}, selamat datang di Sokaze.`,
-      "Siapkan dirimu dulu sebelum masuk lebih jauh:",
-      `- Ambil role: ${rolesChannel}`,
-      `- Baca rules: ${rulesChannel}`,
-      `- Lihat guide: ${guideChannel}`,
+      `Yoo ${member}! Selamat datang di **Murphy**! 🚀`,
+      "Senang banget ada member baru yang join! Biar gak bingung, ini beberapa channel utama kita:",
+      `📌 **Rules:** ${rulesChannel}`,
+      `🎭 **Self Roles:** ${rolesChannel}`,
       "",
-      "**Hope you feel at home here.**"
+      "**Enjoy your stay and have fun! 🌟**"
     ].join("\n"),
     [
-      `${member} baru saja tiba di sisi gelap Sokaze.`,
-      "Buka jalurmu lewat channel ini:",
-      `- Rules: ${rulesChannel}`,
-      `- Guide: ${guideChannel}`,
-      `- Roles: ${rolesChannel}`,
+      `Yay, ada teman baru! Selamat datang di **Murphy**, ${member}! ✨`,
+      "Yuk langsung seru-seruan bareng kita! Jangan lupa mampir ke channel ini ya:",
+      `✨ **Roles:** ${rolesChannel}`,
+      `📜 **Rules:** ${rulesChannel}`,
       "",
-      "**Hope you feel at home here.**"
+      "**Semoga nyaman dan betah di Murphy! 🎉**"
     ].join("\n"),
     [
-      `Sokaze menyambut ${member}.`,
-      "Kalau mau langsung nyatu, cek ini dulu:",
-      `- Roles: ${rolesChannel}`,
-      `- Rules: ${rulesChannel}`,
-      `- Kenalan: ${introChannel}`,
+      `Halo ${member}! Welcome to the **Murphy** family! ❤️`,
+      "Terima kasih sudah bergabung bersama kami. Yuk mulai perjalananmu dari sini:",
+      `🎭 **Roles:** ${rolesChannel}`,
+      `📋 **Rules:** ${rulesChannel}`,
       "",
-      "**Hope you feel at home here.**"
-    ].join("\n"),
-    [
-      `Halo ${member}. Selamat datang di Sokaze.`,
-      "Awal yang bagus dimulai dari:",
-      `- Guide: ${guideChannel}`,
-      `- Roles: ${rolesChannel}`,
-      `- Rules: ${rulesChannel}`,
-      "",
-      "**Hope you feel at home here.**"
+      "**Make yourself comfortable and enjoy the vibe! ✨**"
     ].join("\n")
   ];
 
@@ -76,25 +62,22 @@ function buildPublicWelcomeText(member, client) {
 function buildWelcomeEmbed(member, client) {
   const { welcome } = getEffectiveGuildSettings(member.guild.id, client);
   const rulesChannel = buildChannelLine(welcome.rulesChannelId, "`rules belum diatur`");
-  const rolesChannel = "<#1482480655039201485>";
-  const guideChannel = "<#1482496677255450687>";
-  const introChannel = buildChannelLine(welcome.introChannelId, "`intro belum diatur`");
+  const rolesChannel = "<#1558526617071128686>";
 
   return new EmbedBuilder()
     .setColor(welcome.accentColor)
     .setAuthor({
-      name: "Sokaze Gateway"
+      name: "Murphy Welcome"
     })
-    .setTitle("A New Soul Enters Sokaze")
+    .setTitle("Welcome to Murphy! 🎉")
     .setDescription(
       [
-        `Welcome, ${member}.`,
-        "Step into the dark and make your presence known.",
+        `Welcome, ${member}! We're super excited to have you here.`,
         "",
-        `Read ${rulesChannel} before you move further.`,
-        `Claim your place in ${rolesChannel} before you settle in.`,
-        `Study ${guideChannel} to move through Sokaze without missing a step.`,
-        `Introduce yourself in ${introChannel} when you're ready.`
+        `✨ Claim your roles in ${rolesChannel}`,
+        `📜 Read our rules in ${rulesChannel}`,
+        "",
+        "Make yourself at home and enjoy your stay! ❤️"
       ].join("\n")
     )
     .setImage("attachment://welcome-card.png")
@@ -113,10 +96,23 @@ async function sendWelcomeMessage(member, client, channelOverride = null) {
   }
 
   const welcomeCard = await createWelcomeCard(member, welcome.accentColor);
+  const embeds = [buildWelcomeEmbed(member, client)];
+  const files = [welcomeCard];
+
+  const gifPath = path.join(__dirname, "..", "..", "..", "assets", "bannergif.gif");
+  if (fs.existsSync(gifPath)) {
+    const gifAttachment = new AttachmentBuilder(gifPath, { name: "bannergif.gif" });
+    const gifEmbed = new EmbedBuilder()
+      .setColor(welcome.accentColor)
+      .setImage("attachment://bannergif.gif");
+
+    embeds.push(gifEmbed);
+    files.push(gifAttachment);
+  }
 
   await targetChannel.send({
-    embeds: [buildWelcomeEmbed(member, client)],
-    files: [welcomeCard]
+    embeds,
+    files
   });
 
   return true;

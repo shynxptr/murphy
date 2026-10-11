@@ -5,7 +5,7 @@ const { formatDurationShort } = require("./profileSystem");
 
 const displayFontRegistered = GlobalFonts.registerFromPath(
   path.resolve(__dirname, "..", "..", "..", "assets", "font.otf"),
-  "Sokaze Display"
+  "Murphy Display"
 );
 const regularFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeui.ttf", "Segoe UI");
 const boldFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeuib.ttf", "Segoe UI Bold");
@@ -19,7 +19,7 @@ function getBodyFont(weight = "normal") {
 }
 
 function getDisplayFont() {
-  return displayFontRegistered ? "Sokaze Display" : getBodyFont("bold");
+  return displayFontRegistered ? "Murphy Display" : getBodyFont("bold");
 }
 
 function drawRoundedRect(context, x, y, width, height, radius) {
@@ -246,7 +246,7 @@ function drawHeader(context, snapshot) {
 
   context.fillStyle = theme.palette.textMuted;
   context.font = `17px "${getBodyFont()}"`;
-  context.fillText(`Masuk Sokaze sejak ${metrics.joinedAtLabel}`, 216, 176);
+  context.fillText(`Masuk Murphy sejak ${metrics.joinedAtLabel}`, 216, 176);
 
   const titleWidth = drawChip(context, 214, 194, title.label, theme, true);
   drawChip(context, 228 + titleWidth, 194, `${levelInfo.code} ${levelInfo.name}`, theme, true);
@@ -367,7 +367,7 @@ function drawBioPanel(context, snapshot) {
   context.font = `16px "${getBodyFont()}"`;
   const lines = wrapText(
     context,
-    metrics.bio || "Belum ada bio. Pakai `sk profile bio <teks>` atau `/profile set-bio` buat isi profilmu.",
+    metrics.bio || "Belum ada bio. Pakai `f profile bio <teks>` atau `/profile set-bio` buat isi profilmu.",
     width - 44,
     2
   );
@@ -383,7 +383,7 @@ function drawFooter(context, snapshot) {
   context.font = `14px "${getBodyFont()}"`;
   context.fillText(`Top friend dihitung dari akumulasi voice bareng. Lagu favorit terisi ${metrics.favoriteSongs.length}/${metrics.favoriteSongLimit}.`, 72, 734);
   context.textAlign = "right";
-  context.fillText("Sokaze Profile Card", 1108, 734);
+  context.fillText("Murphy Profile Card", 1108, 734);
   context.textAlign = "start";
 }
 
@@ -435,7 +435,7 @@ async function createProfileCard(snapshot) {
     198,
     "Favorite Songs",
     snapshot.metrics.favoriteSongs,
-    "Belum ada lagu favorit. Pakai `sk profile song add` untuk isi.",
+    "Belum ada lagu favorit. Pakai `f profile song add` untuk isi.",
     snapshot.theme,
     (entry) => entry
   );
@@ -444,7 +444,7 @@ async function createProfileCard(snapshot) {
   drawFooter(context, snapshot);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-profile-card.png"
+    name: "murphy-profile-card.png"
   });
 }
 

@@ -26,7 +26,7 @@ function buildConfessionPanel(client, guildId) {
     embeds: [
       new EmbedBuilder()
         .setColor(confessions.accentColor)
-        .setTitle("Sokaze Confession")
+        .setTitle("Murphy Confession")
         .setDescription(
           [
             "Gunakan tombol di bawah untuk mengirim confession secara anonim.",

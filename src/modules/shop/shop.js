@@ -17,7 +17,7 @@ module.exports = {
   name: "shop",
   aliases: ["coinshop", "market"],
   category: "levels",
-  description: `Lihat saldo ${GAZECOIN_NAME} dan belanja reward Sokaze.`,
+  description: `Lihat saldo ${GAZECOIN_NAME} dan belanja reward Murphy.`,
   usage: "shop <balance|catalog|buy|grant>",
   async execute(message, args) {
     const action = (args[0] || "catalog").toLowerCase();
@@ -86,7 +86,7 @@ module.exports = {
       const itemKey = String(args[1] || "").trim().toLowerCase();
 
       if (!itemKey) {
-        await message.reply("Gunakan `sk shop buy <item-key>`.");
+        await message.reply("Gunakan `f shop buy <item-key>`.");
         return;
       }
 
@@ -95,6 +95,6 @@ module.exports = {
       return;
     }
 
-    await message.reply(`Gunakan \`sk shop catalog\`, \`sk shop balance\`, \`sk shop buy <item>\`, atau \`sk shop grant @user <jumlah>\` untuk kelola ${GAZECOIN_NAME}.`);
+    await message.reply(`Gunakan \`f shop catalog\`, \`f shop balance\`, \`f shop buy <item>\`, atau \`f shop grant @user <jumlah>\` untuk kelola ${GAZECOIN_NAME}.`);
   }
 };

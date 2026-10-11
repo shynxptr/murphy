@@ -5,6 +5,8 @@ const VOICE_COLORS = {
   leave: "#F59E0B"
 };
 
+const VOICE_LOG_TIMEOUT_MS = 60 * 1000; // 1 menit
+
 function buildVoiceEmbed(member, action, channelName) {
   const unix = Math.floor(Date.now() / 1000);
   const title = action === "join" ? "Join Voice" : "Leave Voice";
@@ -21,9 +23,19 @@ async function sendVoiceLog(channel, embed) {
     return;
   }
 
-  await channel.send({
+  const sentMessage = await channel.send({
     embeds: [embed]
   }).catch(() => null);
+
+  if (sentMessage) {
+    const timer = setTimeout(() => {
+      sentMessage.delete().catch(() => null);
+    }, VOICE_LOG_TIMEOUT_MS);
+
+    if (typeof timer.unref === "function") {
+      timer.unref();
+    }
+  }
 }
 
 async function handleVoiceLog(oldState, newState) {

@@ -8,6 +8,7 @@ function createBotClient() {
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.GuildInvites,
       GatewayIntentBits.MessageContent
     ],
     partials: [Partials.Channel]

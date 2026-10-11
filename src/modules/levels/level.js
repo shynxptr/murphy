@@ -49,7 +49,7 @@ module.exports = {
   name: "level",
   aliases: ["tier"],
   category: "levels",
-  description: "Lihat dan atur progression level Sokaze.",
+  description: "Lihat dan atur progression level Murphy.",
   usage: "level <guide|status|set|role|roles|sync|announce|threshold|reward|cadence|minlength|testup>",
   async execute(message, args, client) {
     const action = (args[0] || "status").toLowerCase();
@@ -116,7 +116,7 @@ module.exports = {
       const rawRole = String(args[2] || "").trim();
 
       if (!rawRole) {
-        await message.reply("Gunakan `sk level role <1-5> <@role|clear>`.");
+        await message.reply("Gunakan `f level role <1-5> <@role|clear>`.");
         return;
       }
 
@@ -249,18 +249,18 @@ module.exports = {
 
     await message.reply([
       "Gunakan salah satu ini:",
-      "`sk level guide`",
-      "`sk level status [@member]`",
-      "`sk level set @member <1-5>`",
-      "`sk level role <1-5> <@role|clear>`",
-      "`sk level roles`",
-      "`sk level sync [@member]`",
-      "`sk level announce <#channel|auto>`",
-      "`sk level threshold <2-5> <xp>`",
-      "`sk level reward <chat|voice|streak> <xp>`",
-      "`sk level cadence <chat|voice> <menit>`",
-      "`sk level minlength <karakter>`",
-      "`sk level testup @member <2-5>`"
+      "`f level guide`",
+      "`f level status [@member]`",
+      "`f level set @member <1-5>`",
+      "`f level role <1-5> <@role|clear>`",
+      "`f level roles`",
+      "`f level sync [@member]`",
+      "`f level announce <#channel|auto>`",
+      "`f level threshold <2-5> <xp>`",
+      "`f level reward <chat|voice|streak> <xp>`",
+      "`f level cadence <chat|voice> <menit>`",
+      "`f level minlength <karakter>`",
+      "`f level testup @member <2-5>`"
     ].join("\n"));
   }
 };

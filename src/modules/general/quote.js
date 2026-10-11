@@ -69,7 +69,7 @@ async function sendQuoteMessage(channel, sourceUser, quoteText, replyTarget = nu
     .setColor("#111111")
     .setTitle("Quotes")
     .setDescription(`Made by <@${sourceUser.id}>`)
-    .setImage("attachment://sokaze-quote.png")
+    .setImage("attachment://murphy-quote.png")
     .setFooter({
       text: `Generated | ${formatGeneratedAt()}`
     });

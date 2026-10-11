@@ -113,10 +113,10 @@ function drawShell(context, width, height) {
 function drawHeader(context, guildName, totalPairs, timezone) {
   context.fillStyle = "#ffffff";
   context.font = `bold 20px "${getFontFamily("bold")}"`;
-  context.fillText("SOKAZE TOP STREAK", 92, 92);
+  context.fillText("MURPHY TOP STREAK", 92, 92);
 
   context.font = `bold 38px "${getFontFamily("bold")}"`;
-  context.fillText(fitText(context, guildName || "Sokaze", 500), 92, 134);
+  context.fillText(fitText(context, guildName || "Murphy", 500), 92, 134);
 
   context.fillStyle = "#a0a7b1";
   context.font = `17px "${getFontFamily()}"`;
@@ -320,7 +320,7 @@ function drawFooter(context) {
 
   context.fillStyle = "#c7ccd4";
   context.font = `15px "${getFontFamily()}"`;
-  context.fillText("Sokaze Assistant", 90, 818);
+  context.fillText("Murphy", 90, 818);
 
   context.fillStyle = "#8f96a0";
   context.textAlign = "right";
@@ -375,7 +375,7 @@ async function createStreakTopBoardCard({ guild, entries, timezone, totalPairs }
   drawFooter(context);
 
   return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "sokaze-top-streak.png"
+    name: "murphy-top-streak.png"
   });
 }
 

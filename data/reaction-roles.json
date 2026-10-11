@@ -1,0 +1,262 @@
+{
+  "lastPanelId": 3,
+  "panels": {
+    "1": {
+      "id": "1",
+      "guildId": "1536009463582949396",
+      "channelId": "1558662444946165811",
+      "mode": "multi",
+      "behavior": "toggle",
+      "title": "Game Self Role",
+      "description": "Pilih role game kamu dengan menekan tombol di bawah.\nKlik lagi tombol yang sama untuk melepas role.",
+      "placeholder": "Pilih game kamu di sini",
+      "imageUrl": "",
+      "presetKey": "game-self-role",
+      "presetTag": "game-self-role",
+      "createdBy": "1543303467337130085",
+      "messageId": "1558662493767737415",
+      "options": [
+        {
+          "roleId": "1558554146838159381",
+          "label": "Roblox",
+          "description": "",
+          "emoji": "<:Roblox:1558554328917348514>",
+          "emojiData": {
+            "id": "1558554328917348514",
+            "name": "Roblox",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558551982137147483",
+          "label": "Free Fire",
+          "description": "",
+          "emoji": "<:freefire:1558552954083217506>",
+          "emojiData": {
+            "id": "1558552954083217506",
+            "name": "freefire",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558551703714922636",
+          "label": "GTA V",
+          "description": "",
+          "emoji": "<:gtav:1558553707904237698>",
+          "emojiData": {
+            "id": "1558553707904237698",
+            "name": "gtav",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558552233648595095",
+          "label": "Honor Of Kings",
+          "description": "",
+          "emoji": "<:hok:1558553735104299080>",
+          "emojiData": {
+            "id": "1558553735104299080",
+            "name": "hok",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558552131634593873",
+          "label": "Magic Chess",
+          "description": "",
+          "emoji": "<:mcgg:1558553762799292456>",
+          "emojiData": {
+            "id": "1558553762799292456",
+            "name": "mcgg",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558552442566869023",
+          "label": "Mobile Legend",
+          "description": "",
+          "emoji": "<:ml:1558553805862207541>",
+          "emojiData": {
+            "id": "1558553805862207541",
+            "name": "ml",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558551795968770068",
+          "label": "PUBG Mobile",
+          "description": "",
+          "emoji": "<:pubg:1558553855250272357>",
+          "emojiData": {
+            "id": "1558553855250272357",
+            "name": "pubg",
+            "animated": false
+          }
+        },
+        {
+          "roleId": "1558551865506005113",
+          "label": "Valorant",
+          "description": "",
+          "emoji": "<:valorant:1558553921746767893>",
+          "emojiData": {
+            "id": "1558553921746767893",
+            "name": "valorant",
+            "animated": false
+          }
+        }
+      ],
+      "createdAt": "2026-10-11T02:00:46.233Z",
+      "updatedAt": "2026-10-11T02:08:17.160Z",
+      "componentType": "button"
+    },
+    "2": {
+      "id": "2",
+      "guildId": "1536009463582949396",
+      "channelId": "1558667009905000498",
+      "mode": "single",
+      "behavior": "sync",
+      "componentType": "select",
+      "title": "Role Domisili",
+      "description": "Pilih role daerahmu di bawah ini.",
+      "placeholder": "Pilih role daerahmu",
+      "imageUrl": "",
+      "presetKey": "domisili-self-role",
+      "presetTag": "domisili-self-role",
+      "createdBy": "1543303467337130085",
+      "messageId": "1558667078867615790",
+      "options": [
+        {
+          "roleId": "1558663018739540118",
+          "label": "Jawa",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664072227192862",
+          "label": "Kalimantan",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664150727663647",
+          "label": "Sumatera",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664337915383858",
+          "label": "Sulawesi",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664455192182834",
+          "label": "Bali",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664492236410900",
+          "label": "Maluku",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664634393821194",
+          "label": "Papua",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664691050356816",
+          "label": "Bangka Belitung",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664752539111424",
+          "label": "Kepulauan Riau",
+          "description": "",
+          "emoji": "📍",
+          "emojiData": {
+            "name": "📍"
+          }
+        },
+        {
+          "roleId": "1558664809082257558",
+          "label": "International",
+          "description": "",
+          "emoji": "🌐",
+          "emojiData": {
+            "name": "🌐"
+          }
+        }
+      ],
+      "createdAt": "2026-10-11T02:26:29.858Z",
+      "updatedAt": "2026-10-11T02:28:09.915Z",
+      "hideSummary": true
+    },
+    "3": {
+      "id": "3",
+      "guildId": "1536009463582949396",
+      "channelId": "1558668817415151646",
+      "mode": "single",
+      "behavior": "toggle",
+      "componentType": "button",
+      "title": "Age Role",
+      "description": "Pilih rentang usiamu dengan menekan tombol di bawah.",
+      "placeholder": "Pilih usia kamu",
+      "imageUrl": "",
+      "presetKey": "age-self-role",
+      "presetTag": "age-self-role",
+      "createdBy": "1543303467337130085",
+      "messageId": "1558670378937614418",
+      "options": [
+        {
+          "roleId": "1558668942279708722",
+          "label": "18-",
+          "description": "",
+          "emoji": "🌱",
+          "emojiData": {
+            "name": "🌱"
+          }
+        },
+        {
+          "roleId": "1558668994997784586",
+          "label": "18+",
+          "description": "",
+          "emoji": "🔞",
+          "emojiData": {
+            "name": "🔞"
+          }
+        }
+      ],
+      "createdAt": "2026-10-11T02:39:36.657Z",
+      "updatedAt": "2026-10-11T02:39:37.093Z"
+    }
+  }
+}

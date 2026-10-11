@@ -408,7 +408,7 @@ async function renderPreviewSheet() {
 
   context.fillStyle = "#f8fafc";
   context.font = "bold 40px Segoe UI Bold";
-  context.fillText("Sokaze Temp Voice Emojis", previewPaddingX, 62);
+  context.fillText("404! Collective Temp Voice Emojis", previewPaddingX, 62);
 
   context.fillStyle = "#9ca3af";
   context.font = "20px Segoe UI";

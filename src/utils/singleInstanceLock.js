@@ -68,7 +68,7 @@ function acquireSingleInstanceLock() {
     const payload = readLockPayload();
 
     if (payload?.pid && canPingProcess(payload.pid)) {
-      throw new Error(`Another Sokaze instance is already running with PID ${payload.pid}.`);
+      throw new Error(`Another Murphy instance is already running with PID ${payload.pid}.`);
     }
 
     try {

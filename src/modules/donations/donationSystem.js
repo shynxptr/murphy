@@ -129,7 +129,7 @@ function buildDonationStatusEmbed(guild) {
       }
     )
     .setFooter({
-      text: `${guild.name} - Sokaze Donation System`,
+      text: `${guild.name} - Murphy Donation System`,
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();
@@ -263,7 +263,7 @@ function buildDonationFeedEmbed(guild, data) {
   const embed = new EmbedBuilder()
     .setColor(getDonationSettings(guild.id).accentColor)
     .setDescription([
-      `${DONATION_HEADER_EMOJI} **DONATION FEED - SOKAZE**`,
+      `${DONATION_HEADER_EMOJI} **DONATION FEED - MURPHY**`,
       "",
       data.roleMention,
       DONATION_RECEIVED_LABEL,
@@ -273,7 +273,7 @@ function buildDonationFeedEmbed(guild, data) {
       `${DONATION_NOTE_LABEL} ${data.note || "-"}`,
       "",
       DONATION_THANKS_LINE,
-      `Kontribusi kalian membantu Sokaze terus berkembang ${DONATION_FOOTER_EMOJI}`
+      `Kontribusi kalian membantu Murphy terus berkembang ${DONATION_FOOTER_EMOJI}`
     ].join("\n"))
     .setFooter({
       text: `${guild.name} - Donation Feed`,

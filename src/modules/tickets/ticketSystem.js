@@ -13,6 +13,13 @@ const { getTicketPriorityFlair } = require("../levels/levelSystem");
 const CLOSE_TICKET_BUTTON_ID = "ticket:close";
 const TICKET_TYPE_PREFIX = "ticket:type:";
 
+const VERIF_STAFF_ROLE_ID = "1558778004425932890";
+const VERIF_GIRL_ROLE_ID = "1558511957500497920";
+const VERIF_UNVERIFIED_ROLE_ID = "1558510979380412446";
+
+const VERIF_CLAIM_BUTTON_ID = "ticket:verif:claim";
+const VERIF_APPROVE_BUTTON_ID = "ticket:verif:approve";
+
 const TICKET_TYPES = [
   { key: "verifikasi-girl", label: "Verifikasi Girl", emoji: "\uD83D\uDC97", style: ButtonStyle.Secondary, panel: "main" },
   { key: "minta-role", label: "Minta Role", emoji: "\uD83C\uDFAD", style: ButtonStyle.Secondary, panel: "main" },
@@ -43,26 +50,26 @@ function buildTicketPanel(client, guildId) {
   const { tickets } = getEffectiveGuildSettings(guildId, client);
   const mainTypes = TICKET_TYPES.filter((type) => type.panel === "main");
   const panelLines = [
-    "Gunakan loket ini kalau kamu butuh bantuan dari tim Sokaze.",
+    "Gunakan loket ini kalau kamu butuh bantuan dari tim Murphy.",
     "",
     "**Loket tersedia untuk:**",
-    "- \uD83D\uDC97 Verifikasi Girl",
-    "- \uD83C\uDFAD Minta Role",
-    "- \uD83E\uDDF9 Hapus Role",
-    "- \uD83D\uDEA8 Laporan",
-    "- \uD83D\uDCE2 Pasang Iklan",
-    "- \uD83D\uDCE1 Media Partner",
+    "- 💖 Verifikasi Girl",
+    "- 🎭 Minta Role",
+    "- 🧹 Hapus Role",
+    "- 🚨 Laporan",
+    "- 📢 Pasang Iklan",
+    "- 📡 Media Partner",
     "",
     "**SOP Pengambilan Tiket:**",
-    "- \uD83D\uDD58 Jam aktif loket: `09.00 WIB - 02.00 WIB`",
-    "- \uD83E\uDDFE Pilih kategori tiket sesuai kebutuhanmu",
-    "- \uD83D\uDC69 Verifikasi Girl hanya akan diproses oleh admin perempuan",
-    "- \uD83D\uDEAB Dilarang membuat laporan palsu, manipulatif, atau tidak sesuai fakta",
-    "- \uD83D\uDD15 Dilarang mention atau tag role tanpa izin",
-    "- \u23F3 Dilarang membuka tiket berulang sebelum `2x24 jam`",
-    "- \uD83D\uDDF4 Tiket akan ditutup otomatis setelah `6 jam` tanpa respon",
+    "- 🕐 Jam aktif loket: `09.00 WIB - 02.00 WIB`",
+    "- 🧾 Pilih kategori tiket sesuai kebutuhanmu",
+    "- 👩 Verifikasi Girl hanya akan diproses oleh admin perempuan",
+    "- 🚫 Dilarang membuat laporan palsu, manipulatif, atau tidak sesuai fakta",
+    "- 🔔 Dilarang mention atau tag role tanpa izin",
+    "- ⏳ Dilarang membuka tiket berulang sebelum `2x24 jam`",
+    "- 🗑️ Tiket akan ditutup otomatis setelah `6 jam` tanpa respon",
     "",
-    "- \u26A0\uFE0F Pelanggaran SOP dapat menyebabkan tiket ditolak atau langsung ditutup",
+    "- ⚠️ Pelanggaran SOP dapat menyebabkan tiket ditolak atau langsung ditutup",
     "",
     "Klik tombol di bawah untuk membuka tiket."
   ];
@@ -105,38 +112,38 @@ function buildPartnershipTicketPanel(client, guildId) {
   const partnershipOpen = tickets.partnershipEnabled !== false;
   const statusLabel = partnershipOpen ? "PARTNERSHIP OPEN" : "PARTNERSHIP CLOSED";
   const statusLine = partnershipOpen
-    ? "\u25C8 Status: **OPEN**"
-    : "\u25C8 Status: **CLOSED**";
+    ? "◈ Status: **OPEN**"
+    : "◈ Status: **CLOSED**";
 
   const embed = new EmbedBuilder()
     .setColor(tickets.panelAccentColor)
     .setTitle(statusLabel)
     .setDescription(
       [
-        "Halo, welcome to Sokaze.",
+        "Halo, welcome to Murphy.",
         partnershipOpen
           ? "Gerbang partnership kami terbuka untuk komunitas yang ingin tumbuh bersama dalam kerja sama yang sehat dan saling menguntungkan."
           : "Saat ini partnership sedang ditutup sementara. Silakan pantau panel ini sampai loket dibuka kembali.",
         "",
         statusLine,
         "",
-        "\u25C8 Benefit Partnership",
-        "\u25B8 Promosi server di channel partnership Sokaze",
-        "\u25B8 Relasi dengan komunitas aktif dan berkembang",
-        "\u25B8 Dukungan kerja sama timbal balik untuk memperluas jangkauan komunitas",
+        "◈ Benefit Partnership",
+        "▸ Promosi server di channel partnership Murphy",
+        "▸ Relasi dengan komunitas aktif dan berkembang",
+        "▸ Dukungan kerja sama timbal balik untuk memperluas jangkauan komunitas",
         "",
-        "\u25C8 Syarat Partnership",
-        "\u25B8 Minimal 500 member aktif",
-        "\u25B8 Member tidak termasuk bot",
-        "\u25B8 Wajib siap untuk promosi timbal balik",
-        "\u25B8 Tidak mengandung konten yang melanggar ToS Discord",
-        "\u25B8 Tidak mengandung unsur NSFW",
+        "◈ Syarat Partnership",
+        "▸ Minimal 500 member aktif",
+        "▸ Member tidak termasuk bot",
+        "▸ Wajib siap untuk promosi timbal balik",
+        "▸ Tidak mengandung konten yang melanggar ToS Discord",
+        "▸ Tidak mengandung unsur NSFW",
         "",
-        "\u25C8 Ketentuan Tambahan",
-        "\u25B8 Mohon informasikan kepada staff jika server mengalami perubahan penting",
-        "\u25B8 Jangan keluar dari server tanpa alasan dan konfirmasi yang jelas",
-        "\u25B8 Partnership dapat dilepas jika ketentuan dilanggar",
-        "\u25B8 Perwakilan server diharapkan aktif selama masa kerja sama",
+        "◈ Ketentuan Tambahan",
+        "▸ Mohon informasikan kepada staff jika server mengalami perubahan penting",
+        "▸ Jangan keluar dari server tanpa alasan dan konfirmasi yang jelas",
+        "▸ Partnership dapat dilepas jika ketentuan dilanggar",
+        "▸ Perwakilan server diharapkan aktif selama masa kerja sama",
         "",
         partnershipOpen
           ? "Tekan tombol di bawah untuk membuka Ticket Partnership."
@@ -170,6 +177,66 @@ function buildTicketCloseRow() {
   );
 }
 
+function getIndonesianDateString() {
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeZone: "Asia/Jakarta"
+  }).format(new Date());
+}
+
+function buildVerifikasiGirlEmbed(user) {
+  const formattedDate = getIndonesianDateString();
+
+  return new EmbedBuilder()
+    .setColor("#f472b6")
+    .setTitle(`🌸 Tiket Verifikasi - ${user.username}`)
+    .setDescription(
+      [
+        `Halo ${user}! Silakan kirimkan Voice Note (VN) langsung dari fitur Discord untuk verifikasi.`,
+        "",
+        "Wajib sebutkan ini di VN:",
+        `> "Halo, aku ${user.username}/(nama panggilan), hari ini ${formattedDate}, mau verif role female."`,
+        "",
+        "Staff akan segera mengecek tiketmu. Mohon bersabar ya!"
+      ].join("\n")
+    );
+}
+
+function buildVerifikasiGirlActionRow(options = {}) {
+  const isClaimed = Boolean(options.claimedBy);
+  const isApproved = Boolean(options.approved);
+
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(VERIF_CLAIM_BUTTON_ID)
+      .setLabel(isClaimed ? (options.claimedName ? `Claimed by ${options.claimedName}` : "Claimed") : "Claim Ticket")
+      .setEmoji("🧠")
+      .setStyle(isClaimed ? ButtonStyle.Secondary : ButtonStyle.Primary)
+      .setDisabled(isClaimed),
+    new ButtonBuilder()
+      .setCustomId(VERIF_APPROVE_BUTTON_ID)
+      .setLabel("Approved")
+      .setEmoji("✅")
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(isApproved),
+    new ButtonBuilder()
+      .setCustomId(CLOSE_TICKET_BUTTON_ID)
+      .setLabel("Close Ticket")
+      .setEmoji("🔒")
+      .setStyle(ButtonStyle.Danger)
+  );
+}
+
+function isVerifStaffMember(member, client) {
+  const settings = getEffectiveGuildSettings(member.guild.id, client);
+  const staffRoleId = settings.tickets?.verifStaffRoleId || VERIF_STAFF_ROLE_ID;
+
+  return member.roles.cache.has(staffRoleId)
+    || (settings.tickets?.supportRoleId && member.roles.cache.has(settings.tickets.supportRoleId))
+    || member.permissions.has(PermissionFlagsBits.ManageChannels)
+    || member.permissions.has(PermissionFlagsBits.Administrator);
+}
+
 function buildTicketOpenedEmbed(user, supportRoleId, ticketType, ticketFlair = "") {
   const supportLine = supportRoleId ? `<@&${supportRoleId}>` : "Tim support belum diatur.";
 
@@ -184,7 +251,7 @@ function buildTicketOpenedEmbed(user, supportRoleId, ticketType, ticketFlair = "
         `Support: ${supportLine}`,
         "",
         "Jelaskan kebutuhanmu dengan jelas agar tim bisa bantu lebih cepat.",
-        "Template detail akan dikirim lewat command `sksupport`."
+        "Template detail akan dikirim lewat command `fsupport`."
       ].filter(Boolean).join("\n")
     );
 }
@@ -228,8 +295,8 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
     return {
       ok: false,
       reason: ticketType?.key === "partnership"
-        ? "Kategori partnership belum diatur. Gunakan `sksetpartnershipcategory` dulu."
-        : "Kategori tiket belum diatur. Gunakan `sksetticketcategory` dulu."
+        ? "Kategori partnership belum diatur. Gunakan `fsetpartnershipcategory` dulu."
+        : "Kategori tiket belum diatur. Gunakan `fsetticketcategory` dulu."
     };
   }
 
@@ -256,9 +323,12 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
     };
   }
 
+  const isVerifikasiGirl = ticketType.key === "verifikasi-girl";
+  const verifStaffRoleId = tickets.verifStaffRoleId || VERIF_STAFF_ROLE_ID;
   const ticketPingRoleIds = getTicketPingRoleIds(interaction.guildId, ticketType.key, client);
   const accessRoleIds = [...new Set([
     ...(tickets.supportRoleId ? [tickets.supportRoleId] : []),
+    ...(isVerifikasiGirl ? [verifStaffRoleId] : []),
     ...ticketPingRoleIds
   ])];
 
@@ -298,20 +368,32 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
   const ticketFlair = getTicketPriorityFlair(interaction.guildId, interaction.user.id);
   const mentionRoleIds = [...new Set([
     ...(tickets.supportRoleId ? [tickets.supportRoleId] : []),
+    ...(isVerifikasiGirl ? [verifStaffRoleId] : []),
     ...ticketPingRoleIds
   ])];
   const mentionContent = mentionRoleIds.length
     ? mentionRoleIds.map((roleId) => `<@&${roleId}>`).join(" ")
     : undefined;
 
-  await ticketChannel.send({
-    content: mentionContent,
-    allowedMentions: {
-      roles: mentionRoleIds
-    },
-    embeds: [buildTicketOpenedEmbed(interaction.user, tickets.supportRoleId, ticketType, ticketFlair)],
-    components: [buildTicketCloseRow()]
-  });
+  if (isVerifikasiGirl) {
+    await ticketChannel.send({
+      content: mentionContent,
+      allowedMentions: {
+        roles: mentionRoleIds
+      },
+      embeds: [buildVerifikasiGirlEmbed(interaction.user)],
+      components: [buildVerifikasiGirlActionRow()]
+    });
+  } else {
+    await ticketChannel.send({
+      content: mentionContent,
+      allowedMentions: {
+        roles: mentionRoleIds
+      },
+      embeds: [buildTicketOpenedEmbed(interaction.user, tickets.supportRoleId, ticketType, ticketFlair)],
+      components: [buildTicketCloseRow()]
+    });
+  }
 
   return {
     ok: true,
@@ -321,10 +403,12 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
 
 async function closeTicketChannel(interaction, client) {
   const { tickets } = getEffectiveGuildSettings(interaction.guildId, client);
-  const ownerTag = interaction.channel.topic?.match(/^ticket-owner:(\d+)\|type:/)?.[1];
+  const ownerTag = interaction.channel.topic?.match(/^ticket-owner:(\d+)/)?.[1];
   const ticketTypeKey = interaction.channel.topic?.match(/\|type:([^|]+)/)?.[1] || "";
   const ticketPingRoleIds = ticketTypeKey ? getTicketPingRoleIds(interaction.guildId, ticketTypeKey, client) : [];
   const hasTicketPingAccess = ticketPingRoleIds.some((roleId) => interaction.member.roles.cache.has(roleId));
+  const verifStaffRoleId = tickets.verifStaffRoleId || VERIF_STAFF_ROLE_ID;
+  const hasVerifStaffAccess = ticketTypeKey === "verifikasi-girl" && interaction.member.roles.cache.has(verifStaffRoleId);
 
   if (!ownerTag) {
     return {
@@ -337,6 +421,7 @@ async function closeTicketChannel(interaction, client) {
     interaction.user.id !== ownerTag &&
     !interaction.member.permissions.has(PermissionFlagsBits.ManageChannels) &&
     !hasTicketPingAccess &&
+    !hasVerifStaffAccess &&
     (!tickets.supportRoleId || !interaction.member.roles.cache.has(tickets.supportRoleId))
   ) {
     return {
@@ -358,14 +443,199 @@ async function closeTicketChannel(interaction, client) {
   return { ok: true };
 }
 
+async function handleTicketClaimButton(interaction, client) {
+  if (!isVerifStaffMember(interaction.member, client)) {
+    await interaction.reply({
+      content: "Kamu tidak memiliki izin staff untuk meng-claim tiket ini.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const topic = interaction.channel.topic || "";
+  const ownerId = topic.match(/^ticket-owner:(\d+)/)?.[1];
+
+  if (ownerId && interaction.user.id === ownerId) {
+    await interaction.reply({
+      content: "Kamu tidak bisa meng-claim tiket milikmu sendiri.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const claimedId = topic.match(/\|claimed:(\d+)/)?.[1];
+  if (claimedId) {
+    await interaction.reply({
+      content: `Tiket ini sudah di-claim oleh <@${claimedId}>.`,
+      ephemeral: true
+    });
+    return;
+  }
+
+  await interaction.deferUpdate().catch(() => null);
+
+  const updatedTopic = `${topic}|claimed:${interaction.user.id}`;
+  await interaction.channel.setTopic(updatedTopic).catch(() => null);
+
+  const existingApproved = topic.includes("|approved:true");
+  const updatedRow = buildVerifikasiGirlActionRow({
+    claimedBy: interaction.user.id,
+    claimedName: interaction.member.displayName || interaction.user.username,
+    approved: existingApproved
+  });
+
+  if (interaction.message) {
+    await interaction.message.edit({
+      components: [updatedRow]
+    }).catch(() => null);
+  }
+
+  await interaction.channel.send({
+    content: `🧠 Tiket ini telah di-claim oleh ${interaction.user}.`
+  });
+}
+
+async function handleTicketApproveButton(interaction, client) {
+  if (!isVerifStaffMember(interaction.member, client)) {
+    await interaction.reply({
+      content: "Kamu tidak memiliki izin staff untuk menyetujui verifikasi ini.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const topic = interaction.channel.topic || "";
+  const ownerId = topic.match(/^ticket-owner:(\d+)/)?.[1];
+
+  if (!ownerId) {
+    await interaction.reply({
+      content: "Owner tiket tidak ditemukan.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  if (interaction.user.id === ownerId) {
+    await interaction.reply({
+      content: "Kamu tidak bisa meng-approve tiket milikmu sendiri.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  if (topic.includes("|approved:true")) {
+    await interaction.reply({
+      content: "Tiket verifikasi ini sudah di-approve sebelumnya.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const targetMember = await interaction.guild.members.fetch(ownerId).catch(() => null);
+
+  if (!targetMember) {
+    await interaction.reply({
+      content: "Member tiket tidak ditemukan di server.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const settings = getEffectiveGuildSettings(interaction.guildId, client);
+  const girlRoleId = settings.tickets?.verifGirlRoleId || VERIF_GIRL_ROLE_ID;
+  const unverifiedRoleId = settings.tickets?.verifUnverifiedRoleId || VERIF_UNVERIFIED_ROLE_ID;
+
+  const girlRole = interaction.guild.roles.cache.get(girlRoleId);
+
+  if (!girlRole) {
+    await interaction.reply({
+      content: `Role Girl (<@&${girlRoleId}>) tidak ditemukan di server. Hubungi admin.`,
+      ephemeral: true
+    });
+    return;
+  }
+
+  await interaction.deferUpdate().catch(() => null);
+
+  try {
+    await targetMember.roles.add(girlRole);
+  } catch (error) {
+    console.error("Failed to add girl role:", error);
+    await interaction.followUp({
+      content: "Gagal memberikan role Girl. Pastikan posisi role bot berada di atas role Girl pada Server Settings.",
+      ephemeral: true
+    }).catch(() => null);
+    return;
+  }
+
+  let unverifiedRemoved = false;
+  if (targetMember.roles.cache.has(unverifiedRoleId)) {
+    try {
+      await targetMember.roles.remove(unverifiedRoleId);
+      unverifiedRemoved = true;
+    } catch (error) {
+      console.warn("Failed to remove unverified role:", error);
+    }
+  }
+
+  const updatedTopic = `${topic}|approved:true`;
+  await interaction.channel.setTopic(updatedTopic).catch(() => null);
+
+  const claimedId = topic.match(/\|claimed:(\d+)/)?.[1];
+  const claimedMember = claimedId ? await interaction.guild.members.fetch(claimedId).catch(() => null) : null;
+  const updatedRow = buildVerifikasiGirlActionRow({
+    claimedBy: claimedId,
+    claimedName: claimedMember?.displayName || claimedMember?.user?.username || "",
+    approved: true
+  });
+
+  if (interaction.message) {
+    await interaction.message.edit({
+      components: [updatedRow]
+    }).catch(() => null);
+  }
+
+  const unverifiedText = unverifiedRemoved
+    ? ` dan role <@&${unverifiedRoleId}> telah dicabut`
+    : "";
+
+  const successEmbed = new EmbedBuilder()
+    .setColor("#22c55e")
+    .setTitle("✅ Verifikasi Berhasil!")
+    .setDescription(
+      [
+        `Selamat ${targetMember}, kamu telah diverifikasi sebagai girl! 🎉`,
+        "",
+        `Role <@&${girlRoleId}> telah diberikan${unverifiedText} oleh ${interaction.user}.`,
+        "",
+        "Silakan nikmati fasilitas dan channel khusus di server Murphy! 💕"
+      ].join("\n")
+    )
+    .setTimestamp();
+
+  await interaction.channel.send({
+    content: `${targetMember}`,
+    embeds: [successEmbed]
+  });
+}
+
 module.exports = {
   CLOSE_TICKET_BUTTON_ID,
   TICKET_TYPE_PREFIX,
+  VERIF_CLAIM_BUTTON_ID,
+  VERIF_APPROVE_BUTTON_ID,
+  VERIF_STAFF_ROLE_ID,
+  VERIF_GIRL_ROLE_ID,
+  VERIF_UNVERIFIED_ROLE_ID,
   buildPartnershipTicketPanel,
   buildTicketPanel,
+  buildVerifikasiGirlEmbed,
+  buildVerifikasiGirlActionRow,
   getTicketPingRoleIds,
   getTicketTypeChoices,
   getTicketType,
   createTicketChannel,
-  closeTicketChannel
+  closeTicketChannel,
+  handleTicketClaimButton,
+  handleTicketApproveButton
 };

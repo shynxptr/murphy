@@ -10,12 +10,23 @@ const { startCustomRoleScheduler } = require("../modules/custom-roles/customRole
 const { startShopEconomyScheduler } = require("../modules/shop/shopSystem");
 const { startPrivateRoomScheduler } = require("../modules/private-rooms/privateRoomSystem");
 const { reconcileLevelState, startLevelProgressionScheduler } = require("../modules/levels/levelSystem");
+const { initInviteTracker } = require("../modules/invites/inviteTracker");
 
 module.exports = {
   name: "clientReady",
   once: true,
   async execute(client) {
-    console.log(`${client.user.tag} is online with prefix "${client.config.prefix}"`);
+    console.log(`${client.user.tag} (${client.config.botName || "Murphy"}) is online with prefix "${client.config.prefix}"`);
+
+    const targetBotName = client.config.botName || "Murphy";
+    if (client.user.username !== targetBotName) {
+      try {
+        await client.user.setUsername(targetBotName);
+        console.log(`Bot username updated to "${targetBotName}" on Discord.`);
+      } catch (err) {
+        console.warn(`Could not set bot username to "${targetBotName}" via API: ${err.message}`);
+      }
+    }
 
     try {
       const result = await syncSlashCommands(client);
@@ -61,6 +72,9 @@ module.exports = {
     startLevelProgressionScheduler(client);
     await refreshAllMusicBoards(client).catch((error) => {
       console.error("Failed to refresh music boards:", error);
+    });
+    await initInviteTracker(client).catch((error) => {
+      console.error("Failed to initialize invite tracker:", error);
     });
   }
 };

@@ -1,52 +1,52 @@
 {
   "template": {
-    "width": 1536,
-    "height": 1024
+    "width": 2360,
+    "height": 1468
   },
   "mask": {
-    "centerX": 1105,
-    "centerY": 570,
-    "radius": 262
+    "centerX": 1788,
+    "centerY": 723,
+    "radius": 435
   },
   "avatar": {
-    "x": 811,
-    "y": 293,
-    "size": 584,
-    "radius": 292
+    "x": 1351,
+    "y": 285,
+    "size": 870,
+    "radius": 435
   },
   "fields": {
     "name": {
-      "x": 221,
-      "y": 344,
-      "width": 461,
-      "fontSize": 65
+      "x": 514,
+      "y": 340,
+      "width": 710,
+      "fontSize": 90
     },
     "age": {
-      "x": 222,
-      "y": 436,
-      "width": 473,
-      "fontSize": 65
+      "x": 515,
+      "y": 582,
+      "width": 610,
+      "fontSize": 90
     },
     "city": {
-      "x": 280,
-      "y": 530,
-      "width": 389,
-      "fontSize": 65
+      "x": 519,
+      "y": 814,
+      "width": 610,
+      "fontSize": 90
     },
     "bio": {
-      "x": 76,
-      "y": 698,
-      "width": 634,
-      "height": 166,
-      "startFontSize": 38,
-      "minFontSize": 44,
-      "lineHeightFactor": 1.16
+      "x": 507,
+      "y": 1042,
+      "width": 710,
+      "height": 190,
+      "startFontSize": 68,
+      "minFontSize": 42,
+      "lineHeightFactor": 1.25
     }
   },
   "previewData": {
     "name": "Sokaa",
     "age": "20 Tahun",
     "city": "Bandung",
-    "bio": "Suka ngobrol santai, dengerin musik malam, dan nemenin teman-teman di Sokaze sampai larut sambil bikin suasana tetap hidup."
+    "bio": "Suka ngobrol santai, dengerin musik malam, dan nemenin teman-teman di Murphy sampai larut sambil bikin suasana tetap hidup."
   }
 }

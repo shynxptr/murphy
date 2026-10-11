@@ -31,7 +31,7 @@ const DEFAULT_TEMP_VOICE_SETTINGS = {
 };
 
 const TEMP_VOICE_PANEL_IMAGE_PATH = path.join(__dirname, "..", "..", "..", "assets", "temp-voice", "panel.png");
-const TEMP_VOICE_PANEL_IMAGE_NAME = "sokaze-temp-voice-panel.png";
+const TEMP_VOICE_PANEL_IMAGE_NAME = "murphy-temp-voice-panel.png";
 const tempVoicePanelRefreshes = new Map();
 
 const TEMP_VOICE_BUTTON_PREFIX = "tv";
@@ -532,7 +532,7 @@ function buildUniversalTempVoiceEmbed(guild, settings) {
       "Saat room berhasil dibuat, bot akan otomatis mengirim interface kontrol aktif langsung ke chat voice room tersebut."
     ].join("\n"))
     .setFooter({
-      text: "Sokaze Assistant | Temp Voice universal interface",
+      text: "Murphy | Temp Voice universal interface",
       iconURL: getGuildIconUrl(guild) || undefined
     })
     .setTimestamp();

@@ -13,11 +13,11 @@ async function createLevelGuideAttachment() {
 function buildLevelGuideEmbed() {
   return new EmbedBuilder()
     .setColor("#111214")
-    .setTitle("Sokaze Level Guide")
+    .setTitle("Murphy Level Guide")
     .setDescription([
-      "Naik level, buka benefit, dan bangun identitasmu di Sokaze.",
+      "Naik level, buka benefit, dan bangun identitasmu di Murphy.",
       "",
-      "Cek progresmu kapan saja dengan `sk exp` dan `sk profile`."
+      "Cek progresmu kapan saja dengan `f exp` dan `f profile`."
     ].join("\n"))
     .setImage(`attachment://${INFOGRAPHIC_NAME}`)
     .setFooter({

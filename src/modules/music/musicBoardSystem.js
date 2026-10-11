@@ -118,7 +118,7 @@ function buildMusicBoardEmbed(guild, entries) {
   return new EmbedBuilder()
     .setColor("#22c55e")
     .setAuthor({
-      name: "Sokaze Music List",
+      name: "Murphy Music List",
       iconURL: guildIconUrl
     })
     .setDescription([
@@ -129,7 +129,7 @@ function buildMusicBoardEmbed(guild, entries) {
     ].join("\n"))
     .addFields(fields)
     .setFooter({
-      text: "Sokaze Assistant | Music board auto update",
+      text: "Murphy | Music board auto update",
       iconURL: guildIconUrl
     })
     .setTimestamp();

@@ -3,13 +3,14 @@ const { Canvas, GlobalFonts, loadImage } = require("@napi-rs/canvas");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const headingFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font-01.otf"), "Sokaze Welcome");
-const gothicFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font.otf"), "Sokaze Gothic");
-const brandFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "Gothicha.ttf"), "Sokaze Brand");
+const headingFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font-01.otf"), "Murphy Welcome");
+const gothicFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font.otf"), "Murphy Gothic");
+const brandFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "Gothicha.ttf"), "Murphy Brand");
 const semiboldFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeuib.ttf", "Segoe UI");
 const regularFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeui.ttf", "Segoe UI Regular");
 const assetsDirectory = path.join(__dirname, "..", "..", "..", "assets");
 const preferredBackgroundCandidates = [
+  path.join(assetsDirectory, "bannerwelcome.png"),
   path.join(assetsDirectory, "tes-bg.png"),
   path.join(assetsDirectory, "welcome-bg.jpg"),
   path.join(assetsDirectory, "welcome-bg.png"),
@@ -49,6 +50,33 @@ function drawRoundedRect(context, x, y, width, height, radius) {
   context.closePath();
 }
 
+function drawChromeText(context, text, x, y, fontSize, fontName, strokeWidth = 2) {
+  context.font = `${fontSize}px "${fontName}"`;
+
+  const chromeGrad = context.createLinearGradient(0, y - fontSize + 6, 0, y + 4);
+  chromeGrad.addColorStop(0.0, "#ffffff");
+  chromeGrad.addColorStop(0.25, "#f1f5f9");
+  chromeGrad.addColorStop(0.48, "#cbd5e1");
+  chromeGrad.addColorStop(0.50, "#475569");
+  chromeGrad.addColorStop(0.52, "#1e293b");
+  chromeGrad.addColorStop(0.75, "#94a3b8");
+  chromeGrad.addColorStop(1.0, "#ffffff");
+
+  context.shadowColor = "rgba(0, 0, 0, 0.85)";
+  context.shadowBlur = 10;
+  context.shadowOffsetY = 3;
+
+  context.lineWidth = strokeWidth;
+  context.strokeStyle = "rgba(15, 23, 42, 0.9)";
+  context.strokeText(text, x, y);
+
+  context.fillStyle = chromeGrad;
+  context.fillText(text, x, y);
+
+  context.shadowBlur = 0;
+  context.shadowOffsetY = 0;
+}
+
 async function loadAvatar(member) {
   const avatarUrl = member.user.displayAvatarURL({
     extension: "png",
@@ -85,7 +113,7 @@ function getBackgroundAssetPath() {
 
 function getHeadlineFont() {
   if (headingFontRegistered) {
-    return "Sokaze Welcome";
+    return "Murphy Welcome";
   }
 
   return semiboldFontRegistered ? "Segoe UI" : "sans-serif";
@@ -93,7 +121,7 @@ function getHeadlineFont() {
 
 function getBrandFont() {
   if (brandFontRegistered) {
-    return "Sokaze Brand";
+    return "Murphy Brand";
   }
 
   return semiboldFontRegistered ? "Segoe UI" : "sans-serif";
@@ -101,7 +129,7 @@ function getBrandFont() {
 
 function getBodyFont() {
   if (gothicFontRegistered) {
-    return "Sokaze Gothic";
+    return "Murphy Gothic";
   }
 
   return semiboldFontRegistered ? "Segoe UI" : "sans-serif";
@@ -199,79 +227,44 @@ async function createWelcomeCard(member, accentColor) {
   const canvas = new Canvas(width, height);
   const context = canvas.getContext("2d");
 
-  const usedBackgroundImage = await drawBackgroundImage(context, width, height);
+  // 1. Draw base dark fill
+  drawBackground(context, width, height, accentColor, false);
 
-  if (!usedBackgroundImage) {
-    drawBackground(context, width, height, accentColor);
-  } else {
-    drawBackground(context, width, height, accentColor, true);
-  }
+  // 2. Polaroid cutout window bounds (perfectly fitted inside polaroid frame)
+  const holeX = 488;
+  const holeY = 64;
+  const holeWidth = 224;
+  const holeHeight = 248;
 
-  const avatarX = 544;
-  const avatarY = 136;
-  const avatarSize = 112;
-
-  context.shadowColor = "rgba(18, 24, 30, 0.36)";
-  context.shadowBlur = 18;
-  context.shadowOffsetY = 10;
-  drawRoundedRect(context, avatarX - 6, avatarY - 6, avatarSize + 12, avatarSize + 12, 32);
-  context.fillStyle = "rgba(54, 66, 78, 0.44)";
-  context.fill();
-  context.shadowBlur = 0;
-  context.shadowOffsetY = 0;
-
+  // 3. Render Avatar BEHIND bannerwelcome.png to fill the cutout window
   try {
     const avatar = await loadAvatar(member);
-    clipAvatarCircle(context);
-    context.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
-    restoreAvatarCircle(context);
+    context.drawImage(avatar, holeX, holeY, holeWidth, holeHeight);
   } catch (error) {
     console.error("Failed to render welcome avatar:", error);
-    clipAvatarCircle(context);
     drawAvatarFallback(context, member, accentColor);
-    restoreAvatarCircle(context);
   }
 
-  drawRoundedRect(context, avatarX, avatarY, avatarSize, avatarSize, 28);
-  context.lineWidth = 2;
-  context.strokeStyle = "rgba(196, 208, 220, 0.28)";
-  context.stroke();
+  // 4. Subtle dark gradient overlay over top & bottom of avatar to ensure high text legibility
+  const avatarDarkOverlay = context.createLinearGradient(0, holeY, 0, holeY + holeHeight);
+  avatarDarkOverlay.addColorStop(0, "rgba(0, 0, 0, 0.55)");
+  avatarDarkOverlay.addColorStop(0.35, "rgba(0, 0, 0, 0.10)");
+  avatarDarkOverlay.addColorStop(0.65, "rgba(0, 0, 0, 0.10)");
+  avatarDarkOverlay.addColorStop(1, "rgba(0, 0, 0, 0.65)");
+  context.fillStyle = avatarDarkOverlay;
+  context.fillRect(holeX, holeY, holeWidth, holeHeight);
+
+  // 5. Draw bannerwelcome.png ON TOP of avatar
+  await drawBackgroundImage(context, width, height);
 
   context.textAlign = "center";
 
-  context.shadowColor = "rgba(0,0,0,0.36)";
-  context.shadowBlur = 16;
-  context.fillStyle = "#f3eee8";
-  context.font = `42px "${getHeadlineFont()}"`;
-  context.fillText("WELCOME TO", width / 2, 78);
-  context.shadowBlur = 0;
+  // Render Display Name with Chrome Metallic gradient effect
+  drawChromeText(context, member.displayName.slice(0, 24), width / 2, 293, 44, getBodyFont(), 2.5);
 
-  context.font = `38px "${getBrandFont()}"`;
-  context.lineWidth = 1.4;
-  context.strokeStyle = "rgba(255, 247, 238, 0.30)";
-  context.strokeText("SOKAZE", width / 2, 118);
-  context.fillStyle = "rgba(248, 240, 232, 0.96)";
-  context.fillText("SOKAZE", width / 2, 118);
-  context.fillText("SOKAZE", (width / 2) + 0.6, 118);
+  // Render #Member Count with Chrome Metallic gradient effect
+  drawChromeText(context, `#Member ${member.guild.memberCount}`, width / 2, 356, 34, getBodyFont(), 2);
 
-  context.font = `44px "${getBodyFont()}"`;
-  context.fillStyle = "#fcf7ef";
-  context.fillText(member.displayName.slice(0, 24), width / 2, 293);
-
-  context.font = `22px "${getBodyFont()}"`;
-  context.fillStyle = "rgba(225, 230, 236, 0.88)";
-  context.fillText(`#Member ${member.guild.memberCount}`, width / 2, 327);
-
-  drawRoundedRect(context, (width / 2) - 84, 346, 168, 34, 17);
-  context.fillStyle = "rgba(255,255,255,0.08)";
-  context.fill();
-  context.strokeStyle = "rgba(255,255,255,0.12)";
-  context.lineWidth = 1;
-  context.stroke();
-
-  context.font = `17px "${getBrandFont()}"`;
-  context.fillStyle = "#ece8e1";
-  context.fillText("SOKAZE", width / 2, 370);
   context.textAlign = "start";
 
   return new AttachmentBuilder(await canvas.encode("png"), {

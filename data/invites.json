@@ -1,0 +1,219 @@
+{
+  "guilds": {
+    "1536009463582949396": {
+      "settings": {
+        "dailyTarget": 10,
+        "targetRoleId": "1558778004425932890",
+        "userTargets": {}
+      },
+      "members": {
+        "1381519638680047726": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791726120427,
+          "isFake": false
+        },
+        "1541047560981192704": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791726263124,
+          "isFake": false
+        },
+        "1463761323212144749": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791726885136,
+          "isFake": false
+        },
+        "1256785353574973440": {
+          "inviterId": "UNKNOWN",
+          "code": "UNKNOWN",
+          "joinedAt": 1791726885673,
+          "isFake": false
+        },
+        "1462634987311337582": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791726934823,
+          "isFake": false
+        },
+        "1467327074388934697": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791727455881,
+          "isFake": false
+        },
+        "944191339808038924": {
+          "inviterId": "633920703523061760",
+          "code": "XEUBjebq6Z",
+          "joinedAt": 1791727654597,
+          "isFake": false
+        },
+        "1557463165577601034": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729646156,
+          "isFake": false
+        },
+        "1557273235895226439": {
+          "inviterId": "UNKNOWN",
+          "code": "UNKNOWN",
+          "joinedAt": 1791729646617,
+          "isFake": false
+        },
+        "1557471547436957727": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729647605,
+          "isFake": false
+        },
+        "1557370800355414183": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729647998,
+          "isFake": false
+        },
+        "1557222533970001945": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729648554,
+          "isFake": false
+        },
+        "1557347960784683073": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729652014,
+          "isFake": false
+        },
+        "1557270256819503117": {
+          "inviterId": "856414742942973962",
+          "code": "W46J4RbcH",
+          "joinedAt": 1791729656527,
+          "isFake": false
+        },
+        "408785106942164992": {
+          "inviterId": "UNKNOWN",
+          "code": "UNKNOWN",
+          "joinedAt": 1791732357120,
+          "isFake": false
+        },
+        "519287796549156864": {
+          "inviterId": "UNKNOWN",
+          "code": "UNKNOWN",
+          "joinedAt": 1791732376121,
+          "isFake": false
+        }
+      },
+      "inviters": {
+        "856414742942973962": {
+          "regular": 10,
+          "fake": 0,
+          "leaves": 0,
+          "codes": {
+            "FFHYhy6gT": 1,
+            "PshjVD9jd": 1,
+            "eY85jgNxN": 1,
+            "uPAFyhrbY": 1,
+            "W46J4RbcH": 6
+          },
+          "history": [
+            {
+              "type": "join",
+              "memberId": "1557463165577601034",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729646156
+            },
+            {
+              "type": "join",
+              "memberId": "1557471547436957727",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729647605
+            },
+            {
+              "type": "join",
+              "memberId": "1557370800355414183",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729647998
+            },
+            {
+              "type": "join",
+              "memberId": "1557222533970001945",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729648554
+            },
+            {
+              "type": "join",
+              "memberId": "1557347960784683073",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729652014
+            },
+            {
+              "type": "join",
+              "memberId": "1557270256819503117",
+              "code": "W46J4RbcH",
+              "isFake": false,
+              "timestamp": 1791729656527
+            }
+          ]
+        },
+        "633920703523061760": {
+          "regular": 8,
+          "fake": 0,
+          "leaves": 0,
+          "codes": {
+            "XEUBjebq6Z": 8
+          },
+          "history": [
+            {
+              "type": "join",
+              "memberId": "1381519638680047726",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791726120427
+            },
+            {
+              "type": "join",
+              "memberId": "1541047560981192704",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791726263124
+            },
+            {
+              "type": "join",
+              "memberId": "1463761323212144749",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791726885136
+            },
+            {
+              "type": "join",
+              "memberId": "1462634987311337582",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791726934823
+            },
+            {
+              "type": "join",
+              "memberId": "1467327074388934697",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791727455881
+            },
+            {
+              "type": "join",
+              "memberId": "944191339808038924",
+              "code": "XEUBjebq6Z",
+              "isFake": false,
+              "timestamp": 1791727654597
+            }
+          ]
+        }
+      }
+    }
+  }
+}

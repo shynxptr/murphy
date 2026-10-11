@@ -8,7 +8,7 @@ const {
 
 module.exports = {
   name: "setmusicboard",
-  description: "Atur channel untuk Sokaze Music List.",
+  description: "Atur channel untuk Murphy Music List.",
   aliases: ["setmusicchannel", "setmusicboardchannel"],
   category: "admin",
   usage: "setmusicboard [#channel]",

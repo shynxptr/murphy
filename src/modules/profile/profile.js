@@ -16,7 +16,7 @@ module.exports = {
   name: "profile",
   aliases: ["pf", "profil"],
   category: "levels",
-  description: "Lihat dan atur profile card Sokaze.",
+  description: "Lihat dan atur profile card Murphy.",
   usage: "profile [@member] | profile catalog | profile theme <key> | profile title <key> | profile bio <teks> | profile song <add|remove|clear>",
   async execute(message, args) {
     const firstArg = (args[0] || "").toLowerCase();
@@ -40,7 +40,7 @@ module.exports = {
       const themeKey = String(args[1] || "").trim().toLowerCase();
 
       if (!themeKey) {
-        await message.reply("Gunakan `sk profile theme <key>`.");
+        await message.reply("Gunakan `f profile theme <key>`.");
         return;
       }
 
@@ -54,7 +54,7 @@ module.exports = {
       const titleKey = String(args[1] || "").trim().toLowerCase();
 
       if (!titleKey) {
-        await message.reply("Gunakan `sk profile title <key>`.");
+        await message.reply("Gunakan `f profile title <key>`.");
         return;
       }
 
@@ -104,9 +104,9 @@ module.exports = {
 
       await message.reply([
         "Gunakan salah satu ini:",
-        "`sk profile song add <judul lagu>`",
-        "`sk profile song remove <nomor|judul lagu>`",
-        "`sk profile song clear`"
+        "`f profile song add <judul lagu>`",
+        "`f profile song remove <nomor|judul lagu>`",
+        "`f profile song clear`"
       ].join("\n"));
       return;
     }

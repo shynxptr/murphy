@@ -6,7 +6,7 @@ module.exports = createTemplateCommand({
   title: "Bantuan Ticket Partnership",
   introLines: [
     "Halo, terima kasih sudah membuka ticket partnership.",
-    "Sebelum pengajuan diproses, mohon pastikan server kamu sudah memenuhi syarat dasar partnership Sokaze."
+    "Sebelum pengajuan diproses, mohon pastikan server kamu sudah memenuhi syarat dasar partnership Murphy."
   ],
   formLines: [
     "Syarat utama partnership:",

@@ -105,7 +105,7 @@ function buildPrivateRoomPanelEmbed() {
       "Klik tombol di bawah untuk membuat room atau cek status room kamu."
     ].join("\n"))
     .setFooter({
-      text: "Sokaze Elite Private Room"
+      text: "Murphy Elite Private Room"
     });
 }
 
