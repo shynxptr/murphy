@@ -23,7 +23,7 @@ function buildPublicWelcomeText(member, client) {
       "**Semoga betah & happy chatting di sini ya! <a:mythic:1559246070511571108>**"
     ].join("\n"),
     [
-      `Welcome to **Murphy**, ${member}! 👋`,
+      `Welcome to **Murphy**, ${member}! <a:crossian:1559353944441098373>`,
       "Halo! Selamat bergabung di komunitas kita. Biar makin akrab, yuk cek poin penting ini:",
       `<a:panah:1559348502906150962> Baca rules dulu di ${rulesChannel} ya!`,
       `<a:panah:1559348502906150962> Abis itu ambil role kamu di ${rolesChannel}!`,
