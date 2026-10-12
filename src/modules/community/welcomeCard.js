@@ -248,8 +248,9 @@ async function createWelcomeCard(member, accentColor) {
     context.drawImage(backgroundImage, 0, 0, width, height);
   }
 
-  return new AttachmentBuilder(await canvas.encode("png"), {
-    name: "welcome-card.png"
+  // JPEG jauh lebih kecil dari PNG (~5-10x) — mencegah upload timeout di VPS
+  return new AttachmentBuilder(await canvas.encode("jpeg", 85), {
+    name: "welcome-card.jpg"
   });
 }
 

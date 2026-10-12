@@ -80,7 +80,7 @@ function buildWelcomeEmbed(member, client) {
         "Make yourself at home and enjoy your stay! ❤️"
       ].join("\n")
     )
-    .setImage("attachment://welcome-card.png")
+    .setImage("attachment://welcome-card.jpg")
     .setFooter({
       text: `Member #${member.guild.memberCount}`
     })
