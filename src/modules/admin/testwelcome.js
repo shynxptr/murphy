@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { resolveTextChannel } = require("../../utils/channelResolver");
-const { sendWelcomeMessage } = require("../community/welcome");
+const { sendWelcomeMessage, sendPublicWelcomeMessage } = require("../community/welcome");
 
 module.exports = {
   name: "testwelcome",
@@ -26,6 +26,8 @@ module.exports = {
       await message.reply("Welcome channel belum valid. Atur dulu dengan `sksetwelcome #channel`.");
       return;
     }
+
+    await sendPublicWelcomeMessage(message.member, client);
 
     if (targetChannel) {
       await message.reply(`Preview welcome dikirim ke ${targetChannel}.`);
