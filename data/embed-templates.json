@@ -1,0 +1,297 @@
+{
+  "lastTemplateId": 6,
+  "templates": {
+    "1": {
+      "id": "1",
+      "name": "DONASI",
+      "payload": {
+        "channelId": "1558526617071128686",
+        "threadName": "ROLE INFO",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "dukungan & apresiasi.",
+            "description": "murphy bisa terus menjadi tempat singgah yang nyaman berkat dukungan dari kalian. bagi murphs yang ingin memberikan apresiasi lebih untuk merawat tempat ini, kami menyediakan beberapa peran khusus:\n\n· <a:nitrobadge:1559109398419218472> <@&1558851865540825210>\nuntuk kamu yang memberikan nitro boost. otomatis mendapatkan role khusus custom.\n\n· <a:emoji_67:1559107434440556656> <@&1558754256998113331>\nuntuk kamu yang mendukung kami melalui donasi (saweria/trakteer). sebagai bentuk terima kasih, kamu akan mendapatkan badge khusus di profilmu dan hak istimewa di beberapa event.\n\n> cara klaim:\nsetelah melakukan boost atau donasi, silakan buka tiket <#1542549784697638922> atau mention staff kami agar role dan hadiahmu bisa langsung disiapkan. terima kasih sudah merawat murphy.",
+            "color": "#111214",
+            "authorName": "Murphy Donation &  appreciation",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "dukungan nitro.",
+            "description": "kalian yang udah nitipin nitro boost-nya di sini, kualitas ruang obrolan dan fasilitas murphy jadi jauh lebih baik. \n\nsebagai apresiasi, para booster berhak menikmati fasilitas ini:\n> - role otomatis <@&1558851865540825210>  dengan badge khusus dari discord.\n> - bebas membuat custom role pribadi.\n> - bebas nge-chat tanpa kena limit slowmode di general chat.\n> - boleh nitip custom emoji atau stiker favoritmu buat dijadiin emoji resmi murphy.\n\ncara klaim:\nbegitu kamu nge-boost, discord bakal otomatis ngasih role-nya ke kamu. buat atur warna nama dan nitip emoji, langsung aja buka tiket di <#1542549784697638922>  dan sapa staf kami ya.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "apresiasi & tingkatan richizen.",
+            "description": "dukungan kalian adalah alasan murphy bisa terus bernapas. agar apresiasi ini lebih terukur dan jelas, kami menyusun tingkatan bagi para richizen berdasarkan jejak dukungan yang diberikan:\n\n· <@&1558759439580794882> *( rp 15.000 - rp 50.000 )*\n> - mendapatkan role eksklusif richizen.\n> - akses masuk ke lounge privat donatur (teks & voice).\n> - prioritas respon tiket dari staf.\n> - kebebasan menggunakan fitur soundboard server.\n\n· <@&1558759460640530442> *( rp 50.000 - rp 99.000 )*\n> - seluruh kenyamanan di tingkat bronze.\n> - mendapat custom role pribadi.\n> - hak untuk request penambahan  emoji atau stiker server.\n> - kebebasan dari batasan slowmode di channel obrolan utama.\n\n· <@&1558759491934101505>  *( rp 100.000 - rp 249.000 )*\n> - seluruh kenyamanan di tingkat silver.\n> - 1 bot jockie music pribadi (aktif selama 1 bulan).\n> - custom role kini bisa kamu bagi ke 5 orang.\n> - prioritas utama untuk mendapatkan slot saat event atau voice channel penuh.\n> - akses sneak peek untuk melihat pembaruan & fitur baru murphy lebih awal.\n> - hak memiliki 1 voice channel privat (vvip room) yang namanya bisa kamu atur sendiri.\n\n· <@&1558759382072954971> *( rp 250.000 - rp 500.000 )*\n> - seluruh kenyamanan di tingkat gold.\n> - 1 bot jockie music pribadi (aktif selama 3 bulan).\n> - custom role kini bisa dibagi ke 10 orang.\n> - bebas dari batasan slowmode di seluruh penjuru server.\n> - hak istimewa untuk ikut menyumbang suara (voting) pada keputusan komunitas.\n> - namamu dipajang pada poster pengumuman event.\n\n· <@&1558759475266060379>  *(rp 500.000+ )*\n> - seluruh kenyamanan di tingkat platinum.\n> - 1 bot jockie music pribadi (aktif selama 6 bulan).\n> - akan mendapatkan 2 role custom role, dan kini bisa di-tag/mention oleh member lain.\n> - namamu disebut dan dipajang secara permanen sebagai penyokong utama di setiap event murphy.\n> - apresiasi langsung & prioritas tertinggi dari jajaran manajemen.\n\nsistem bot & cara klaim:\n- fasilitas bot jockie music murni berbasis langganan bulanan. setiap rp 100.000 terhitung untuk 1 bot selama 1 bulan (bisa diakumulasikan untuk menambah jumlah bot atau memperpanjang durasi bulan).\n- sekecil apa pun dukunganmu, sangat berharga bagi ruang ini. penyalahgunaan fasilitas akan berujung pada penarikan benefit.\n- setelah memberikan dukungan, silakan singgah ke channel tiket dan lampirkan buktimu. staf kami akan segera menyematkan apresiasi ini di profilmu.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [
+        "role"
+      ],
+      "createdAt": "2026-10-12T11:39:31.659Z",
+      "updatedAt": "2026-10-12T11:41:00.377Z"
+    },
+    "2": {
+      "id": "2",
+      "name": "special role",
+      "payload": {
+        "channelId": "1542962240251240550",
+        "threadName": "",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "**special roles & cara dapetinnya.**",
+            "description": "murphy bukan cuma tempat singgah, tapi juga tempat di mana kehadiranmu dihargai. ini beberapa role spesial buat kalian yang bikin server ini hidup, beserta cara buat dapetinnya:\n\n· <@&1558721804665753630> \nbuat kamu yang paling ramah, suka nyapa member baru, dan rajin nongkrong. role ini ngebuka akses ke channel rahasia. (tapi ingat, role ini bisa pudar kalau kamu ngilang 2-3 hari).\n> cara ambil: gak perlu klik tombol. cukup jadi dirimu yang aktif dan asik. tim kami (helper) selalu mantau dan bakal ngasih role ini langsung secara organik.\n\n· <@&1558722200775827486>\nsebuah tanda kedekatan. pasang tag server murphy  di profil discord kamu dan dapatkan role khusus secara instan.\n> cara ambil: tambahin tag murphy di namamu, lalu mention staff atau buka tiket. role akan diberikan selama tag tersebut gak kamu lepas.\n\n· <@&1558722095587004438>\nsuka ngajak teman buat gabung ke murphy? bakal ada peringkat invite dan reward/uang saku buat kamu yang paling gacor bawa massa.\n> cara ambil: gunakan link invite pribadimu. pantau rank kamu di channel bot, dan kalau kamu aktif ngundang orang, staff bakal ngasih role ini plus ngarahin kamu buat ambil hadiahnya.\n\n· <@&1558722371450310756>\npenghargaan tertinggi bulanan. murni pilihan sesama murphs untuk member yang paling bawa vibes positif dan gak pernah toxic.\n> cara ambil: di minggu terakhir tiap bulan, kami bakal milih 3-5 kandidat. pemenangnya ditentukan lewat  interaksi antar member baik itu di chat atau divoice room. yang menang otomatis dapet gelar, shoutout, dan hadiah.\n\n· <@&1558722478497472562>\nmau bikin acara nobar film, mabar game, atau lomba santai sendiri? kamu yang jadi host, kami yang siapin tempatnya. \n> cara ambil: ajuin ide acaramu ke kami (lewat channel forum/tiket). kalau di-acc, role 'event host' bakal dikasih selama acara berlangsung. kalau acaramu sukses besar, kamu berhak bawa pulang role permanen 'event creator'.\n\nkeep talking, keep mingling. we see your efforts.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [
+        "role"
+      ],
+      "createdAt": "2026-10-12T11:46:46.114Z",
+      "updatedAt": "2026-10-12T11:46:46.114Z"
+    },
+    "3": {
+      "id": "3",
+      "name": "role game",
+      "payload": {
+        "channelId": "1558662444946165811",
+        "threadName": "",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "**role game.**",
+            "description": "untuk membantu teman-teman mencari partner bermain, kami sudah menyediakan beberapa role game. silakan ambil role yang sesuai agar lebih mudah terhubung dengan murphs yang lain.\n\ncara mengambil role:\n1. pilih role dari game yang paling sering kamu mainkan.\n2. kamu bebas memilih lebih dari satu role.\n\nsemoga harimu menyenangkan, murphs.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [
+        "role"
+      ],
+      "createdAt": "2026-10-12T11:54:33.805Z",
+      "updatedAt": "2026-10-12T11:54:53.775Z"
+    },
+    "4": {
+      "id": "4",
+      "name": "dom",
+      "payload": {
+        "channelId": "1559177529930022952",
+        "threadName": "",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "titik singgah.",
+            "description": "dari mana kamu menyapa kami? kami menyiapkan role domisili untuk membantumu menemukan teman satu daerah. siapa tahu kalian bisa terhubung dan nongkrong bareng di dunia nyata.\n\nuntuk mengambil role, kamu cukup menekan tombol yang sudah kami sediakan di bawah ini.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [
+        "role"
+      ],
+      "createdAt": "2026-10-12T12:16:14.101Z",
+      "updatedAt": "2026-10-12T12:16:14.101Z"
+    },
+    "5": {
+      "id": "5",
+      "name": "rules",
+      "payload": {
+        "channelId": "1542962240251240550",
+        "threadName": "",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "",
+            "description": "",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "https://cdn.discordapp.com/attachments/1559083357483175977/1559200269122801744/gemini_generated_video_38ff9377-ezgif.com-resize.gif?ex=6ace35e8&is=6acce468&hm=607cbdf0f66af86942d47ffd68265e424f429a78291d06aeb835cbcfc02472e7&",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "<:rules:1559196330398851102> Murphy. Rules",
+            "description": "Seluruh <@&1558507801532305508> wajib mematuhi peraturan berikut demi menjaga kenyamanan, keamanan, dan suasana positif di dalam Murphy.\n\nPeraturan ini mengacu pada Discord Community Guidelines dan Discord Terms of Service. Pelanggaran terhadap peraturan Discord maupun aturan kami dapat dikenakan tindakan oleh Staff.\n\n━━━━━━━━━━━━━━━━━━\n<:rules:1559196330398851102>  RULES\nㅤ\n🤝 1. Respect Others (1–6)\nHormati seluruh member. Dilarang menghina, diskriminasi, bullying, pelecehan, ancaman, toxic, provokasi, atau membuat drama.\n\n💬 2. Use Channels Properly (1)\nGunakan channel sesuai fungsinya. Dilarang OOT berlebihan, spam mention, atau menggunakan @everyone/@here tanpa izin Staff.\n\n🔊 3. Voice Channel (1–3)\nJaga kenyamanan VC. Hindari mic berisik, teriakan, spam soundboard, dan mengganggu percakapan.\n\n🪪 4. Username & Profile (1–5)\nUsername, display name, dan avatar harus sopan. Dilarang menggunakan identitas Staff/member lain atau konten ofensif.\n\n🚫 5. Spam (2–4)\nDilarang spam chat, emoji, sticker, caps, command bot, voice, maupun soundboard.\n\n🔗 6. Server Link & Promotion (5–6)\nDilarang mengirim invite/link server Discord lain, promosi komunitas, iklan, maupun DM promosi tanpa izin Staff.\n\n🛡️ 7. Scam & Phishing (6)\nSegala bentuk scam, phishing, malware, token logger, atau penipuan digital akan dikenakan Permanent Ban.\n\n🔞 8. NSFW & Illegal Content (6)\nDilarang mengirim konten NSFW, vulgar, gore, perjudian, cheat, crack, atau aktivitas ilegal lainnya.\n\n⚖️ 9. Sensitive Topics (1–4)\nHindari politik, agama, SARA, atau topik yang berpotensi memicu konflik.\n\n🤖 10. Bot Abuse (2–4)\nDilarang spam command, exploit bug, maupun abuse fitur bot.\n\n📩 11. DM Abuse (2–5)\nDilarang spam, promosi, atau mengganggu member melalui DM.\n\n🎭 12. Impersonation (6)\nDilarang menyamar sebagai Staff, Developer, maupun member lain.\n\n👮 13. Follow Staff Instructions (1–4)\nHormati keputusan Staff. Gunakan ticket apabila ingin menyampaikan keberatan.\n\n👤 14. Privacy & Personal Information (4–6)\nDilarang membagikan data pribadi milik sendiri maupun orang lain tanpa izin, termasuk nomor telepon, alamat, email, atau informasi sensitif lainnya.\n\n📢 15. Misinformation (2–5)\nDilarang menyebarkan informasi palsu, rumor, fitnah, atau hoaks yang dapat merugikan member maupun komunitas.\n\n━━━━━━━━━━━━━━━━━━",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "",
+            "description": "⚖️ SISTEM POIN\n\n```🟢 1 Poin → Warning\n🟡 2 Poin → Timeout 1 Jam\n🟠 3 Poin → Timeout 24 Jam\n🔴 4 Poin → Kick\n⛔ 5 Poin → Temporary Ban\n🚫 6 Poin → Permanent Ban ```\n\n\nStaff dapat memberikan hukuman yang lebih berat apabila pelanggaran dilakukan berulang kali, bersifat serius, atau melanggar Discord ToS.\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n<a:zarrowblue:1559172712587337799> CATATAN\n\nStaff berhak mengambil tindakan di luar peraturan tertulis apabila diperlukan demi menjaga keamanan dan kenyamanan Murphy.\nKetidaktahuan terhadap peraturan bukan merupakan alasan untuk menghindari sanksi.\nDengan tetap berada di Murphy, seluruh <@&1558507801532305508> dianggap telah membaca, memahami, dan menyetujui seluruh peraturan di atas.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [
+        "baru"
+      ],
+      "createdAt": "2026-10-12T13:45:48.268Z",
+      "updatedAt": "2026-10-12T13:45:48.268Z"
+    },
+    "6": {
+      "id": "6",
+      "name": "struktur",
+      "payload": {
+        "channelId": "1559237030356193340",
+        "threadName": "",
+        "messageContent": "",
+        "targetMode": "send",
+        "targetMessageId": "",
+        "embeds": [
+          {
+            "title": "",
+            "description": "",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "https://cdn.discordapp.com/attachments/1558794036628951120/1559250312445952080/gemini_generated_video_ea2b560d-ezgif.com-resize.gif?ex=6ace6483&is=6acd1303&hm=74d9f6b4f7a64809fd7908e081c95b6e8bbbe9b4bc2170aa7eca789b76f80f1d&",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "struktur murphy.",
+            "description": "❖ <@&1558778004425932890>\nidentitas resmi bagi seluruh jajaran pengurus. menaungi semua elemen dalam struktur manajemen dan menjadi penanda kolektif bahwa pemegangnya adalah bagian dari tim penggerak murphy.\n\n✦ <@&1558506120148947045>\nvisioner dan pencetus murphy. berfokus pada penjagaan nilai-nilai dasar, fondasi komunitas, dan arah tujuan server ke depannya.\n\n♔ <@&1558505997621002420>\npemegang kendali utama. bertugas mengelola operasional server secara menyeluruh, memimpin jajaran staf, dan memastikan murphy tetap menjadi ruang yang setara dan aman.\n\n♕ <@&1558845271813652591>\nrekan eksekutif. mendampingi owner dalam merumuskan keputusan penting, serta membantu menjaga kelancaran manajemen server sehari-hari.\n\n♞ <@&1559236101409996871>\npengarah divisi. bertugas memimpin staf di sektornya, memandu eksekusi program, dan memastikan setiap rencana berjalan sesuai dengan visi murphy.\n\n🛡 <@&1559236216875127017>\npengelola sistem dan keamanan. mengatur aspek teknis di balik layar, termasuk konfigurasi role, perizinan channel, dan perlindungan privasi komunitas.\n\n⌘ <@&1559236280750186548>\narsitek sistem. merancang, memelihara, dan mengembangkan bot serta fitur teknis lainnya untuk mendukung kelancaran aktivitas di dalam server.\n\n👁 <@&1559236178253840515>\npenjaga kedamaian komunitas. memantau aktivitas teks dan suara, menengahi perselisihan, serta memastikan lingkungan server bersih dari segala bentuk toksisitas.\n\n🕊 <@&1559236232750301204>\nkomunikator resmi server. menyusun informasi, menyampaikan pengumuman, dan menjadi jembatan utama yang menyambut hangat para member baru.\n\n🎞 <@&1559236262865404014>\nperencana kegiatan komunitas. mengonsep, menjadwalkan, dan menjalankan acara-acara server untuk menjaga interaksi antar member tetap hidup dan berkesan.\n\n〰 <@&1559236250735616110>\npemandu ruang suara. mengelola sesi voice hangout, mengatur rotasi audio/musik, dan memastikan suasana obrolan selalu kondusif untuk saling berbagi cerita.\n\n⚮ <@&1559236199846256680>\npengelola relasi eksternal. bertugas mencari, menyaring, dan menjalin kerja sama resmi dengan komunitas lain untuk memperluas jaringan pertemanan murphy.",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          },
+          {
+            "title": "",
+            "description": "",
+            "color": "#111214",
+            "authorName": "",
+            "authorIconUrl": "",
+            "authorUrl": "",
+            "thumbnailUrl": "",
+            "imageUrl": "https://cdn.discordapp.com/attachments/1558794036628951120/1559254029832425654/Gemini_Generated_Image_ya4r6xya4r6xya4r_1.jpg?ex=6ace67fa&is=6acd167a&hm=612a2a08bd2508eec1ec2a3310539e886b79024dd6c756d4affcdff35c260912&",
+            "footerText": "",
+            "footerIconUrl": "",
+            "timestampMode": "off",
+            "timestampValue": "",
+            "fields": []
+          }
+        ],
+        "buttons": []
+      },
+      "tags": [],
+      "createdAt": "2026-10-12T17:19:31.346Z",
+      "updatedAt": "2026-10-12T17:19:31.346Z"
+    }
+  }
+}

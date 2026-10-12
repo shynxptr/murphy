@@ -51,6 +51,12 @@
                 <span id="embedCountBadge" class="info-chip">1 embed aktif</span>
               </div>
             </div>
+
+            <div id="forumTitleRow" class="stack hidden" style="grid-column: 1 / -1;">
+              <span>Judul Postingan Forum (Post Title)</span>
+              <input id="forumTitleInput" type="text" maxlength="100" data-format-target="Judul Forum" placeholder="Masukkan judul postingan forum..." />
+              <span class="field-hint">Channel yang dipilih adalah Forum Channel. Bot akan membuat postingan/thread baru di forum ini dengan judul di atas.</span>
+            </div>
           </div>
         </section>
 
@@ -138,7 +144,11 @@
 
         <section class="card toolbar-card">
           <div class="toolbar-header">
-            <strong>Formatting Toolbar</strong>
+            <div class="toolbar-header-left">
+              <strong>Formatting Toolbar</strong>
+              <button type="button" id="openRolePickerButton" class="toolbar-action-chip" title="Pilih dan Tag Role Server">🏷️ @Role</button>
+              <button type="button" id="openEmojiPickerButton" class="toolbar-action-chip" title="Pilih Emoji Server & Simbol">😀 Emoji</button>
+            </div>
             <span id="formatTargetLabel">Fokus: belum ada textarea aktif</span>
           </div>
           <div class="toolbar-grid">
@@ -152,8 +162,9 @@
             <button type="button" data-format="quote" title="Quote">></button>
             <button type="button" data-format="bullet" title="Bullet list">-</button>
             <button type="button" data-format="number" title="Numbered list">1.</button>
+            <button type="button" id="toolbarRoleBtn" title="Pilih Role Server">@R</button>
+            <button type="button" id="toolbarEmojiBtn" title="Pilih Emoji">😀</button>
             <button type="button" data-format="user-mention" title="User mention">@U</button>
-            <button type="button" data-format="role-mention" title="Role mention">@R</button>
             <button type="button" data-format="channel-mention" title="Channel mention">#C</button>
             <button type="button" data-format="masked-link" title="Masked link">[Link]</button>
             <button type="button" data-format="timestamp" title="Discord timestamp">&lt;t:&gt;</button>
@@ -202,7 +213,7 @@
             <div class="double-grid">
               <label class="stack">
                 <span>Title</span>
-                <input id="embedTitle" type="text" maxlength="256" />
+                <input id="embedTitle" type="text" maxlength="256" data-format-target="Embed Title" />
               </label>
               <label class="stack">
                 <span>Color</span>
@@ -214,7 +225,7 @@
               </label>
               <label class="stack">
                 <span>Author Name</span>
-                <input id="authorName" type="text" maxlength="256" />
+                <input id="authorName" type="text" maxlength="256" data-format-target="Author Name" />
               </label>
               <label class="stack">
                 <span>Author Icon URL</span>
@@ -234,7 +245,7 @@
               </label>
               <label class="stack">
                 <span>Footer Text</span>
-                <input id="footerText" type="text" maxlength="2048" />
+                <input id="footerText" type="text" maxlength="2048" data-format-target="Footer Text" />
               </label>
               <label class="stack">
                 <span>Footer Icon URL</span>
@@ -346,6 +357,39 @@
         </div>
       </aside>
     </main>
+
+    <div id="rolePickerModal" class="overlay hidden">
+      <div class="picker-card">
+        <div class="picker-header">
+          <div>
+            <strong>Tag Role Server</strong>
+            <p class="muted">Pilih role untuk disisipkan ke posisi kursor aktif.</p>
+          </div>
+          <button type="button" id="closeRolePickerButton" class="ghost-button mini-label-button">✕</button>
+        </div>
+        <input id="roleSearchInput" type="text" placeholder="Cari nama role..." class="picker-search" />
+        <div id="rolePickerList" class="role-picker-list"></div>
+      </div>
+    </div>
+
+    <div id="emojiPickerModal" class="overlay hidden">
+      <div class="picker-card emoji-picker-card">
+        <div class="picker-header">
+          <div>
+            <strong>Pilih Emoji</strong>
+            <p class="muted">Pilih custom emoji server atau simbol populer.</p>
+          </div>
+          <button type="button" id="closeEmojiPickerButton" class="ghost-button mini-label-button">✕</button>
+        </div>
+        <div class="emoji-picker-tabs">
+          <button type="button" id="serverEmojiTabBtn" class="emoji-tab-btn active">Emoji Server</button>
+          <button type="button" id="standardEmojiTabBtn" class="emoji-tab-btn">Simbol & Populer</button>
+        </div>
+        <input id="emojiSearchInput" type="text" placeholder="Cari nama emoji..." class="picker-search" />
+        <div id="serverEmojiGrid" class="emoji-grid"></div>
+        <div id="standardEmojiGrid" class="emoji-grid hidden"></div>
+      </div>
+    </div>
 
     <script src="/embed-builder.js"></script>
   </body>

@@ -12,11 +12,11 @@
       "lastChatMessageAt": "",
       "lastChatCoinAt": "",
       "lastVoiceCoinAt": "",
-      "lastVoiceProgressAt": "2026-10-11T13:00:48.274Z",
-      "voiceSessionStartedAt": "2026-10-11T13:00:00.510Z",
+      "lastVoiceProgressAt": "",
+      "voiceSessionStartedAt": "",
       "voiceSessionEarned": 0,
-      "voiceEligibilityState": "paused",
-      "updatedAt": "2026-10-11T13:00:48.274Z"
+      "voiceEligibilityState": "idle",
+      "updatedAt": "2026-10-11T15:59:26.807Z"
     },
     "1536009463582949396:1532411704468570273": {
       "guildId": "1536009463582949396",
@@ -31,10 +31,10 @@
       "lastChatCoinAt": "",
       "lastVoiceCoinAt": "",
       "lastVoiceProgressAt": "",
-      "voiceSessionStartedAt": "2026-10-11T15:03:48.272Z",
+      "voiceSessionStartedAt": "",
       "voiceSessionEarned": 0,
       "voiceEligibilityState": "idle",
-      "updatedAt": "2026-10-11T15:03:48.272Z"
+      "updatedAt": "2026-10-11T15:58:46.188Z"
     },
     "1536009463582949396:1422347621049045063": {
       "guildId": "1536009463582949396",
@@ -67,10 +67,10 @@
       "lastChatCoinAt": "",
       "lastVoiceCoinAt": "",
       "lastVoiceProgressAt": "",
-      "voiceSessionStartedAt": "2026-10-11T15:30:36.313Z",
+      "voiceSessionStartedAt": "",
       "voiceSessionEarned": 0,
       "voiceEligibilityState": "idle",
-      "updatedAt": "2026-10-11T15:30:36.313Z"
+      "updatedAt": "2026-10-11T15:58:17.947Z"
     },
     "1536009463582949396:1517857810774233150": {
       "guildId": "1536009463582949396",
@@ -85,10 +85,10 @@
       "lastChatCoinAt": "",
       "lastVoiceCoinAt": "",
       "lastVoiceProgressAt": "",
-      "voiceSessionStartedAt": "2026-10-11T14:37:14.303Z",
+      "voiceSessionStartedAt": "",
       "voiceSessionEarned": 0,
       "voiceEligibilityState": "idle",
-      "updatedAt": "2026-10-11T14:37:14.303Z"
+      "updatedAt": "2026-10-11T15:59:14.864Z"
     }
   }
 }

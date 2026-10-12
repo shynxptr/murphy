@@ -81,7 +81,7 @@ async function loadAvatar(member) {
   const avatarUrl = member.user.displayAvatarURL({
     extension: "png",
     forceStatic: true,
-    size: 256
+    size: 512
   });
 
   const response = await fetch(avatarUrl);
@@ -143,129 +143,94 @@ function getRegularFont() {
   return semiboldFontRegistered ? "Segoe UI" : "sans-serif";
 }
 
-async function drawBackgroundImage(context, width, height) {
-  const backgroundAssetPath = getBackgroundAssetPath();
-
-  if (!backgroundAssetPath) {
-    return false;
-  }
-
-  const backgroundImage = await loadImage(backgroundAssetPath);
-  context.drawImage(backgroundImage, 0, 0, width, height);
-
-  const topOverlay = context.createLinearGradient(0, 0, 0, height);
-  topOverlay.addColorStop(0, "rgba(8, 10, 12, 0.18)");
-  topOverlay.addColorStop(0.58, "rgba(8, 10, 12, 0.12)");
-  topOverlay.addColorStop(1, "rgba(8, 10, 12, 0.58)");
-  context.fillStyle = topOverlay;
-  context.fillRect(0, 0, width, height);
-
-  const sideOverlay = context.createLinearGradient(0, 0, width, 0);
-  sideOverlay.addColorStop(0, "rgba(10, 12, 14, 0.28)");
-  sideOverlay.addColorStop(0.5, "rgba(10, 12, 14, 0.05)");
-  sideOverlay.addColorStop(1, "rgba(10, 12, 14, 0.28)");
-  context.fillStyle = sideOverlay;
-  context.fillRect(0, 0, width, height);
-
-  return true;
-}
-
-function drawBackground(context, width, height, accentColor, skipBaseFill = false) {
-  if (!skipBaseFill) {
-    const background = context.createLinearGradient(0, 0, width, height);
-    background.addColorStop(0, "#0a0d11");
-    background.addColorStop(0.45, "#141a20");
-    background.addColorStop(1, "#090b0e");
-
-    context.fillStyle = background;
-    context.fillRect(0, 0, width, height);
-  }
-
-  const frameInset = 18;
-  drawRoundedRect(context, frameInset, frameInset, width - frameInset * 2, height - frameInset * 2, 28);
-  context.lineWidth = 2;
-  context.strokeStyle = "rgba(108, 128, 152, 0.34)";
-  context.stroke();
-
-  drawRoundedRect(context, frameInset + 10, frameInset + 10, width - ((frameInset + 10) * 2), height - ((frameInset + 10) * 2), 22);
-  context.lineWidth = 1;
-  context.strokeStyle = "rgba(204, 217, 230, 0.10)";
-  context.stroke();
-}
-
-function drawAvatarFallback(context, member, accentColor) {
+function drawAvatarFallback(context, member, accentColor, holeX, holeY, holeWidth, holeHeight) {
   const fallbackColor = sanitizeHexColor(accentColor, "#111111");
 
-  const fallbackGradient = context.createLinearGradient(544, 136, 656, 248);
+  const fallbackGradient = context.createLinearGradient(holeX, holeY, holeX + holeWidth, holeY + holeHeight);
   fallbackGradient.addColorStop(0, hexToRgba(fallbackColor, 0.85));
   fallbackGradient.addColorStop(1, "rgba(255, 255, 255, 0.14)");
   context.fillStyle = fallbackGradient;
-  context.fillRect(544, 136, 112, 112);
+  context.fillRect(holeX, holeY, holeWidth, holeHeight);
 
   context.fillStyle = "#f3f3f3";
-  context.font = `bold 54px "${semiboldFontRegistered ? "Segoe UI" : "sans-serif"}"`;
+  context.font = `bold ${Math.round(holeHeight * 0.35)}px "${semiboldFontRegistered ? "Segoe UI" : "sans-serif"}"`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillText(member.displayName.charAt(0).toUpperCase(), 600, 192);
+  context.fillText(member.displayName.charAt(0).toUpperCase(), holeX + holeWidth / 2, holeY + holeHeight / 2);
   context.textAlign = "start";
   context.textBaseline = "alphabetic";
 }
 
-function clipAvatarCircle(context) {
-  context.save();
-  drawRoundedRect(context, 544, 136, 112, 112, 28);
-  context.clip();
-}
-
-function restoreAvatarCircle(context) {
-  context.restore();
-}
-
 async function createWelcomeCard(member, accentColor) {
-  const width = 1200;
-  const height = 420;
+  const backgroundAssetPath = getBackgroundAssetPath();
+  const backgroundImage = backgroundAssetPath ? await loadImage(backgroundAssetPath) : null;
+
+  // Base dimensions based on banner (native: 3168 x 1344)
+  const baseWidth = backgroundImage ? backgroundImage.width : 3168;
+  const baseHeight = backgroundImage ? backgroundImage.height : 1344;
+  const scale = 0.5;
+  const width = Math.round(baseWidth * scale);
+  const height = Math.round(baseHeight * scale);
+
   const canvas = new Canvas(width, height);
   const context = canvas.getContext("2d");
 
   // 1. Draw base dark fill
-  drawBackground(context, width, height, accentColor, false);
+  context.fillStyle = "#0a0d11";
+  context.fillRect(0, 0, width, height);
 
-  // 2. Polaroid cutout window bounds (perfectly fitted inside polaroid frame)
-  const holeX = 488;
-  const holeY = 64;
-  const holeWidth = 224;
-  const holeHeight = 248;
+  // 2. Cutout window bounds inside polaroid frame:
+  // Native coordinates: minX: 1355, minY: 405, maxX: 1816, maxY: 893
+  // With slight 10px bleed behind frame borders to avoid gaps:
+  const holeX = Math.round(1345 * scale);
+  const holeY = Math.round(395 * scale);
+  const holeWidth = Math.round(480 * scale);
+  const holeHeight = Math.round(510 * scale);
 
   // 3. Render Avatar BEHIND bannerwelcome.png to fill the cutout window
   try {
     const avatar = await loadAvatar(member);
-    context.drawImage(avatar, holeX, holeY, holeWidth, holeHeight);
+    const aspect = avatar.width / avatar.height;
+    let drawW = holeWidth;
+    let drawH = holeHeight;
+    let drawX = holeX;
+    let drawY = holeY;
+
+    if (aspect > holeWidth / holeHeight) {
+      drawW = holeHeight * aspect;
+      drawX = holeX - (drawW - holeWidth) / 2;
+    } else {
+      drawH = holeWidth / aspect;
+      drawY = holeY - (drawH - holeHeight) / 2;
+    }
+
+    context.save();
+    context.beginPath();
+    context.rect(holeX, holeY, holeWidth, holeHeight);
+    context.clip();
+    context.drawImage(avatar, drawX, drawY, drawW, drawH);
+
+    // Dark filter / moody vignette over user profile
+    const cx = holeX + holeWidth / 2;
+    const cy = holeY + holeHeight / 2;
+    const radius = Math.max(holeWidth, holeHeight) * 0.72;
+    const darkFilter = context.createRadialGradient(cx, cy, radius * 0.15, cx, cy, radius);
+    darkFilter.addColorStop(0, "rgba(8, 12, 18, 0.20)");
+    darkFilter.addColorStop(0.7, "rgba(8, 12, 18, 0.42)");
+    darkFilter.addColorStop(1, "rgba(8, 12, 18, 0.70)");
+    context.fillStyle = darkFilter;
+    context.fillRect(holeX, holeY, holeWidth, holeHeight);
+
+    context.restore();
   } catch (error) {
     console.error("Failed to render welcome avatar:", error);
-    drawAvatarFallback(context, member, accentColor);
+    drawAvatarFallback(context, member, accentColor, holeX, holeY, holeWidth, holeHeight);
   }
 
-  // 4. Subtle dark gradient overlay over top & bottom of avatar to ensure high text legibility
-  const avatarDarkOverlay = context.createLinearGradient(0, holeY, 0, holeY + holeHeight);
-  avatarDarkOverlay.addColorStop(0, "rgba(0, 0, 0, 0.55)");
-  avatarDarkOverlay.addColorStop(0.35, "rgba(0, 0, 0, 0.10)");
-  avatarDarkOverlay.addColorStop(0.65, "rgba(0, 0, 0, 0.10)");
-  avatarDarkOverlay.addColorStop(1, "rgba(0, 0, 0, 0.65)");
-  context.fillStyle = avatarDarkOverlay;
-  context.fillRect(holeX, holeY, holeWidth, holeHeight);
-
-  // 5. Draw bannerwelcome.png ON TOP of avatar
-  await drawBackgroundImage(context, width, height);
-
-  context.textAlign = "center";
-
-  // Render Display Name with Chrome Metallic gradient effect
-  drawChromeText(context, member.displayName.slice(0, 24), width / 2, 293, 44, getBodyFont(), 2.5);
-
-  // Render #Member Count with Chrome Metallic gradient effect
-  drawChromeText(context, `#Member ${member.guild.memberCount}`, width / 2, 356, 34, getBodyFont(), 2);
-
-  context.textAlign = "start";
+  // 4. Draw bannerwelcome.png ON TOP of avatar
+  if (backgroundImage) {
+    context.drawImage(backgroundImage, 0, 0, width, height);
+  }
 
   return new AttachmentBuilder(await canvas.encode("png"), {
     name: "welcome-card.png"

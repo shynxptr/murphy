@@ -156,6 +156,7 @@ function normalizeBuilderPayload(rawPayload = {}) {
 
   return {
     channelId: sanitizeString(rawPayload.channelId, 32),
+    threadName: sanitizeString(rawPayload.threadName || rawPayload.postTitle, 100),
     messageContent: sanitizeString(rawPayload.messageContent ?? rawPayload.content, 2000),
     targetMode,
     targetMessageId,
@@ -235,7 +236,10 @@ function buildEmbedFromPayload(embedPayload) {
   }
 
   if (embedPayload.timestampMode === "custom" && embedPayload.timestampValue) {
-    embed.setTimestamp(embedPayload.timestampValue);
+    const timestampDate = new Date(embedPayload.timestampValue);
+    if (!Number.isNaN(timestampDate.getTime())) {
+      embed.setTimestamp(timestampDate);
+    }
   } else if (embedPayload.timestampMode === "now") {
     embed.setTimestamp();
   }
@@ -375,18 +379,51 @@ async function listGuildTextChannels(guild) {
       && channel.permissionsFor(selfMember)?.has(["ViewChannel", "SendMessages"]))
     .sort((left, right) => left.position - right.position);
 
-  if (!textChannels.length) {
+  const forumChannels = [...channelCollection.values()]
+    .filter((channel) => channel
+      && channel.type === ChannelType.GuildForum
+      && channel.permissionsFor(selfMember)?.has(["ViewChannel", "SendMessages"]))
+    .sort((left, right) => left.position - right.position);
+
+  const activeThreadsData = await guild.channels.fetchActiveThreads().catch(() => null);
+  const activeThreads = activeThreadsData?.threads
+    ? [...activeThreadsData.threads.values()]
+        .filter((thread) => thread
+          && thread.permissionsFor(selfMember)?.has(["ViewChannel", "SendMessages"]))
+        .sort((left, right) => (right.createdTimestamp || 0) - (left.createdTimestamp || 0))
+    : [];
+
+  const combinedChannels = [
+    ...textChannels.map((channel) => ({
+      id: channel.id,
+      name: channel.name,
+      type: channel.type,
+      category: "text"
+    })),
+    ...forumChannels.map((channel) => ({
+      id: channel.id,
+      name: channel.name,
+      type: channel.type,
+      category: "forum",
+      isForum: true
+    })),
+    ...activeThreads.map((thread) => ({
+      id: thread.id,
+      name: `${thread.parent?.name ? `${thread.parent.name} › ` : ""}${thread.name}`,
+      type: thread.type,
+      category: "thread",
+      isThread: true
+    }))
+  ];
+
+  if (!combinedChannels.length) {
     return null;
   }
 
   return {
     guildId: guild.id,
     guildName: guild.name,
-    channels: textChannels.map((channel) => ({
-      id: channel.id,
-      name: channel.name,
-      type: channel.type
-    }))
+    channels: combinedChannels
   };
 }
 
@@ -453,7 +490,7 @@ async function resolveTargetChannel(client, channelId) {
   const channel = client.channels.cache.get(resolvedId)
     || await client.channels.fetch(resolvedId).catch(() => null);
 
-  if (!channel?.isTextBased?.()) {
+  if (!channel?.isTextBased?.() && channel?.type !== ChannelType.GuildForum) {
     throw new Error("Channel tujuan tidak valid atau bot tidak bisa mengaksesnya.");
   }
 
@@ -533,11 +570,15 @@ async function sendBuilderMessage(client, rawPayload) {
 
   const channel = await resolveTargetChannel(client, normalized.channelId);
 
-  if (!channel.send) {
+  if (channel.type !== ChannelType.GuildForum && !channel.send) {
     throw new Error("Channel tujuan tidak valid atau bot tidak bisa mengirim ke sana.");
   }
 
   if (normalized.targetMode === "edit") {
+    if (channel.type === ChannelType.GuildForum) {
+      throw new Error("Untuk mengedit postingan di Forum, silakan pilih postingan/thread tujuan dari daftar channel.");
+    }
+
     if (!normalized.targetMessageId) {
       throw new Error("Mode edit butuh message ID atau message link yang valid.");
     }
@@ -556,7 +597,12 @@ async function sendBuilderMessage(client, rawPayload) {
       throw new Error("Bot hanya bisa mengedit pesan yang dikirim oleh bot ini sendiri.");
     }
 
-    const editedMessage = await targetMessage.edit(discordPayload);
+    const editPayload = {
+      content: discordPayload.content ?? "",
+      embeds: discordPayload.embeds ?? [],
+      components: discordPayload.components ?? []
+    };
+    const editedMessage = await targetMessage.edit(editPayload);
 
     return {
       ok: true,
@@ -565,6 +611,31 @@ async function sendBuilderMessage(client, rawPayload) {
       channelId: channel.id,
       guildId: channel.guild?.id || "",
       jumpUrl: editedMessage.url,
+      normalized
+    };
+  }
+
+  if (channel.type === ChannelType.GuildForum) {
+    const postTitle = sanitizeString(
+      normalized.threadName
+      || normalized.embeds[0]?.title
+      || normalized.messageContent?.slice(0, 80)
+      || "Postingan Baru",
+      100
+    );
+
+    const thread = await channel.threads.create({
+      name: postTitle,
+      message: discordPayload
+    });
+
+    return {
+      ok: true,
+      action: "forum_post",
+      messageId: thread.lastMessageId || thread.id,
+      channelId: thread.id,
+      guildId: channel.guild?.id || "",
+      jumpUrl: thread.url,
       normalized
     };
   }

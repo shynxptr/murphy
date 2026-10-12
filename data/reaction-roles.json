@@ -4,7 +4,7 @@
     "1": {
       "id": "1",
       "guildId": "1536009463582949396",
-      "channelId": "1558662444946165811",
+      "channelId": "1559177058213429308",
       "mode": "multi",
       "behavior": "toggle",
       "title": "Game Self Role",
@@ -14,7 +14,7 @@
       "presetKey": "game-self-role",
       "presetTag": "game-self-role",
       "createdBy": "1543303467337130085",
-      "messageId": "1558662493767737415",
+      "messageId": "1559177163515760736",
       "options": [
         {
           "roleId": "1558554146838159381",
@@ -106,13 +106,13 @@
         }
       ],
       "createdAt": "2026-10-11T02:00:46.233Z",
-      "updatedAt": "2026-10-11T02:08:17.160Z",
+      "updatedAt": "2026-10-12T12:13:24.043Z",
       "componentType": "button"
     },
     "2": {
       "id": "2",
       "guildId": "1536009463582949396",
-      "channelId": "1558667009905000498",
+      "channelId": "1559177529930022952",
       "mode": "single",
       "behavior": "sync",
       "componentType": "select",
@@ -123,7 +123,7 @@
       "presetKey": "domisili-self-role",
       "presetTag": "domisili-self-role",
       "createdBy": "1543303467337130085",
-      "messageId": "1558667078867615790",
+      "messageId": "1559177728459145330",
       "options": [
         {
           "roleId": "1558663018739540118",
@@ -217,13 +217,13 @@
         }
       ],
       "createdAt": "2026-10-11T02:26:29.858Z",
-      "updatedAt": "2026-10-11T02:28:09.915Z",
+      "updatedAt": "2026-10-12T12:15:38.633Z",
       "hideSummary": true
     },
     "3": {
       "id": "3",
       "guildId": "1536009463582949396",
-      "channelId": "1558668817415151646",
+      "channelId": "1559178008848375919",
       "mode": "single",
       "behavior": "toggle",
       "componentType": "button",
@@ -234,7 +234,7 @@
       "presetKey": "age-self-role",
       "presetTag": "age-self-role",
       "createdBy": "1543303467337130085",
-      "messageId": "1558670378937614418",
+      "messageId": "1559178194773352541",
       "options": [
         {
           "roleId": "1558668942279708722",
@@ -256,7 +256,8 @@
         }
       ],
       "createdAt": "2026-10-11T02:39:36.657Z",
-      "updatedAt": "2026-10-11T02:39:37.093Z"
+      "updatedAt": "2026-10-12T12:17:29.830Z",
+      "hideSummary": true
     }
   }
 }

@@ -811,10 +811,192 @@ textarea {
 }
 
 .markdown .spoiler {
-  background: rgba(255, 255, 255, 0.18);
-  color: transparent;
+.toolbar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(79, 70, 229, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #c7d2fe;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.toolbar-action-chip:hover {
+  background: rgba(79, 70, 229, 0.35);
+  border-color: rgba(99, 102, 241, 0.7);
+  transform: translateY(-1px);
+}
+
+.picker-card {
+  width: min(500px, calc(100vw - 32px));
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #11141b;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.picker-header strong {
+  font-size: 18px;
+}
+
+.picker-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.picker-search {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0d1016;
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.role-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding-right: 4px;
+}
+
+.role-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+  transition: all 120ms ease;
+}
+
+.role-picker-item:hover {
+  background: rgba(79, 70, 229, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateX(3px);
+}
+
+.role-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.emoji-picker-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.emoji-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.emoji-tab-btn.active {
+  background: rgba(79, 70, 229, 0.22);
+  border-color: rgba(99, 102, 241, 0.6);
+  color: #fff;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 350px;
+  padding: 4px;
+}
+
+.emoji-grid-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 120ms ease;
+  padding: 4px;
+}
+
+.emoji-grid-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.emoji-grid-item img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.discord-mention {
+  background: rgba(88, 101, 242, 0.15);
+  color: #c9cdfb;
+  padding: 1px 5px;
   border-radius: 4px;
-  padding: 0 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.discord-mention.role-mention {
+  border: 1px solid currentColor;
+  opacity: 0.95;
+}
+
+.discord-custom-emoji {
+  width: 20px;
+  height: 20px;
+  vertical-align: -4px;
+  object-fit: contain;
+  margin: 0 1px;
 }
 
 @media (max-width: 1100px) {

@@ -283,14 +283,48 @@ async function handleLogin(request, response, serverConfig) {
   });
 }
 
+function listGuildRoles(client) {
+  if (!client?.guilds?.cache) return [];
+  const guilds = [...client.guilds.cache.values()];
+  return guilds.flatMap((guild) =>
+    [...guild.roles.cache.values()]
+      .filter((role) => role.name !== "@everyone")
+      .map((role) => ({
+        id: role.id,
+        name: role.name,
+        color: role.hexColor !== "#000000" ? role.hexColor : "#99aab5",
+        position: role.rawPosition,
+        guildName: guild.name
+      }))
+  ).sort((a, b) => b.position - a.position);
+}
+
+function listGuildEmojis(client) {
+  if (!client?.guilds?.cache) return [];
+  const guilds = [...client.guilds.cache.values()];
+  return guilds.flatMap((guild) =>
+    [...guild.emojis.cache.values()].map((emoji) => ({
+      id: emoji.id,
+      name: emoji.name,
+      animated: Boolean(emoji.animated),
+      url: `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? "gif" : "png"}?size=64`,
+      guildName: guild.name
+    }))
+  ).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 async function handleBootstrap(response, client) {
   const channels = await listAvailableTextChannels(client);
   const templates = mapTemplatesForResponse();
+  const roles = listGuildRoles(client);
+  const emojis = listGuildEmojis(client);
 
   sendJson(response, 200, {
     ok: true,
     channels,
     templates,
+    roles,
+    emojis,
     audits: listAuditEntries(12),
     limits: {
       embeds: MAX_EMBEDS,
@@ -762,6 +796,20 @@ function startEmbedBuilderServer(client) {
 
       if (request.method === "GET" && url.pathname === "/api/embed-builder/channels") {
         return handleChannels(response, client, url.searchParams.get("refresh") === "1");
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/embed-builder/roles") {
+        return sendJson(response, 200, {
+          ok: true,
+          roles: listGuildRoles(client)
+        });
+      }
+
+      if (request.method === "GET" && url.pathname === "/api/embed-builder/emojis") {
+        return sendJson(response, 200, {
+          ok: true,
+          emojis: listGuildEmojis(client)
+        });
       }
 
       if (request.method === "GET" && url.pathname === "/api/embed-builder/templates") {

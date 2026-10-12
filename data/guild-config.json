@@ -58,8 +58,8 @@
     "leaderboards": {
       "channelId": "1542546855207116963",
       "chatChannelId": "1482505425973936180",
-      "lastAutoRefreshDate": "2026-10-11",
-      "lastAutoRefreshHour": "2026-10-11-22",
+      "lastAutoRefreshDate": "2026-10-13",
+      "lastAutoRefreshHour": "2026-10-13-00",
       "temporaryResponseSeconds": 90,
       "messageIds": {
         "chat": "1558747270395068437",
@@ -75,8 +75,8 @@
       "rewardRoleId": "1483797982720561292",
       "topChannelId": "1542546855207116963",
       "topMessageId": "1558747266037326213",
-      "topLastUpdatedDate": "2026-10-11",
-      "topLastUpdatedHour": "2026-10-11-22",
+      "topLastUpdatedDate": "2026-10-13",
+      "topLastUpdatedHour": "2026-10-13-00",
       "temporaryResponseSeconds": 90,
       "timezone": "Asia/Jakarta"
     },

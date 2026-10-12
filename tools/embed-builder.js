@@ -22,7 +22,10 @@ const state = {
   previewFrame: null,
   templateFilter: "",
   previewMode: "desktop",
-  recentTargets: []
+  recentTargets: [],
+  roles: [],
+  serverEmojis: [],
+  activeEmojiTab: "server"
 };
 
 const elements = {
@@ -33,7 +36,24 @@ const elements = {
   logoutButton: document.getElementById("logoutButton"),
   sendButton: document.getElementById("sendButton"),
   channelSelect: document.getElementById("channelSelect"),
+  forumTitleRow: document.getElementById("forumTitleRow"),
+  forumTitleInput: document.getElementById("forumTitleInput"),
   refreshChannelsButton: document.getElementById("refreshChannelsButton"),
+  openRolePickerButton: document.getElementById("openRolePickerButton"),
+  openEmojiPickerButton: document.getElementById("openEmojiPickerButton"),
+  toolbarRoleBtn: document.getElementById("toolbarRoleBtn"),
+  toolbarEmojiBtn: document.getElementById("toolbarEmojiBtn"),
+  rolePickerModal: document.getElementById("rolePickerModal"),
+  closeRolePickerButton: document.getElementById("closeRolePickerButton"),
+  roleSearchInput: document.getElementById("roleSearchInput"),
+  rolePickerList: document.getElementById("rolePickerList"),
+  emojiPickerModal: document.getElementById("emojiPickerModal"),
+  closeEmojiPickerButton: document.getElementById("closeEmojiPickerButton"),
+  serverEmojiTabBtn: document.getElementById("serverEmojiTabBtn"),
+  standardEmojiTabBtn: document.getElementById("standardEmojiTabBtn"),
+  emojiSearchInput: document.getElementById("emojiSearchInput"),
+  serverEmojiGrid: document.getElementById("serverEmojiGrid"),
+  standardEmojiGrid: document.getElementById("standardEmojiGrid"),
   messageActionSelect: document.getElementById("messageActionSelect"),
   messageTargetInput: document.getElementById("messageTargetInput"),
   messageTargetHint: document.getElementById("messageTargetHint"),
@@ -270,12 +290,12 @@ function setStatus(message, tone = "muted") {
 function setFocusedElement(element) {
   state.focusedElement = element || null;
   elements.formatTargetLabel.textContent = state.focusedElement
-    ? `Fokus: ${state.focusedElement.dataset.formatTarget || "Textarea"}`
-    : "Fokus: belum ada textarea aktif";
+    ? `Fokus: ${state.focusedElement.dataset.formatTarget || "Field"}`
+    : "Fokus: belum ada field aktif";
 }
 
 function bindFocusTracking(root = document) {
-  root.querySelectorAll("textarea[data-format-target]").forEach((element) => {
+  root.querySelectorAll("textarea[data-format-target], input[data-format-target]").forEach((element) => {
     element.addEventListener("focus", () => setFocusedElement(element));
     element.addEventListener("click", () => setFocusedElement(element));
   });
@@ -439,6 +459,7 @@ function normalizeImportedPayload(rawPayload = {}) {
 
   return {
     channelId: sanitizeString(rawPayload.channelId || parsedTarget.channelId, 32),
+    threadName: sanitizeString(rawPayload.threadName || rawPayload.postTitle, 100),
     messageContent: sanitizeString(rawPayload.messageContent ?? rawPayload.content, 2000),
     targetMode: rawPayload.targetMode === "edit" || parsedTarget.messageId ? "edit" : "send",
     targetMessageId: parsedTarget.messageId,
@@ -455,6 +476,7 @@ function getCurrentPayload(options = {}) {
 
   const payload = {
     channelId: elements.channelSelect.value || "",
+    threadName: elements.forumTitleInput?.value?.trim() || "",
     messageContent: sanitizeString(elements.messageContent.value, 2000),
     embeds: state.embeds.map(normalizeEmbed),
     buttons: state.buttons
@@ -985,6 +1007,17 @@ function restoreAutosave() {
   }
 }
 
+function syncForumTitleVisibility() {
+  if (!elements.forumTitleRow) return;
+  const selectedId = elements.channelSelect.value;
+  const channel = state.channels.flatMap((entry) => entry.channels).find((c) => c.id === selectedId);
+  if (channel?.isForum) {
+    elements.forumTitleRow.classList.remove("hidden");
+  } else {
+    elements.forumTitleRow.classList.add("hidden");
+  }
+}
+
 function renderChannelOptions() {
   const currentValue = elements.channelSelect.value;
   elements.channelSelect.innerHTML = "";
@@ -994,27 +1027,47 @@ function renderChannelOptions() {
     option.value = "";
     option.textContent = "Tidak ada channel tersedia";
     elements.channelSelect.appendChild(option);
+    syncForumTitleVisibility();
     return;
   }
 
   state.channels.forEach((guildEntry) => {
-    const group = document.createElement("optgroup");
-    group.label = guildEntry.guildName;
+    const textGroup = document.createElement("optgroup");
+    textGroup.label = `${guildEntry.guildName} — Text Channels`;
+
+    const forumGroup = document.createElement("optgroup");
+    forumGroup.label = `${guildEntry.guildName} — Forum Channels`;
+
+    const threadGroup = document.createElement("optgroup");
+    threadGroup.label = `${guildEntry.guildName} — Forum Posts & Threads`;
 
     guildEntry.channels.forEach((channel) => {
       const option = document.createElement("option");
       option.value = channel.id;
-      option.textContent = `#${channel.name}`;
-      group.appendChild(option);
+
+      if (channel.isForum) {
+        option.textContent = `📂 ${channel.name}`;
+        forumGroup.appendChild(option);
+      } else if (channel.isThread) {
+        option.textContent = `🧵 ${channel.name}`;
+        threadGroup.appendChild(option);
+      } else {
+        option.textContent = `# ${channel.name}`;
+        textGroup.appendChild(option);
+      }
     });
 
-    elements.channelSelect.appendChild(group);
+    if (textGroup.children.length) elements.channelSelect.appendChild(textGroup);
+    if (forumGroup.children.length) elements.channelSelect.appendChild(forumGroup);
+    if (threadGroup.children.length) elements.channelSelect.appendChild(threadGroup);
   });
 
   const flattened = state.channels.flatMap((entry) => entry.channels);
   elements.channelSelect.value = flattened.some((channel) => channel.id === currentValue)
     ? currentValue
     : flattened[0]?.id || "";
+
+  syncForumTitleVisibility();
 }
 
 function renderTemplateOptions() {
@@ -1197,6 +1250,7 @@ function renderFields() {
     nameInput.type = "text";
     nameInput.maxLength = 256;
     nameInput.value = field.name || "";
+    nameInput.dataset.formatTarget = `Field ${index + 1} Name`;
     nameInput.addEventListener("input", () => {
       field.name = nameInput.value;
       renderEmbedTabs();
@@ -1449,6 +1503,8 @@ function applyPayloadToEditor(payload = {}, activeIndex = 0) {
   const normalized = normalizeImportedPayload(payload);
 
   elements.channelSelect.value = normalized.channelId || elements.channelSelect.value;
+  if (elements.forumTitleInput) elements.forumTitleInput.value = normalized.threadName || "";
+  syncForumTitleVisibility();
   elements.messageActionSelect.value = normalized.targetMode;
   elements.messageTargetInput.value = normalized.targetMessageId || "";
   elements.templateTagsInput.value = formatTemplateTags(normalized.tags);
@@ -1502,7 +1558,7 @@ function applyToolbarAction(action) {
   const element = state.focusedElement;
 
   if (!element) {
-    setStatus("Pilih textarea dulu sebelum pakai formatting toolbar.", "error");
+    setStatus("Pilih field/textarea dulu sebelum pakai formatting toolbar.", "error");
     return;
   }
 
@@ -1589,6 +1645,136 @@ function applyToolbarAction(action) {
   }
 }
 
+const STANDARD_EMOJIS = [
+  "🔥", "✨", "⭐", "🌟", "👑", "💎", "🎉", "🚀", "⚡", "💥",
+  "📢", "📌", "🔔", "⚠️", "❌", "✅", "❗", "❓", "🛡️", "⚔️",
+  "💬", "📨", "📝", "📜", "📖", "💡", "🎯", "🏆", "🥇", "🥈",
+  "✦", "▸", "•", "—", "»", "★", "◈", "◇", "◆", "➔",
+  "❤️", "💙", "💜", "🖤", "🤍", "🌸", "☕", "🎮", "🎵", "🎧",
+  "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"
+];
+
+function insertTextAtCursor(text) {
+  const element = state.focusedElement || elements.embedDescription || elements.messageContent;
+  if (!element) return;
+  const start = element.selectionStart ?? element.value.length;
+  const end = element.selectionEnd ?? element.value.length;
+  element.value = `${element.value.slice(0, start)}${text}${element.value.slice(end)}`;
+  element.focus();
+  element.selectionStart = start + text.length;
+  element.selectionEnd = start + text.length;
+  element.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function openRolePicker() {
+  renderRolePickerList();
+  elements.roleSearchInput.value = "";
+  elements.rolePickerModal.classList.remove("hidden");
+  elements.roleSearchInput.focus();
+}
+
+function closeRolePicker() {
+  elements.rolePickerModal.classList.add("hidden");
+  if (state.focusedElement) {
+    state.focusedElement.focus();
+  }
+}
+
+function renderRolePickerList() {
+  const query = elements.roleSearchInput.value.toLowerCase().trim();
+  const filtered = state.roles.filter((r) => r.name.toLowerCase().includes(query));
+  elements.rolePickerList.innerHTML = "";
+
+  if (!filtered.length) {
+    elements.rolePickerList.innerHTML = '<p class="muted" style="padding:12px 0;">Tidak ada role yang cocok.</p>';
+    return;
+  }
+
+  filtered.forEach((role) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "role-picker-item";
+    item.innerHTML = `
+      <span class="role-color-dot" style="background-color: ${escapeHtml(role.color)}"></span>
+      <span style="font-weight:600;">@${escapeHtml(role.name)}</span>
+    `;
+    item.addEventListener("click", () => {
+      insertTextAtCursor(`<@&${role.id}>`);
+      closeRolePicker();
+      setStatus(`Role @${role.name} berhasil disisipkan.`, "success");
+    });
+    elements.rolePickerList.appendChild(item);
+  });
+}
+
+function openEmojiPicker() {
+  renderServerEmojiGrid();
+  renderStandardEmojiGrid();
+  elements.emojiSearchInput.value = "";
+  elements.emojiPickerModal.classList.remove("hidden");
+  elements.emojiSearchInput.focus();
+}
+
+function closeEmojiPicker() {
+  elements.emojiPickerModal.classList.add("hidden");
+  if (state.focusedElement) {
+    state.focusedElement.focus();
+  }
+}
+
+function renderServerEmojiGrid() {
+  const query = elements.emojiSearchInput.value.toLowerCase().trim();
+  const filtered = state.serverEmojis.filter((e) => e.name.toLowerCase().includes(query));
+  elements.serverEmojiGrid.innerHTML = "";
+
+  if (!filtered.length) {
+    elements.serverEmojiGrid.innerHTML = '<p class="muted" style="padding:12px; grid-column: 1 / -1;">Tidak ada emoji server yang cocok.</p>';
+    return;
+  }
+
+  filtered.forEach((emoji) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "emoji-grid-item";
+    item.title = `:${emoji.name}:`;
+    item.innerHTML = `<img src="${escapeHtml(emoji.url)}" alt=":${escapeHtml(emoji.name)}:">`;
+    item.addEventListener("click", () => {
+      const tag = emoji.animated ? `<a:${emoji.name}:${emoji.id}>` : `<:${emoji.name}:${emoji.id}>`;
+      insertTextAtCursor(tag);
+      closeEmojiPicker();
+      setStatus(`Emoji :${emoji.name}: berhasil disisipkan.`, "success");
+    });
+    elements.serverEmojiGrid.appendChild(item);
+  });
+}
+
+function renderStandardEmojiGrid() {
+  const query = elements.emojiSearchInput.value.toLowerCase().trim();
+  elements.standardEmojiGrid.innerHTML = "";
+
+  const filtered = query
+    ? STANDARD_EMOJIS.filter((char) => char.includes(query))
+    : STANDARD_EMOJIS;
+
+  if (!filtered.length) {
+    elements.standardEmojiGrid.innerHTML = '<p class="muted" style="padding:12px; grid-column: 1 / -1;">Tidak ada simbol yang cocok.</p>';
+    return;
+  }
+
+  filtered.forEach((char) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "emoji-grid-item";
+    item.textContent = char;
+    item.addEventListener("click", () => {
+      insertTextAtCursor(char);
+      closeEmojiPicker();
+      setStatus(`Emoji ${char} berhasil disisipkan.`, "success");
+    });
+    elements.standardEmojiGrid.appendChild(item);
+  });
+}
+
 function renderInlineMarkdown(text) {
   let html = escapeHtml(text);
   const maskedLinks = [];
@@ -1606,6 +1792,24 @@ function renderInlineMarkdown(text) {
   html = html.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
   html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
   html = html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noreferrer">$1</a>');
+
+  html = html.replace(/&lt;(a)?:([a-zA-Z0-9_]+):(\d+)&gt;/g, (_, anim, name, id) => {
+    const ext = anim ? "gif" : "png";
+    return `<img class="discord-custom-emoji" src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=48" alt=":${name}:" title=":${name}:" />`;
+  });
+
+  html = html.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
+    const role = state.roles.find((r) => r.id === id);
+    const name = role ? role.name : id;
+    const color = role && role.color && role.color !== "#99aab5" ? role.color : "#c9cdfb";
+    return `<span class="discord-mention role-mention" style="color:${escapeHtml(color)};"><span class="mention-at">@</span>${escapeHtml(name)}</span>`;
+  });
+
+  html = html.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
+    const ch = state.channels.flatMap((g) => g.channels).find((c) => c.id === id);
+    return `<span class="discord-mention">#${escapeHtml(ch ? ch.name : id)}</span>`;
+  });
+
   maskedLinks.forEach((link, index) => {
     html = html.replace(`@@MASKED_LINK_${index}@@`, link);
   });
@@ -1950,6 +2154,8 @@ function resetDraft() {
   state.embeds = [createEmptyEmbed()];
   state.activeEmbedIndex = 0;
   elements.messageContent.value = "";
+  if (elements.forumTitleInput) elements.forumTitleInput.value = "";
+  syncForumTitleVisibility();
   elements.jsonPayload.value = "";
   syncActiveEmbedToForm();
   renderEmbedTabs();
@@ -1987,6 +2193,8 @@ async function bootstrap() {
 
   state.channels = data.channels || [];
   state.templates = data.templates || [];
+  state.roles = data.roles || [];
+  state.serverEmojis = data.emojis || [];
   setAudits(data.audits || []);
   state.limits = {
     ...state.limits,
@@ -2012,6 +2220,7 @@ function bindCommonInput(element, callback) {
 
 async function initialize() {
   elements.channelSelect.addEventListener("change", () => {
+    syncForumTitleVisibility();
     schedulePreviewRender();
     scheduleAutosave();
   });
@@ -2346,6 +2555,48 @@ async function initialize() {
         setStatus(`${actionLabel}. Message ID: ${data.result.messageId}`, "success");
       } catch (error) {
         setStatus(error.message, "error");
+      }
+    });
+  });
+
+  if (elements.openRolePickerButton) elements.openRolePickerButton.addEventListener("click", openRolePicker);
+  if (elements.toolbarRoleBtn) elements.toolbarRoleBtn.addEventListener("click", openRolePicker);
+  if (elements.closeRolePickerButton) elements.closeRolePickerButton.addEventListener("click", closeRolePicker);
+  if (elements.roleSearchInput) elements.roleSearchInput.addEventListener("input", renderRolePickerList);
+
+  if (elements.openEmojiPickerButton) elements.openEmojiPickerButton.addEventListener("click", openEmojiPicker);
+  if (elements.toolbarEmojiBtn) elements.toolbarEmojiBtn.addEventListener("click", openEmojiPicker);
+  if (elements.closeEmojiPickerButton) elements.closeEmojiPickerButton.addEventListener("click", closeEmojiPicker);
+  if (elements.emojiSearchInput) {
+    elements.emojiSearchInput.addEventListener("input", () => {
+      renderServerEmojiGrid();
+      renderStandardEmojiGrid();
+    });
+  }
+
+  if (elements.serverEmojiTabBtn) {
+    elements.serverEmojiTabBtn.addEventListener("click", () => {
+      elements.serverEmojiTabBtn.classList.add("active");
+      elements.standardEmojiTabBtn.classList.remove("active");
+      elements.serverEmojiGrid.classList.remove("hidden");
+      elements.standardEmojiGrid.classList.add("hidden");
+    });
+  }
+
+  if (elements.standardEmojiTabBtn) {
+    elements.standardEmojiTabBtn.addEventListener("click", () => {
+      elements.standardEmojiTabBtn.classList.add("active");
+      elements.serverEmojiTabBtn.classList.remove("active");
+      elements.standardEmojiGrid.classList.remove("hidden");
+      elements.serverEmojiGrid.classList.add("hidden");
+    });
+  }
+
+  [elements.rolePickerModal, elements.emojiPickerModal].forEach((modal) => {
+    if (!modal) return;
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.add("hidden");
       }
     });
   });
