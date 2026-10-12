@@ -15,44 +15,44 @@ function buildPublicWelcomeText(member, client) {
 
   const variants = [
     [
-      `Halo ${member}! Selamat datang di **Murphy**! <:yay:1559351693869580288>`,
+      `Halo ${member}! Selamat datang di **Murphy**! <a:yay:1559351693869580288>`,
       "Senang banget kamu bisa bergabung di sini. Biar makin seru, yuk langsung cek channel ini:",
-      `<:panah:1559348502906150962> Jangan lupa baca rules di ${rulesChannel} ya!`,
-      `<:panah:1559348502906150962> Terus ambil role kamu di ${rolesChannel}!`,
+      `<a:panah:1559348502906150962> Jangan lupa baca rules di ${rulesChannel} ya!`,
+      `<a:panah:1559348502906150962> Terus ambil role kamu di ${rolesChannel}!`,
       "",
-      "**Semoga betah & happy chatting di sini ya! <:mythic:1559246070511571108>**"
+      "**Semoga betah & happy chatting di sini ya! <a:mythic:1559246070511571108>**"
     ].join("\n"),
     [
       `Welcome to **Murphy**, ${member}! 👋`,
       "Halo! Selamat bergabung di komunitas kita. Biar makin akrab, yuk cek poin penting ini:",
-      `<:panah:1559348502906150962> Baca rules dulu di ${rulesChannel} ya!`,
-      `<:panah:1559348502906150962> Abis itu ambil role kamu di ${rolesChannel}!`,
+      `<a:panah:1559348502906150962> Baca rules dulu di ${rulesChannel} ya!`,
+      `<a:panah:1559348502906150962> Abis itu ambil role kamu di ${rolesChannel}!`,
       "",
-      "**Feel free to chat and make yourself at home! <:cheart:1559350537273483274>**"
+      "**Feel free to chat and make yourself at home! <a:cheart:1559350537273483274>**"
     ].join("\n"),
     [
-      `Yoo ${member}! Selamat datang di **Murphy**! <:rocket_1f680:1559349587368476682>`,
+      `Yoo ${member}! Selamat datang di **Murphy**! <a:rocket_1f680:1559349587368476682>`,
       "Senang banget ada member baru yang join! Biar gak bingung, ini beberapa channel utama kita:",
-      `<:panah:1559348502906150962> Cek rules di ${rulesChannel} ya!`,
-      `<:panah:1559348502906150962> Dan ambil role kamu di ${rolesChannel}!`,
+      `<a:panah:1559348502906150962> Cek rules di ${rulesChannel} ya!`,
+      `<a:panah:1559348502906150962> Dan ambil role kamu di ${rolesChannel}!`,
       "",
-      "**Enjoy your stay and have fun! <:mythic:1559246070511571108>**"
+      "**Enjoy your stay and have fun! <a:mythic:1559246070511571108>**"
     ].join("\n"),
     [
-      `Yay, ada teman baru! Selamat datang di **Murphy**, ${member}! <:wheart:1559350367748227162>`,
+      `Yay, ada teman baru! Selamat datang di **Murphy**, ${member}! <a:wheart:1559350367748227162>`,
       "Yuk langsung seru-seruan bareng kita! Jangan lupa mampir ke channel ini ya:",
-      `<:panah:1559348502906150962> Baca rules di ${rulesChannel} dulu ya!`,
-      `<:panah:1559348502906150962> Terus ambil role di ${rolesChannel}!`,
+      `<a:panah:1559348502906150962> Baca rules di ${rulesChannel} dulu ya!`,
+      `<a:panah:1559348502906150962> Terus ambil role di ${rolesChannel}!`,
       "",
-      "**Semoga nyaman dan betah di Murphy! <:yay:1559351693869580288>**"
+      "**Semoga nyaman dan betah di Murphy! <a:yay:1559351693869580288>**"
     ].join("\n"),
     [
-      `Halo ${member}! Welcome to the **Murphy** family! <:bheart:1559350537273483274>`,
+      `Halo ${member}! Welcome to the **Murphy** family! <a:bheart:1559350537273483274>`,
       "Terima kasih sudah bergabung bersama kami. Yuk mulai perjalananmu dari sini:",
-      `<:panah:1559348502906150962> Jangan lupa baca rules di ${rulesChannel}!`,
-      `<:panah:1559348502906150962> Dan ambil role kamu di ${rolesChannel} ya!`,
+      `<a:panah:1559348502906150962> Jangan lupa baca rules di ${rulesChannel}!`,
+      `<a:panah:1559348502906150962> Dan ambil role kamu di ${rolesChannel} ya!`,
       "",
-      "**Make yourself comfortable and enjoy the vibe! <:wheart:1559350367748227162>**"
+      "**Make yourself comfortable and enjoy the vibe! <a:wheart:1559350367748227162>**"
     ].join("\n")
   ];
 
