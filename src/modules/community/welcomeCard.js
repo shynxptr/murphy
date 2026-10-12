@@ -6,8 +6,15 @@ const path = require("node:path");
 const headingFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font-01.otf"), "Murphy Welcome");
 const gothicFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "font.otf"), "Murphy Gothic");
 const brandFontRegistered = GlobalFonts.registerFromPath(path.join(__dirname, "..", "..", "..", "assets", "Gothicha.ttf"), "Murphy Brand");
-const semiboldFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeuib.ttf", "Segoe UI");
-const regularFontRegistered = GlobalFonts.registerFromPath("C:\\Windows\\Fonts\\segoeui.ttf", "Segoe UI Regular");
+// Font Segoe UI hanya ada di Windows — di Linux VPS akan gracefully skip
+const SEGOE_SEMIBOLD_PATH = "C:\\Windows\\Fonts\\segoeuib.ttf";
+const SEGOE_REGULAR_PATH = "C:\\Windows\\Fonts\\segoeui.ttf";
+const semiboldFontRegistered = fs.existsSync(SEGOE_SEMIBOLD_PATH)
+  ? GlobalFonts.registerFromPath(SEGOE_SEMIBOLD_PATH, "Segoe UI")
+  : false;
+const regularFontRegistered = fs.existsSync(SEGOE_REGULAR_PATH)
+  ? GlobalFonts.registerFromPath(SEGOE_REGULAR_PATH, "Segoe UI Regular")
+  : false;
 const assetsDirectory = path.join(__dirname, "..", "..", "..", "assets");
 const preferredBackgroundCandidates = [
   path.join(assetsDirectory, "bannerwelcome.png"),
@@ -84,7 +91,16 @@ async function loadAvatar(member) {
     size: 512
   });
 
-  const response = await fetch(avatarUrl);
+  // Timeout 10 detik — mencegah hang di VPS jika CDN Discord lambat
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+  let response;
+  try {
+    response = await fetch(avatarUrl, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch avatar: ${response.status}`);
