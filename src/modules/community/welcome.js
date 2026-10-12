@@ -31,7 +31,7 @@ function buildPublicWelcomeText(member, client) {
       "**Feel free to chat and make yourself at home! 💖**"
     ].join("\n"),
     [
-      `Yoo ${member}! Selamat datang di **Murphy**! 🚀`,
+      `Yoo ${member}! Selamat datang di **Murphy**! <:rocket_1f680:1559349587368476682>`,
       "Senang banget ada member baru yang join! Biar gak bingung, ini beberapa channel utama kita:",
       `<:panah:1559348502906150962> Cek rules di ${rulesChannel} ya!`,
       `<:panah:1559348502906150962> Dan ambil role kamu di ${rolesChannel}!`,
