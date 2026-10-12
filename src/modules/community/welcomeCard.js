@@ -24,6 +24,10 @@ const preferredBackgroundCandidates = [
   path.join(assetsDirectory, "welcome-bg.webp")
 ];
 
+// Cache background image — hanya di-load dari disk sekali saat pertama kali diperlukan
+let _cachedBackground = null;
+let _cacheAttempted = false;
+
 function sanitizeHexColor(input, fallback = "#111111") {
   if (typeof input !== "string") {
     return fallback;
@@ -88,7 +92,7 @@ async function loadAvatar(member) {
   const avatarUrl = member.user.displayAvatarURL({
     extension: "png",
     forceStatic: true,
-    size: 512
+    size: 256  // 256px cukup untuk canvas, download ~4x lebih cepat dari 512px
   });
 
   // Timeout 10 detik — mencegah hang di VPS jika CDN Discord lambat
@@ -177,14 +181,31 @@ function drawAvatarFallback(context, member, accentColor, holeX, holeY, holeWidt
   context.textBaseline = "alphabetic";
 }
 
-async function createWelcomeCard(member, accentColor) {
+async function getBackground() {
+  if (_cacheAttempted) return _cachedBackground;
+
+  _cacheAttempted = true;
   const backgroundAssetPath = getBackgroundAssetPath();
-  const backgroundImage = backgroundAssetPath ? await loadImage(backgroundAssetPath) : null;
+
+  if (backgroundAssetPath) {
+    try {
+      _cachedBackground = await loadImage(backgroundAssetPath);
+      console.log(`[WelcomeCard] Background cached from: ${backgroundAssetPath}`);
+    } catch (err) {
+      console.error("[WelcomeCard] Failed to load background, will render without it:", err);
+    }
+  }
+
+  return _cachedBackground;
+}
+
+async function createWelcomeCard(member, accentColor) {
+  const backgroundImage = await getBackground();
 
   // Base dimensions based on banner (native: 3168 x 1344)
   const baseWidth = backgroundImage ? backgroundImage.width : 3168;
   const baseHeight = backgroundImage ? backgroundImage.height : 1344;
-  const scale = 0.5;
+  const scale = 0.4;  // Dikurangi dari 0.5 → 36% lebih sedikit pixel, render & encode lebih cepat
   const width = Math.round(baseWidth * scale);
   const height = Math.round(baseHeight * scale);
 
