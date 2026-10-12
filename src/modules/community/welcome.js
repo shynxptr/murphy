@@ -17,40 +17,40 @@ function buildPublicWelcomeText(member, client) {
     [
       `Halo ${member}! Selamat datang di **Murphy**! 🎉`,
       "Senang banget kamu bisa bergabung di sini. Biar makin seru, yuk langsung cek channel ini:",
-      `✨ **Roles:** ${rolesChannel}`,
-      `📜 **Rules:** ${rulesChannel}`,
+      `📜 Jangan lupa baca rules dulu di ${rulesChannel} ya!`,
+      `🎭 Terus ambil roles kamu di ${rolesChannel} sesuai minat!`,
       "",
       "**Semoga betah & happy chatting di sini ya! ✨**"
     ].join("\n"),
     [
       `Welcome to **Murphy**, ${member}! 👋`,
       "Halo! Selamat bergabung di komunitas kita. Biar makin akrab, yuk cek poin penting ini:",
-      `🎭 **Pick Roles:** ${rolesChannel}`,
-      `📋 **Baca Rules:** ${rulesChannel}`,
+      `📋 Wajib mampir ke ${rulesChannel} dulu buat baca rules!`,
+      `🎭 Habis itu langsung ambil roles di ${rolesChannel}!`,
       "",
       "**Feel free to chat and make yourself at home! 💖**"
     ].join("\n"),
     [
       `Yoo ${member}! Selamat datang di **Murphy**! 🚀`,
       "Senang banget ada member baru yang join! Biar gak bingung, ini beberapa channel utama kita:",
-      `📌 **Rules:** ${rulesChannel}`,
-      `🎭 **Self Roles:** ${rolesChannel}`,
+      `📌 Cek rules dulu di ${rulesChannel} sebelum mulai chat!`,
+      `✨ Jangan lupa ambil roles di ${rolesChannel} juga ya!`,
       "",
       "**Enjoy your stay and have fun! 🌟**"
     ].join("\n"),
     [
       `Yay, ada teman baru! Selamat datang di **Murphy**, ${member}! ✨`,
       "Yuk langsung seru-seruan bareng kita! Jangan lupa mampir ke channel ini ya:",
-      `✨ **Roles:** ${rolesChannel}`,
-      `📜 **Rules:** ${rulesChannel}`,
+      `📜 Luangin waktu baca rules di ${rulesChannel} ya!`,
+      `🎭 Terus pilih roles favoritmu di ${rolesChannel}!`,
       "",
       "**Semoga nyaman dan betah di Murphy! 🎉**"
     ].join("\n"),
     [
       `Halo ${member}! Welcome to the **Murphy** family! ❤️`,
       "Terima kasih sudah bergabung bersama kami. Yuk mulai perjalananmu dari sini:",
-      `🎭 **Roles:** ${rolesChannel}`,
-      `📋 **Rules:** ${rulesChannel}`,
+      `📋 Yuk baca rules di ${rulesChannel} biar makin paham!`,
+      `🎭 Dan pilih roles kamu di ${rolesChannel} sesuai vibe!`,
       "",
       "**Make yourself comfortable and enjoy the vibe! ✨**"
     ].join("\n")
