@@ -1,5 +1,6 @@
 const { reconcileCustomRoleMember } = require("../modules/custom-roles/customRoleSystem");
 const { syncLevelRoleForMember } = require("../modules/levels/levelSystem");
+const { sendBoosterAnnounce } = require("../modules/community/boosterAnnounce");
 
 module.exports = {
   name: "guildMemberUpdate",
@@ -8,6 +9,14 @@ module.exports = {
 
     if (!member || member.user?.bot) {
       return;
+    }
+
+    // Detect new boost: sebelumnya tidak boost, sekarang boost
+    const justBoosted = !oldMember.premiumSince && newMember.premiumSince;
+    if (justBoosted) {
+      sendBoosterAnnounce(newMember, client).catch((error) => {
+        console.error(`[BoosterAnnounce] Failed to send boost announce for ${newMember.id}:`, error);
+      });
     }
 
     await reconcileCustomRoleMember(member, client).catch((error) => {

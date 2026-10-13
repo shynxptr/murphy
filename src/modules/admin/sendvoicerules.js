@@ -44,7 +44,7 @@ function buildVoiceRulesPayload(guild) {
       name: "Murphy • Voice Rules",
       iconURL: guild.iconURL({ extension: "png" }) || undefined
     })
-    .setTitle("🎙️ VOICE RULES")
+    .setTitle("<a:music:1559450513479831572> VOICE RULES")
     .setDescription(
       [
         "*saat kamu terhubung ke ruang suara, kita berbagi ruang dan waktu yang sama. mari jaga kenyamanan obrolan dengan memperhatikan hal-hal berikut:*",
@@ -86,14 +86,14 @@ function buildVoiceRulesPayload(guild) {
         "",
         "**Bot Command :**",
         "",
-        "🎵 **Jockie Music**",
+        "<a:spotify:1559450125632274532> **Jockie Music**",
         "• `m!play (judul lagu / link)` → Memutar lagu",
         "• `m!pause` → Menjeda lagu",
         "• `m!resume` → Melanjutkan lagu",
         "• `m!skip` → Melewati lagu",
         "• `m!stop` → Menghentikan musik",
         "",
-        "🤖 **Bot Music Lain**",
+        "<:bot:1559451641730834512> **Bot Music Lain**",
         "• `/play (judul lagu / link)` → Memutar lagu",
         "• `/pause` → Menjeda lagu",
         "• `/resume` → Melanjutkan lagu",
@@ -101,7 +101,7 @@ function buildVoiceRulesPayload(guild) {
         "• `/stop` → Menghentikan musik",
         "",
         "━━━━━━━━━━━━━━━━━━━━━━━━━━",
-        "> ⚠️ **Catatan:**",
+        "> <a:emoji_31:1559106957619757056> **Catatan:**",
         `> *Jika bot tidak merespon, coba gunakan perintah kembali. Jika masih error, silakan buat ticket help di <#${TICKET_CHANNEL_ID}> atau hubungi admin.*`
       ].join("\n")
     );
@@ -129,7 +129,7 @@ function buildVoiceRulesPayload(guild) {
     new ButtonBuilder()
       .setCustomId(VOICE_PING_BUTTON_ID)
       .setLabel("Voice Ping")
-      .setEmoji("🔔")
+      .setEmoji({ name: "emoji_136", id: "1559450353005502494", animated: true })
       .setStyle(ButtonStyle.Secondary)
   );
 

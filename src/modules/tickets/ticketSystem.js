@@ -21,11 +21,11 @@ const VERIF_CLAIM_BUTTON_ID = "ticket:verif:claim";
 const VERIF_APPROVE_BUTTON_ID = "ticket:verif:approve";
 
 const TICKET_TYPES = [
-  { key: "verifikasi-girl", label: "Verifikasi Girl", emoji: "\uD83D\uDC97", style: ButtonStyle.Secondary, panel: "main" },
-  { key: "minta-role", label: "Minta Role", emoji: "\uD83C\uDFAD", style: ButtonStyle.Secondary, panel: "main" },
-  { key: "hapus-role", label: "Hapus Role", emoji: "\uD83E\uDDF9", style: ButtonStyle.Secondary, panel: "main" },
-  { key: "laporan", label: "Laporan", emoji: "\uD83D\uDEA8", style: ButtonStyle.Secondary, panel: "main" },
-  { key: "pasang-iklan", label: "Pasang Iklan", emoji: "\uD83D\uDCE2", style: ButtonStyle.Secondary, panel: "main" },
+  { key: "verifikasi-girl", label: "Verifikasi Girl", emoji: { name: "205160pinkbow", id: "1559452035093504030", animated: true }, style: ButtonStyle.Secondary, panel: "main" },
+  { key: "minta-role", label: "Minta Role", emoji: { name: "Roles", id: "1559453664622415892", animated: true }, style: ButtonStyle.Secondary, panel: "main" },
+  { key: "hapus-role", label: "Hapus Role", emoji: { name: "nooo", id: "1559450091310293002", animated: true }, style: ButtonStyle.Secondary, panel: "main" },
+  { key: "laporan", label: "Laporan", emoji: { name: "8_telephone", id: "1559453575388725288", animated: true }, style: ButtonStyle.Secondary, panel: "main" },
+  { key: "pasang-iklan", label: "Pasang Iklan", emoji: { name: "mega_announce_yellow", id: "1559107399430963210", animated: true }, style: ButtonStyle.Secondary, panel: "main" },
   { key: "media-partner", label: "Media Partner", emoji: "\uD83D\uDCE1", style: ButtonStyle.Secondary, panel: "main" },
   { key: "custom-role", label: "Custom Role", emoji: "\u2728", style: ButtonStyle.Secondary, panel: "custom-role" },
   { key: "partnership", label: "Partnership", emoji: "\uD83E\uDD1D", style: ButtonStyle.Secondary, panel: "partnership" }
@@ -53,11 +53,11 @@ function buildTicketPanel(client, guildId) {
     "Gunakan loket ini kalau kamu butuh bantuan dari tim Murphy.",
     "",
     "**Loket tersedia untuk:**",
-    "- 💖 Verifikasi Girl",
-    "- 🎭 Minta Role",
-    "- 🧹 Hapus Role",
-    "- 🚨 Laporan",
-    "- 📢 Pasang Iklan",
+    "- <a:205160pinkbow:1559452035093504030> Verifikasi Girl",
+    "- <a:Roles:1559453664622415892> Minta Role",
+    "- <a:nooo:1559450091310293002> Hapus Role",
+    "- <a:8_telephone:1559453575388725288> Laporan",
+    "- <a:mega_announce_yellow:1559107399430963210> Pasang Iklan",
     "- 📡 Media Partner",
     "",
     "**SOP Pengambilan Tiket:**",

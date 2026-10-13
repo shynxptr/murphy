@@ -89,6 +89,7 @@ const {
   getInviterMetrics
 } = require("../modules/invites/inviteTracker");
 const { handleVoicePingButton } = require("../modules/admin/sendvoicerules");
+const { handleBoosterClaimButton } = require("../modules/community/boosterAnnounce");
 
 module.exports = {
   name: "interactionCreate",
@@ -315,6 +316,10 @@ module.exports = {
       }
 
       if (await handleVoicePingButton(interaction)) {
+        return;
+      }
+
+      if (await handleBoosterClaimButton(interaction, client)) {
         return;
       }
 
