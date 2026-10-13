@@ -178,11 +178,13 @@ module.exports = {
 
     if (action === "listbadwords") {
       const statusEmbed = buildAutomodStatusEmbed(message.guild);
-      const field = statusEmbed.data.fields?.find((entry) => entry.name === "Bad Word List");
+      const fields = statusEmbed.data.fields?.filter((entry) => entry.name.startsWith("Bad Word List")) || [];
+      const combined = fields.map((entry) => entry.value).join(", ");
 
-      await message.reply(field ? field.value : "`none`");
+      await message.reply(combined || "`none`");
       return;
     }
+
 
     if (action === "whitelistchannel") {
       const mode = args[1]?.toLowerCase();

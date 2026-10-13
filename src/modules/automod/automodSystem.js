@@ -438,11 +438,51 @@ function buildAutomodStatusEmbed(guild) {
   const whitelistRoles = settings.whitelistRoleIds.length
     ? settings.whitelistRoleIds.map((roleId) => `<@&${roleId}>`).join(", ")
     : "`none`";
-  const badWords = settings.badWords.words.length
-    ? settings.badWords.words.map((word) => `\`${word}\``).join(", ")
-    : "`none`";
 
-  return new EmbedBuilder()
+  const FIELD_LIMIT = 1024;
+
+  function buildBadWordFields(words) {
+    if (!words.length) {
+      return [{ name: "Bad Word List", value: "`none`", inline: false }];
+    }
+
+    const fields = [];
+    let current = "";
+    let fieldIndex = 0;
+
+    for (const word of words) {
+      const formatted = `\`${word}\``;
+      const separator = current ? ", " : "";
+      const next = current + separator + formatted;
+
+      if (next.length > FIELD_LIMIT) {
+        if (current) {
+          fields.push({
+            name: fieldIndex === 0 ? `Bad Word List (${words.length})` : "Bad Word List (cont.)",
+            value: current,
+            inline: false
+          });
+          fieldIndex++;
+        }
+
+        current = formatted;
+      } else {
+        current = next;
+      }
+    }
+
+    if (current) {
+      fields.push({
+        name: fieldIndex === 0 ? `Bad Word List (${words.length})` : "Bad Word List (cont.)",
+        value: current,
+        inline: false
+      });
+    }
+
+    return fields;
+  }
+
+  const embed = new EmbedBuilder()
     .setColor("#111827")
     .setTitle("Automod Lite Status")
     .setDescription("Semua rule disiapkan dulu dalam keadaan off, lalu bisa dinyalakan kapan saja.")
@@ -466,17 +506,16 @@ function buildAutomodStatusEmbed(guild) {
         ].join("\n"),
         inline: true
       },
-      {
-        name: "Bad Word List",
-        value: badWords,
-        inline: false
-      }
+      ...buildBadWordFields(settings.badWords.words)
     )
     .setFooter({
       text: `${guild.name} automod configuration`
     })
     .setTimestamp();
+
+  return embed;
 }
+
 
 module.exports = {
   addBadWord,
