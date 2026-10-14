@@ -3,7 +3,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  MessageFlags
+  MessageFlags,
+  PermissionFlagsBits
 } = require("discord.js");
 const { createWelcomeCard } = require("./welcomeCard");
 const { createTicketChannel, TICKET_TYPE_PREFIX } = require("../tickets/ticketSystem");
@@ -117,10 +118,13 @@ async function handleBoosterClaimButton(interaction, client) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
 
   // Cek apakah user adalah booster
+  // [TEMP TEST BYPASS] Admin dengan ManageGuild bisa lolos cek booster untuk testing.
+  // Hapus blok isAdmin bypass ini setelah testing selesai.
   const member = interaction.member;
+  const isAdmin = member?.permissions?.has(PermissionFlagsBits.ManageGuild) ?? false;
   const isPremiumSubscriber = member?.premiumSince !== null;
 
-  if (!isPremiumSubscriber) {
+  if (!isPremiumSubscriber && !isAdmin) {
     await interaction.editReply({
       content: "Benefit ini hanya untuk Nitro Booster server Murphy. Boost dulu ya! 💎"
     }).catch(() => null);
