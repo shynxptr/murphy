@@ -128,12 +128,25 @@ async function handleBoosterClaimButton(interaction, client) {
   }
 
   // Buka tiket minta-role otomatis
+  // Penting: jangan spread interaction ({ ...interaction }) karena akan menghilangkan
+  // prototype chain Discord.js, sehingga getter seperti interaction.guild menjadi undefined.
+  // createTicketChannel menggunakan parameter ke-3 (ticketTypeKey) untuk menentukan jenis tiket,
+  // jadi tidak perlu override interaction.customId.
   const fakeCustomId = `${TICKET_TYPE_PREFIX}minta-role`;
-  const result = await createTicketChannel(
-    { ...interaction, customId: fakeCustomId },
-    client,
-    fakeCustomId
-  );
+  let result;
+  try {
+    result = await createTicketChannel(
+      interaction,
+      client,
+      fakeCustomId
+    );
+  } catch (error) {
+    console.error("[BoosterClaim] Gagal membuat tiket benefit:", error);
+    await interaction.editReply({
+      content: "Terjadi error saat membuka tiket benefit. Coba lagi atau hubungi admin ya. 💜"
+    }).catch(() => null);
+    return true;
+  }
 
   if (!result.ok) {
     await interaction.editReply({
