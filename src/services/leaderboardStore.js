@@ -12,8 +12,10 @@ function ensureStore() {
   if (!fs.existsSync(dataFile)) {
     fs.writeFileSync(dataFile, `${JSON.stringify({
       chat: {},
+      chatByChannel: {},
       voiceTotals: {},
       voiceSessions: {},
+      voiceByChannel: {},
       voicePairs: {},
       voicePairSessions: {},
       donators: {}
@@ -30,8 +32,10 @@ function readStore() {
 
     return {
       chat: parsed.chat || {},
+      chatByChannel: parsed.chatByChannel || {},
       voiceTotals: parsed.voiceTotals || {},
       voiceSessions: parsed.voiceSessions || {},
+      voiceByChannel: parsed.voiceByChannel || {},
       voicePairs: parsed.voicePairs || {},
       voicePairSessions: parsed.voicePairSessions || {},
       donators: parsed.donators || {}
@@ -40,8 +44,10 @@ function readStore() {
     console.error("Failed to read leaderboard store:", error);
     return {
       chat: {},
+      chatByChannel: {},
       voiceTotals: {},
       voiceSessions: {},
+      voiceByChannel: {},
       voicePairs: {},
       voicePairSessions: {},
       donators: {}
@@ -67,6 +73,35 @@ function normalizePairUserIds(userIdA, userIdB) {
 function buildPairKey(guildId, userIdA, userIdB) {
   const [left, right] = normalizePairUserIds(userIdA, userIdB);
   return left && right ? `${guildId}:${left}:${right}` : "";
+}
+
+function buildCompositeKey(guildId, channelId, userId) {
+  return `${guildId}:${channelId}:${userId}`;
+}
+
+function getTodayDateKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function readCompositeEntry(section, guildId, channelId, userId) {
+  const store = readStore();
+  return store[section][buildCompositeKey(guildId, channelId, userId)] || null;
+}
+
+function updateCompositeEntry(section, guildId, channelId, userId, updater) {
+  const store = readStore();
+  const key = buildCompositeKey(guildId, channelId, userId);
+  const current = store[section][key] || null;
+  const next = updater(current);
+
+  if (next === null) {
+    delete store[section][key];
+  } else {
+    store[section][key] = next;
+  }
+
+  writeStore(store);
+  return next;
 }
 
 function readEntry(section, guildId, userId) {
@@ -123,18 +158,44 @@ function updatePairEntry(section, guildId, userIdA, userIdB, updater) {
   return next;
 }
 
-function incrementChatCount(guildId, userId, amount = 1) {
-  return updateEntry("chat", guildId, userId, (current) => ({
+function incrementChatCount(guildId, userId, channelId, amount = 1) {
+  const total = updateEntry("chat", guildId, userId, (current) => ({
     guildId,
     userId,
     totalMessages: (current?.totalMessages || 0) + amount,
     updatedAt: new Date().toISOString()
   }));
+
+  if (channelId) {
+    const dateKey = getTodayDateKey();
+    updateCompositeEntry("chatByChannel", guildId, channelId, userId, (current) => {
+      const daily = { ...(current?.daily || {}) };
+      daily[dateKey] = (daily[dateKey] || 0) + amount;
+
+      return {
+        guildId,
+        channelId,
+        userId,
+        totalMessages: (current?.totalMessages || 0) + amount,
+        daily,
+        updatedAt: new Date().toISOString()
+      };
+    });
+  }
+
+  return total;
 }
 
 function listChatEntries(guildId) {
   const store = readStore();
   return Object.values(store.chat).filter((entry) => entry.guildId === guildId);
+}
+
+function listChatByChannel(guildId, userId) {
+  const store = readStore();
+  return Object.values(store.chatByChannel).filter((entry) =>
+    entry.guildId === guildId && entry.userId === userId
+  );
 }
 
 function startVoiceSession(guildId, userId, channelId, startedAt = new Date().toISOString()) {
@@ -168,6 +229,27 @@ function addVoiceDuration(guildId, userId, durationMs) {
   }));
 }
 
+function addVoiceDurationByChannel(guildId, userId, channelId, durationMs) {
+  if (!channelId || durationMs <= 0) {
+    return null;
+  }
+
+  const dateKey = getTodayDateKey();
+  return updateCompositeEntry("voiceByChannel", guildId, channelId, userId, (current) => {
+    const daily = { ...(current?.daily || {}) };
+    daily[dateKey] = (daily[dateKey] || 0) + durationMs;
+
+    return {
+      guildId,
+      channelId,
+      userId,
+      totalMs: Math.max(0, (current?.totalMs || 0) + Math.max(0, durationMs)),
+      daily,
+      updatedAt: new Date().toISOString()
+    };
+  });
+}
+
 function stopVoiceSession(guildId, userId, endedAt = new Date().toISOString()) {
   const session = getVoiceSession(guildId, userId);
 
@@ -177,6 +259,7 @@ function stopVoiceSession(guildId, userId, endedAt = new Date().toISOString()) {
 
   const durationMs = Math.max(0, new Date(endedAt).getTime() - new Date(session.startedAt).getTime());
   addVoiceDuration(guildId, userId, durationMs);
+  addVoiceDurationByChannel(guildId, userId, session.channelId, durationMs);
   updateEntry("voiceSessions", guildId, userId, () => null);
 
   return {
@@ -184,6 +267,13 @@ function stopVoiceSession(guildId, userId, endedAt = new Date().toISOString()) {
     endedAt,
     durationMs
   };
+}
+
+function listVoiceByChannel(guildId, userId) {
+  const store = readStore();
+  return Object.values(store.voiceByChannel).filter((entry) =>
+    entry.guildId === guildId && entry.userId === userId
+  );
 }
 
 function listVoiceTotals(guildId) {
@@ -345,13 +435,16 @@ function listDonators(guildId) {
 }
 
 module.exports = {
+  addVoiceDurationByChannel,
   getDonator,
   getVoicePairSession,
   getVoiceSession,
   incrementDonatorAmount,
   incrementChatCount,
+  listChatByChannel,
   listChatEntries,
   listDonators,
+  listVoiceByChannel,
   listVoicePairSessions,
   listVoicePairsForUser,
   listVoiceSessions,

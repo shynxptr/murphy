@@ -218,7 +218,7 @@ async function trackChatMessage(message, client) {
     return false;
   }
 
-  incrementChatCount(message.guild.id, message.author.id, 1);
+  incrementChatCount(message.guild.id, message.author.id, message.channel.id, 1);
   return true;
 }
 
