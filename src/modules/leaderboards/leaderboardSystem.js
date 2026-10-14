@@ -208,12 +208,6 @@ async function handleBlockedGeneralChannelCommand(message, client, context) {
 }
 
 async function trackChatMessage(message, client) {
-  const settings = getLeaderboardSettings(message.guild.id, client);
-
-  if (message.channel.id !== getChatTrackerChannelId(settings)) {
-    return false;
-  }
-
   if (isRawTextBotCommand(message.content, client.config.prefix)) {
     return false;
   }

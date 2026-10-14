@@ -37,6 +37,14 @@ module.exports = {
       return;
     }
 
+    // Track chat message untuk SEMUA pesan non-bot (bukan hanya satu channel).
+    // Dilakukan di awal supaya tidak ter-bypass oleh early-return handler lain.
+    const trackedChat = await trackChatMessage(message, client);
+    if (trackedChat) {
+      await awardTrackedChatCoins(message, client);
+      await awardTrackedChatXp(message, client);
+    }
+
     const questionAfkContext = parseQuestionAfkCommand(message.content);
 
     if (questionAfkContext) {
@@ -90,11 +98,6 @@ module.exports = {
     if (!context) {
       await notifyMentionedAfkUsers(message);
       await touchPrivateRoomActivity(message, client);
-      const trackedChat = await trackChatMessage(message, client);
-      if (trackedChat) {
-        await awardTrackedChatCoins(message, client);
-        await awardTrackedChatXp(message, client);
-      }
       await handleAutoThreadMessage(message, client);
       await handleCountingMessage(message, client);
       await handleStickyMessage(message, client);
