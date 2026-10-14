@@ -48,7 +48,7 @@ module.exports = {
     await sendStreakNotificationToChannel(message.channel, {
       userIds: [userAId, userBId],
       currentStreak: streakValue
-    });
+    }, client);
 
     await replyWithTemporaryMessage(
       message,

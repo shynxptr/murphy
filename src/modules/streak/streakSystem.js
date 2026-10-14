@@ -605,12 +605,8 @@ async function reactMessagesWithTierEmoji(messages, pair) {
   }));
 }
 
-async function sendStreakNotificationToChannel(channel, pair) {
-  const settings = getStreakSettings(channel.guild.id, {
-    config: {
-      streak: DEFAULT_STREAK_SETTINGS
-    }
-  });
+async function sendStreakNotificationToChannel(channel, pair, client = null) {
+  const settings = getStreakSettings(channel.guild.id, client);
   const notificationChannelId = getStreakNotificationChannelId(settings);
   const destinationChannel = notificationChannelId
     ? await channel.guild.channels.fetch(notificationChannelId).catch(() => channel)
@@ -651,8 +647,8 @@ async function sendStreakNotificationToChannel(channel, pair) {
   await destinationChannel.send(payload).catch(() => null);
 }
 
-async function sendStreakNotification(message, pair) {
-  return sendStreakNotificationToChannel(message.channel, pair);
+async function sendStreakNotification(message, pair, client = null) {
+  return sendStreakNotificationToChannel(message.channel, pair, client);
 }
 
 async function buildStreakInfoData(guild, client, targetMember, requestedPage = 1) {
@@ -930,11 +926,34 @@ async function refreshStreakTopBoardForGuild(guild, client, options = {}) {
   return refreshPromise;
 }
 
+function decayStaleStreaks(guild, client) {
+  const settings = getStreakSettings(guild.id, client);
+  const todayKey = getTodayDateKey(settings.timezone);
+  const yesterdayKey = shiftDateKey(todayKey, -1);
+  const stalePairs = listPairs((pair) =>
+    pair.guildId === guild.id
+    && isActivatedPair(pair)
+    && pair.currentStreak > 0
+    && pair.lastCompletedDate
+    && pair.lastCompletedDate !== todayKey
+    && pair.lastCompletedDate !== yesterdayKey
+  );
+
+  for (const pair of stalePairs) {
+    upsertPair(guild.id, pair.userIds[0], pair.userIds[1], (current) => ({
+      ...current,
+      currentStreak: 0,
+      dailyState: ensureCurrentDayState(current, todayKey)
+    }));
+  }
+}
+
 async function refreshAllStreakTopBoards(client, options = {}) {
   const guilds = [...client.guilds.cache.values()];
 
   await Promise.allSettled(guilds.map(async (guild) => {
     try {
+      decayStaleStreaks(guild, client);
       await refreshStreakTopBoardForGuild(guild, client, options);
     } catch (error) {
       console.error(`Failed to refresh streak top board for guild ${guild.id}:`, error);
@@ -1043,50 +1062,58 @@ function finalizeDailyCompletion(pair, dateKey, completionMessageId, dailyState)
 
 async function completePairStreak(message, pair, options = {}) {
   const additionalMessages = options.additionalMessages || [];
+  const client = options.client || null;
 
   await Promise.allSettled([
     reactMessagesWithTierEmoji([message, ...additionalMessages], pair),
-    sendStreakNotification(message, pair)
+    sendStreakNotification(message, pair, client)
   ]);
 }
 
 async function handleActivePairInteraction(message, client, settings, pair, partnerId, source) {
   const dateKey = getTodayDateKey(settings.timezone);
-  const dailyState = recordDailyInteraction(
-    pair,
-    message.author.id,
-    source,
-    message.id,
-    dateKey
+
+  // Gunakan upsertPair untuk merekam interaksi pada data TERKINI dari store,
+  // bukan snapshot `pair` yang mungkin sudah stale akibat async fetch di caller.
+  const updatedPair = upsertPair(
+    message.guild.id,
+    pair.userIds[0],
+    pair.userIds[1],
+    (current) => {
+      const dailyState = recordDailyInteraction(current, message.author.id, source, message.id, dateKey);
+      return { ...current, dailyState };
+    }
   );
-  const alreadyCompletedToday = Boolean(dailyState.completedAt) || pair.lastCompletedDate === dateKey;
+
+  const dailyState = updatedPair.dailyState || {};
+  const alreadyCompletedToday = Boolean(dailyState.completedAt) || updatedPair.lastCompletedDate === dateKey;
 
   if (alreadyCompletedToday) {
-    upsertPair(message.guild.id, pair.userIds[0], pair.userIds[1], (current) => ({
-      ...current,
-      dailyState
-    }));
-
     await replyWithTemporaryMessage(message, "Streak hari ini selesai.", client);
     return true;
   }
 
-  const partnerInteracted = Boolean(dailyState.participants[partnerId]);
-  const actorAlreadyRecorded = Boolean(dailyState.participants[message.author.id]);
+  const partnerInteracted = Boolean(dailyState.participants?.[partnerId]);
 
-  if (!actorAlreadyRecorded || !partnerInteracted) {
-    upsertPair(message.guild.id, pair.userIds[0], pair.userIds[1], (current) => ({
-      ...current,
-      dailyState
-    }));
+  if (!partnerInteracted) {
+    // Partner belum interact hari ini — react pesan dengan emoji tier streak
+    // supaya user tahu interaksinya tercatat tapi menunggu partner.
+    await reactMessagesWithTierEmoji([message], updatedPair);
     return false;
   }
 
-  const completedPair = upsertPair(message.guild.id, pair.userIds[0], pair.userIds[1], (current) =>
-    finalizeDailyCompletion(current, dateKey, message.id, dailyState)
+  const completedPair = upsertPair(
+    message.guild.id,
+    pair.userIds[0],
+    pair.userIds[1],
+    (current) => {
+      // Ambil ulang dailyState dari store agar tidak menimpa data partner yang baru saja disimpan
+      const freshDailyState = recordDailyInteraction(current, message.author.id, source, message.id, dateKey);
+      return finalizeDailyCompletion(current, dateKey, message.id, freshDailyState);
+    }
   );
 
-  await completePairStreak(message, completedPair);
+  await completePairStreak(message, completedPair, { client });
   await awardStreakXp(message.guild, completedPair.userIds, client, message.channel.id);
   await replyWithTemporaryMessage(message, "Streak hari ini selesai.", client);
   return true;
@@ -1134,7 +1161,8 @@ async function handlePendingAcceptance(message, client, settings, pendingTargetI
   await assignStreakRewardRole(message.guild, client, acceptedPair.userIds);
 
   await completePairStreak(message, acceptedPair, {
-    additionalMessages: [inviteMessage]
+    additionalMessages: [inviteMessage],
+    client
   });
   await awardStreakXp(message.guild, acceptedPair.userIds, client, message.channel.id);
   return true;
