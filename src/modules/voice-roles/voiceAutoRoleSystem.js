@@ -146,11 +146,12 @@ async function syncAllVoiceAutoRoles(client) {
 }
 
 async function handleVoiceAutoRoleState(oldState, newState, client) {
-  if (oldState.member?.user?.bot) {
+  if (newState.member?.user?.bot) {
     return;
   }
 
-  if (oldState.channelId && !newState.channelId) {
+  // Sync saat user join voice (bukan disconnect)
+  if (!oldState.channelId && newState.channelId) {
     await syncVoiceAutoRoleForMember(newState.member, client).catch(() => null);
   }
 }
