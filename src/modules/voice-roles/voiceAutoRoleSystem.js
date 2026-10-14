@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { getGuildSettings, updateGuildSettings } = require("../../services/guildConfigService");
-const { listVoiceTotals } = require("../../services/leaderboardStore");
+const { listVoiceTotals, getVoiceSession } = require("../../services/leaderboardStore");
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -46,12 +46,16 @@ function getVoiceHours(guildId, userId) {
   const totals = listVoiceTotals(guildId);
 
   const entry = totals.find((item) => item.userId === userId);
+  let totalMs = entry?.totalMs || 0;
 
-  if (!entry) {
-    return 0;
+  // Tambah waktu dari active session yang sedang berlangsung
+  const session = getVoiceSession(guildId, userId);
+  if (session?.startedAt) {
+    const liveMs = Math.max(0, Date.now() - new Date(session.startedAt).getTime());
+    totalMs += liveMs;
   }
 
-  return (entry.totalMs || 0) / HOUR_MS;
+  return totalMs / HOUR_MS;
 }
 
 function resolveTierForHours(hours, tiers) {
