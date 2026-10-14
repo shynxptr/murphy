@@ -11,6 +11,7 @@ const { startShopEconomyScheduler } = require("../modules/shop/shopSystem");
 const { startPrivateRoomScheduler } = require("../modules/private-rooms/privateRoomSystem");
 const { reconcileLevelState, startLevelProgressionScheduler } = require("../modules/levels/levelSystem");
 const { initInviteTracker } = require("../modules/invites/inviteTracker");
+const { startVoiceAutoRoleScheduler } = require("../modules/voice-roles/voiceAutoRoleSystem");
 
 module.exports = {
   name: "clientReady",
@@ -70,6 +71,7 @@ module.exports = {
     startShopEconomyScheduler(client);
     startPrivateRoomScheduler(client);
     startLevelProgressionScheduler(client);
+    startVoiceAutoRoleScheduler(client);
     await refreshAllMusicBoards(client).catch((error) => {
       console.error("Failed to refresh music boards:", error);
     });

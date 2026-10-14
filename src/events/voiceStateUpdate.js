@@ -3,6 +3,7 @@ const { handleMusicBoardVoiceState } = require("../modules/music/musicBoardSyste
 const { handleVoiceStateGazecoin } = require("../modules/shop/shopSystem");
 const { handleTempVoiceStateUpdate } = require("../modules/temp-voice/tempVoiceSystem");
 const { handleVoiceLog } = require("../modules/voice/voiceLogSystem");
+const { handleVoiceAutoRoleState } = require("../modules/voice-roles/voiceAutoRoleSystem");
 
 module.exports = {
   name: "voiceStateUpdate",
@@ -12,5 +13,6 @@ module.exports = {
     await handleVoiceStateTracking(oldState, newState);
     await handleMusicBoardVoiceState(oldState, newState);
     await handleVoiceLog(oldState, newState, client);
+    await handleVoiceAutoRoleState(oldState, newState, client);
   }
 };
