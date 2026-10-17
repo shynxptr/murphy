@@ -90,6 +90,7 @@ const {
 } = require("../modules/invites/inviteTracker");
 const { handleVoicePingButton } = require("../modules/admin/sendvoicerules");
 const { handleBoosterClaimButton } = require("../modules/community/boosterAnnounce");
+const { handleClickRoleButton } = require("../modules/click-role/slash");
 
 module.exports = {
   name: "interactionCreate",
@@ -202,6 +203,10 @@ module.exports = {
       }
 
       if (await handleModerationButton(interaction, client)) {
+        return;
+      }
+
+      if (await handleClickRoleButton(interaction, client)) {
         return;
       }
 
