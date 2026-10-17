@@ -47,8 +47,32 @@ function resolveCategoryChannel(message, value) {
   return channel;
 }
 
+function resolveLogChannel(message, value) {
+  if (!value) {
+    const ch = message.channel;
+    if (ch && (ch.isTextBased() || ch.type === ChannelType.GuildForum) && !ch.isDMBased()) {
+      return ch;
+    }
+    return null;
+  }
+
+  const normalized = value.replace(/[<#>]/g, "");
+  const channel = message.guild.channels.cache.get(normalized);
+
+  if (!channel || channel.isDMBased()) {
+    return null;
+  }
+
+  if (channel.isTextBased() || channel.type === ChannelType.GuildForum) {
+    return channel;
+  }
+
+  return null;
+}
+
 module.exports = {
   resolveCategoryChannel,
+  resolveLogChannel,
   resolveTextChannel,
   resolveVoiceChannel
 };

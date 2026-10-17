@@ -13,10 +13,30 @@ const STAFF_EXEMPT_PERMISSIONS = [
   PermissionFlagsBits.KickMembers
 ];
 
+// Mapping kategori pelanggaran ke key di settings.logChannels.
+// Harus sinkron dengan detectAutomodViolation output ruleLabel.
+const AUTOMOD_LOG_CATEGORIES = [
+  { key: "antiInvite", label: "Anti Invite" },
+  { key: "antiLink", label: "Anti Link" },
+  { key: "mentionLimit", label: "Mention Limit" },
+  { key: "badWords", label: "Bad Words" }
+];
+
+// Nama thread yang dibuat/dicari di forum untuk tiap kategori.
+// Format: "[Kategori] — Automod Log" biar unik dan mudah dicari.
+function buildLogThreadName(categoryLabel) {
+  return `[${categoryLabel}] — Automod Log`;
+}
+
 function getAutomodSettings(guildId) {
   return getGuildSettings(guildId, {
     automod: {
-      logChannelId: "",
+      logChannels: {
+        antiInvite: "",
+        antiLink: "",
+        mentionLimit: "",
+        badWords: ""
+      },
       whitelistChannelIds: [],
       whitelistRoleIds: [],
       antiInvite: {
@@ -48,7 +68,24 @@ function updateAutomodSettings(guildId, updater) {
 function setAutomodLogChannel(guildId, channelId) {
   return updateAutomodSettings(guildId, (current) => ({
     ...current,
-    logChannelId: channelId
+    logChannels: {
+      ...(current.logChannels || {}),
+      // Legacy support: set ke semua kategori kalau dipanggil tanpa kategori
+      antiInvite: channelId,
+      antiLink: channelId,
+      mentionLimit: channelId,
+      badWords: channelId
+    }
+  }));
+}
+
+function setAutomodLogChannelForCategory(guildId, categoryKey, channelId) {
+  return updateAutomodSettings(guildId, (current) => ({
+    ...current,
+    logChannels: {
+      ...(current.logChannels || {}),
+      [categoryKey]: channelId
+    }
   }));
 }
 
@@ -251,6 +288,7 @@ function detectAutomodViolation(message, settings) {
 
     if (inviteMatch) {
       return {
+        ruleKey: "antiInvite",
         ruleLabel: "Anti Invite",
         reason: "Link undangan Discord tidak diizinkan di channel ini.",
         details: inviteMatch[0]
@@ -263,6 +301,7 @@ function detectAutomodViolation(message, settings) {
 
     if (linkMatch) {
       return {
+        ruleKey: "antiLink",
         ruleLabel: "Anti Link",
         reason: "Link tidak diizinkan di channel ini.",
         details: linkMatch[0]
@@ -275,6 +314,7 @@ function detectAutomodViolation(message, settings) {
 
     if (mentionCount > settings.mentionLimit) {
       return {
+        ruleKey: "mentionLimit",
         ruleLabel: "Mention Limit",
         reason: `Pesan melebihi batas mention server (${settings.mentionLimit}).`,
         details: `${mentionCount} mention`
@@ -287,6 +327,7 @@ function detectAutomodViolation(message, settings) {
 
     if (matchedWord) {
       return {
+        ruleKey: "badWords",
         ruleLabel: "Bad Words",
         reason: "Pesan mengandung kata yang diblokir automod.",
         details: matchedWord
@@ -369,21 +410,76 @@ function buildAutomodLogEmbed(message, violation) {
     .setTimestamp();
 }
 
-async function sendAutomodLog(guild, settings, embed) {
-  if (!settings.logChannelId) {
+// Kirim log ke thread yang sudah ada di forum. Kalau belum ada, buat thread baru
+// dengan nama yang fix per kategori (mis. "[Anti Invite] — Automod Log").
+// Semua log kategori yang sama bakal balas ke thread yang sama.
+async function sendAutomodLogToForum(guild, forumChannel, categoryLabel, embed) {
+  const threadName = buildLogThreadName(categoryLabel);
+
+  // Cari thread yang sudah ada di forum dengan nama yang matching.
+  // archived threads bisa di-unarchive, jadi kita fetch dulu.
+  const existingThread = forumChannel.threads.cache.find(
+    (thread) => thread.name === threadName && !thread.archived
+  );
+
+  if (existingThread) {
+    await existingThread.send({ embeds: [embed] }).catch(() => null);
     return;
   }
 
-  const logChannel = guild.channels.cache.get(settings.logChannelId)
-    || await guild.channels.fetch(settings.logChannelId).catch(() => null);
+  // Cek archived threads juga
+  const archivedThreads = await forumChannel.threads.fetchArchived({ limit: 100 }).catch(() => null);
+  const archivedMatch = archivedThreads?.threads.find(
+    (thread) => thread.name === threadName
+  );
 
-  if (!logChannel || logChannel.type !== ChannelType.GuildText) {
+  if (archivedMatch) {
+    // Unarchive dulu kalau perlu, baru kirim
+    if (archivedMatch.archived) {
+      await archivedMatch.setArchived(false, "Automod log resume").catch(() => null);
+    }
+    await archivedMatch.send({ embeds: [embed] }).catch(() => null);
     return;
   }
 
-  await logChannel.send({
-    embeds: [embed]
+  // Belum ada thread untuk kategori ini → buat thread baru
+  await forumChannel.threads.create({
+    name: threadName,
+    message: { embeds: [embed] },
+    appliedTags: []
   }).catch(() => null);
+}
+
+async function sendAutomodLog(guild, settings, embed, violation) {
+  // Kalau violation ga punya ruleKey (kasus legacy/manual), skip
+  if (!violation?.ruleKey) {
+    return;
+  }
+
+  const logChannelId = settings.logChannels?.[violation.ruleKey];
+
+  // Hanya pakai logChannels baru. Kalau ga diset, log ga dikirim.
+  if (!logChannelId) {
+    return;
+  }
+
+  const logChannel = guild.channels.cache.get(logChannelId)
+    || await guild.channels.fetch(logChannelId).catch(() => null);
+
+  if (!logChannel) {
+    return;
+  }
+
+  // Forum channel: kirim ke thread per kategori
+  if (logChannel.type === ChannelType.GuildForum) {
+    await sendAutomodLogToForum(guild, logChannel, violation.ruleLabel, embed);
+    return;
+  }
+
+  // Text channel fallback: kirim embed langsung (kalau admin set text channel)
+  if (logChannel.type === ChannelType.GuildText) {
+    await logChannel.send({ embeds: [embed] }).catch(() => null);
+  }
 }
 
 function hasActiveAutomodRules(settings) {
@@ -420,7 +516,7 @@ async function handleAutomodMessage(message) {
 
   await Promise.allSettled([
     sendTemporaryNotice(message, violation.reason),
-    sendAutomodLog(message.guild, settings, buildAutomodLogEmbed(message, violation))
+    sendAutomodLog(message.guild, settings, buildAutomodLogEmbed(message, violation), violation)
   ]);
 
   return true;
@@ -498,9 +594,16 @@ function buildAutomodStatusEmbed(guild) {
         inline: true
       },
       {
+        name: "Log Channels (Forum per Kategori)",
+        value: AUTOMOD_LOG_CATEGORIES.map((cat) => {
+          const channelId = settings.logChannels?.[cat.key];
+          return `${cat.label}: ${channelId ? `<#${channelId}>` : "`none`"}`;
+        }).join("\n"),
+        inline: true
+      },
+      {
         name: "Routing",
         value: [
-          `Log Channel: ${settings.logChannelId ? `<#${settings.logChannelId}>` : "`none`"}`,
           `Whitelisted Channels: ${whitelistChannels}`,
           `Whitelisted Roles: ${whitelistRoles}`
         ].join("\n"),
@@ -521,6 +624,7 @@ module.exports = {
   addBadWord,
   addWhitelistChannel,
   addWhitelistRole,
+  AUTOMOD_LOG_CATEGORIES,
   buildAutomodStatusEmbed,
   getAutomodSettings,
   handleAutomodMessage,
@@ -528,6 +632,7 @@ module.exports = {
   removeWhitelistChannel,
   removeWhitelistRole,
   setAutomodLogChannel,
+  setAutomodLogChannelForCategory,
   setAutomodRuleEnabled,
   setMentionLimit
 };

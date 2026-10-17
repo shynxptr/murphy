@@ -1,13 +1,15 @@
-const { PermissionFlagsBits } = require("discord.js");
-const { resolveTextChannel } = require("../../utils/channelResolver");
+const { PermissionFlagsBits, ChannelType } = require("discord.js");
+const { resolveTextChannel, resolveLogChannel } = require("../../utils/channelResolver");
 const {
   addBadWord,
   addWhitelistChannel,
   addWhitelistRole,
+  AUTOMOD_LOG_CATEGORIES,
   buildAutomodStatusEmbed,
   removeBadWord,
   removeWhitelistChannel,
   removeWhitelistRole,
+  setAutomodLogChannelForCategory,
   setAutomodRuleEnabled,
   setMentionLimit
 } = require("./automodSystem");
@@ -57,7 +59,7 @@ module.exports = {
   description: "Kelola Automod Lite dengan state default off.",
   aliases: ["am"],
   category: "automod",
-  usage: "automod [status|antiinvite|antilink|badwords|addbadword|removebadword|mentionlimit|whitelistchannel|whitelistrole|listbadwords]",
+  usage: "automod [status|logchannel|antiinvite|antilink|badwords|addbadword|removebadword|mentionlimit|whitelistchannel|whitelistrole|listbadwords]",
   async execute(message, args) {
     if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
       await replyError(message, "Kamu butuh permission Manage Server untuk command ini.");
@@ -70,6 +72,76 @@ module.exports = {
       await message.reply({
         embeds: [buildAutomodStatusEmbed(message.guild)]
       });
+      return;
+    }
+
+    if (action === "logchannel") {
+      const categoryInput = args[1]?.toLowerCase();
+      const channelInput = args[2];
+
+      if (!categoryInput) {
+        const list = AUTOMOD_LOG_CATEGORIES.map(
+          (cat) => `- \`${cat.key}\` (Log ${cat.label})`
+        ).join("\n");
+        await replyError(
+          message,
+          [
+            "Tentukan kategori log dan channel forum.",
+            "",
+            "Kategori yang tersedia:",
+            list,
+            "",
+            "Contoh: `skautomod logchannel badwords #forum-badwords`",
+            "Untuk clear: `skautomod logchannel badwords off`"
+          ].join("\n")
+        );
+        return;
+      }
+
+      const category = AUTOMOD_LOG_CATEGORIES.find((cat) => cat.key === categoryInput);
+
+      if (!category) {
+        const list = AUTOMOD_LOG_CATEGORIES.map((cat) => `\`${cat.key}\``).join(", ");
+        await replyError(
+          message,
+          `Kategori tidak valid. Pilih salah satu: ${list}.\nContoh: \`skautomod logchannel badwords #forum\``
+        );
+        return;
+      }
+
+      // Clear log channel untuk kategori ini
+      if (["off", "disable", "disabled", "none", "clear"].includes(channelInput?.toLowerCase())) {
+        setAutomodLogChannelForCategory(message.guild.id, category.key, "");
+        await replySuccess(message, `Log channel untuk ${category.label} dimatikan.`);
+        return;
+      }
+
+      const channel = resolveLogChannel(message, channelInput);
+
+      if (!channel) {
+        await replyError(
+          message,
+          "Channel log tidak valid. Mention forum channel atau jalankan di channel target."
+        );
+        return;
+      }
+
+      // Rekomendasi pakai forum, tapi text channel juga bisa
+      if (channel.type !== ChannelType.GuildForum && channel.type !== ChannelType.GuildText) {
+        await replyError(
+          message,
+          "Channel harus berupa Forum channel atau Text channel."
+        );
+        return;
+      }
+
+      setAutomodLogChannelForCategory(message.guild.id, category.key, channel.id);
+
+      const channelTypeLabel = channel.type === ChannelType.GuildForum ? "Forum" : "Text";
+      await replySuccess(
+        message,
+        `Log ${category.label} diset ke ${channel} (${channelTypeLabel} channel).\nSemua log ${category.label} bakal masuk ke thread yang sama di channel itu.`
+      );
       return;
     }
 
@@ -258,6 +330,7 @@ module.exports = {
         "Subcommand automod tidak dikenali.",
         "Gunakan salah satu ini:",
         "`skautomod status`",
+        "`skautomod logchannel <kategori> [#forum|off]` — kategori: antiinvite, antilink, mentionlimit, badwords",
         "`skautomod antiinvite on|off`",
         "`skautomod antilink on|off`",
         "`skautomod badwords on|off`",

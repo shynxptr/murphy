@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require("discord.js");
-const { resolveTextChannel } = require("../../utils/channelResolver");
+const { resolveLogChannel } = require("../../utils/channelResolver");
 const { setAutomodLogChannel } = require("./automodSystem");
 
 function buildReply(color, title, description) {
@@ -17,7 +17,7 @@ function buildReply(color, title, description) {
 
 module.exports = {
   name: "setautomodlog",
-  description: "Atur channel log khusus automod.",
+  description: "Set channel log yang sama untuk semua kategori automod (quick setup). Untuk set per kategori, pakai: automod logchannel <kategori> <#channel>",
   category: "admin",
   usage: "setautomodlog [#channel]",
   async execute(message, args) {
@@ -26,20 +26,26 @@ module.exports = {
       return;
     }
 
-    const channel = resolveTextChannel(message, args[0]);
+    const channel = resolveLogChannel(message, args[0]);
 
     if (!channel) {
       await message.reply(
         buildReply(
           0xef4444,
           "Automod Error",
-          "Channel log tidak valid. Mention channel teks atau jalankan di channel target."
+          "Channel log tidak valid. Mention channel teks atau forum, atau jalankan di channel target."
         )
       );
       return;
     }
 
     setAutomodLogChannel(message.guild.id, channel.id);
-    await message.reply(buildReply(0x10b981, "Automod Updated", `Automod log channel diset ke ${channel}.`));
+    await message.reply(
+      buildReply(
+        0x10b981,
+        "Automod Updated",
+        `Log channel untuk semua kategori automod (antiInvite, antiLink, mentionLimit, badWords) diset ke ${channel}.\n\nUntuk atur forum per kategori secara terpisah, pakai: \`automod logchannel <kategori> <#channel>\``
+      )
+    );
   }
 };
