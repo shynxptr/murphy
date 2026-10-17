@@ -91,6 +91,7 @@ const {
 const { handleVoicePingButton } = require("../modules/admin/sendvoicerules");
 const { handleBoosterClaimButton } = require("../modules/community/boosterAnnounce");
 const { handleClickRoleButton } = require("../modules/click-role/slash");
+const { handleDutyButton } = require("../modules/staff-duty/slash");
 
 module.exports = {
   name: "interactionCreate",
@@ -207,6 +208,10 @@ module.exports = {
       }
 
       if (await handleClickRoleButton(interaction, client)) {
+        return;
+      }
+
+      if (await handleDutyButton(interaction, client)) {
         return;
       }
 
