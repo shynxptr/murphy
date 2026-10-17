@@ -2,10 +2,6 @@ const {
   SlashCommandBuilder,
   PermissionFlagsBits,
   EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  RolePermission,
   MessageFlags
 } = require("discord.js");
 
@@ -23,10 +19,6 @@ const {
   getTodayKey,
   WEEKDAYS
 } = store;
-
-const DUTY_BUTTON_PREFIX = "staffduty:btn:";
-const DUTY_BUTTON_ON = "staffduty:btn:on";
-const DUTY_BUTTON_OFF = "staffduty:btn:off";
 
 // === Helpers ===
 
@@ -85,39 +77,9 @@ async function sendStaffLog(guild, settings, content) {
   await channel.send(content).catch(() => null);
 }
 
-// === Duty Toggle Handler ===
+// === Duty Toggle ===
 
-async function buildDutyPanel(guild, settings) {
-  const embed = new EmbedBuilder()
-    .setTitle("Staff Duty Toggle")
-    .setDescription("Klik tombol di bawah untuk toggle status duty kamu.\n**On Duty** = siap handle ticket/jobdesk\n**Off Duty** = sedang tidak aktif")
-    .setColor("#111827")
-    .addFields(
-      { name: "On-Duty Role", value: settings.onDutyRoleId ? `<@&${settings.onDutyRoleId}>` : "Belum diset", inline: true },
-      { name: "Staff Role(s)", value: settings.staffRoleIds.length > 0 ? settings.staffRoleIds.map((r) => `<@&${r}>`).join(", ") : "Belum diset", inline: true }
-    );
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(DUTY_BUTTON_ON)
-      .setLabel("On Duty")
-      .setEmoji("🟢")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(DUTY_BUTTON_OFF)
-      .setLabel("Off Duty")
-      .setEmoji("🔴")
-      .setStyle(ButtonStyle.Danger)
-  );
-
-  return { embeds: [embed], components: [row] };
-}
-
-async function handleDutyButton(interaction, client) {
-  if (interaction.customId !== DUTY_BUTTON_ON && interaction.customId !== DUTY_BUTTON_OFF) {
-    return false;
-  }
-
+async function toggleDuty(interaction, client) {
   const settings = getSettings(interaction.guildId);
 
   if (!isStaffMember(interaction.member, settings)) {
@@ -125,15 +87,15 @@ async function handleDutyButton(interaction, client) {
       content: "Kamu bukan staff. Hanya staff yang bisa toggle duty.",
       flags: MessageFlags.Ephemeral
     }).catch(() => null);
-    return true;
+    return;
   }
 
   if (!settings.onDutyRoleId) {
     await interaction.reply({
-      content: "On-Duty role belum diset. Admin bisa pakai `/staffsetup` untuk setup.",
+      content: "On-Duty role belum diset. Admin bisa pakai `/staff setup create-onduty`.",
       flags: MessageFlags.Ephemeral
     }).catch(() => null);
-    return true;
+    return;
   }
 
   const onDutyRole = interaction.guild.roles.cache.get(settings.onDutyRoleId);
@@ -142,30 +104,14 @@ async function handleDutyButton(interaction, client) {
       content: "On-Duty role tidak ditemukan di server.",
       flags: MessageFlags.Ephemeral
     }).catch(() => null);
-    return true;
+    return;
   }
 
-  const isOn = interaction.customId === DUTY_BUTTON_ON;
   const hasRole = interaction.member.roles.cache.has(onDutyRole.id);
 
-  if (isOn && hasRole) {
-    await interaction.reply({
-      content: "Kamu sudah on-duty.",
-      flags: MessageFlags.Ephemeral
-    }).catch(() => null);
-    return true;
-  }
-
-  if (!isOn && !hasRole) {
-    await interaction.reply({
-      content: "Kamu sudah off-duty.",
-      flags: MessageFlags.Ephemeral
-    }).catch(() => null);
-    return true;
-  }
-
   try {
-    if (isOn) {
+    if (!hasRole) {
+      // On Duty
       await interaction.member.roles.add(onDutyRole);
       await interaction.reply({
         content: `Kamu sekarang **On Duty** ${onDutyRole}. Ticket/jobdesk akan diteruskan ke kamu.`,
@@ -173,6 +119,7 @@ async function handleDutyButton(interaction, client) {
       }).catch(() => null);
       await sendStaffLog(interaction.guild, settings, `🟢 **${interaction.user.tag}** sekarang **On Duty**.`);
     } else {
+      // Off Duty
       await interaction.member.roles.remove(onDutyRole);
       await interaction.reply({
         content: `Kamu sekarang **Off Duty**. Sampai jumpa lagi!`,
@@ -186,8 +133,6 @@ async function handleDutyButton(interaction, client) {
       flags: MessageFlags.Ephemeral
     }).catch(() => null);
   }
-
-  return true;
 }
 
 // === Slash Command ===
@@ -236,17 +181,6 @@ const slashData = new SlashCommandBuilder()
         sub
           .setName("info")
           .setDescription("Lihat konfigurasi staff saat ini")
-      )
-  )
-  // Duty
-  .addSubcommand((sub) =>
-    sub
-      .setName("duty")
-      .setDescription("Tampilkan panel duty toggle")
-      .addChannelOption((opt) =>
-        opt
-          .setName("channel")
-          .setDescription("Channel untuk panel (default: channel ini)")
       )
   )
   // Absen
@@ -428,33 +362,6 @@ async function executeSlash(interaction, client) {
       await interaction.editReply({ embeds: [embed] });
       return;
     }
-  }
-
-  // === DUTY ===
-  if (subcommand === "duty") {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
-
-    if (settings.staffRoleIds.length === 0) {
-      await interaction.editReply("Staff role belum diset. Admin bisa pakai `/staff setup roles`.");
-      return;
-    }
-
-    if (!settings.onDutyRoleId) {
-      await interaction.editReply("On-Duty role belum diset. Admin bisa pakai `/staff setup create-onduty`.");
-      return;
-    }
-
-    const channel = interaction.options.getChannel("channel") || interaction.channel;
-    const panel = await buildDutyPanel(interaction.guild, settings);
-    const sent = await channel.send(panel).catch(() => null);
-
-    if (!sent) {
-      await interaction.editReply(`Gagal mengirim panel ke ${channel}.`);
-      return;
-    }
-
-    await interaction.editReply(`Panel duty berhasil dikirim ke ${channel}.`);
-    return;
   }
 
   // === ABSEN ===
@@ -664,9 +571,7 @@ async function executeSlash(interaction, client) {
 
 module.exports = {
   slashData,
-  DUTY_BUTTON_ON,
-  DUTY_BUTTON_OFF,
-  handleDutyButton,
+  toggleDuty,
   executeSlash,
   isStaffMember,
   getStaffSettings
