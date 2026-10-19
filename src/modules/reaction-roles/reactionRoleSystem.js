@@ -616,6 +616,8 @@ async function handleRolePanelButton(interaction) {
   const hasRole = targetMember.roles.cache.has(role.id);
   const isSingle = panel.mode === "single";
 
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+
   const addedRoles = [];
   const removedRoles = [];
 
@@ -646,7 +648,7 @@ async function handleRolePanelButton(interaction) {
     }
   }
 
-  await interaction.reply({
+  await interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setColor("#111827")
@@ -658,9 +660,8 @@ async function handleRolePanelButton(interaction) {
             : "Mode toggle: tekan tombol lagi untuk melepas role."
         })
         .setTimestamp()
-    ],
-    flags: MessageFlags.Ephemeral
-  });
+    ]
+  }).catch(() => null);
 
   return true;
 }

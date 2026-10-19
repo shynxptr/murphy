@@ -21,11 +21,20 @@ const ELEVATED_ADMIN_PERMISSIONS = new PermissionsBitField([
   PermissionFlagsBits.BanMembers
 ]);
 
+let cachedBotOwnerId = null;
+let botOwnerResolved = false;
+
 async function resolveBotOwnerId(client) {
   const configured = String(client?.config?.botOwnerId || "").trim();
 
   if (configured) {
+    cachedBotOwnerId = configured;
+    botOwnerResolved = true;
     return configured;
+  }
+
+  if (botOwnerResolved) {
+    return cachedBotOwnerId;
   }
 
   try {
@@ -34,21 +43,25 @@ async function resolveBotOwnerId(client) {
       : await client.application?.fetch();
     const owner = application?.owner;
 
-    if (!owner) {
-      return "";
+    let resolved = "";
+
+    if (owner) {
+      if (owner.id) {
+        resolved = owner.id;
+      } else if (owner.ownerId) {
+        resolved = owner.ownerId;
+      } else {
+        const firstTeamMember = owner.members?.first?.() || null;
+        resolved = firstTeamMember?.id || "";
+      }
     }
 
-    if (owner.id) {
-      return owner.id;
-    }
-
-    if (owner.ownerId) {
-      return owner.ownerId;
-    }
-
-    const firstTeamMember = owner.members?.first?.() || null;
-    return firstTeamMember?.id || "";
+    cachedBotOwnerId = resolved;
+    botOwnerResolved = true;
+    return resolved;
   } catch {
+    cachedBotOwnerId = "";
+    botOwnerResolved = true;
     return "";
   }
 }
@@ -105,15 +118,15 @@ function isProtectedPrefixedCommand(command) {
 }
 
 function isProtectedSlashCommand(command) {
-  return Boolean(command?.botOwnerOnly || command?.adminOnly || command?.data?.default_member_permissions);
+  return Boolean(command?.botOwnerOnly || command?.adminOnly || command?.data?.default_member_permissions || command?.slashData?.default_member_permissions);
 }
 
-async function withScopedAdminAccess(member, client, executor) {
+async function withScopedAdminAccess(member, client, executor, prebuiltAccess) {
   if (!member?.permissions || typeof member.permissions.has !== "function") {
     return executor();
   }
 
-  const access = await buildAdminAccessState(member, client);
+  const access = prebuiltAccess || await buildAdminAccessState(member, client);
 
   if (!access.hasAccess) {
     return executor();

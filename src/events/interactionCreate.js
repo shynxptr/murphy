@@ -111,8 +111,10 @@ module.exports = {
       }
 
       try {
+        let access = null;
+
         if (command.botOwnerOnly) {
-          const access = await buildAdminAccessState(interaction.member, client);
+          access = await buildAdminAccessState(interaction.member, client);
 
           if (!access.botOwner) {
             await interaction.reply({
@@ -122,17 +124,17 @@ module.exports = {
             return;
           }
         } else if (command.requiredAccess) {
-          const access = await buildBotPermissionAccessState(interaction.member, command.requiredAccess, client);
+          const permAccess = await buildBotPermissionAccessState(interaction.member, command.requiredAccess, client);
 
-          if (!access.hasAccess) {
+          if (!permAccess.hasAccess) {
             await interaction.reply({
-              content: `Kamu tidak punya akses bot \`${access.accessName}\` untuk memakai command ini.`,
+              content: `Kamu tidak punya akses bot \`${permAccess.accessName}\` untuk memakai command ini.`,
               ephemeral: true
             }).catch(() => null);
             return;
           }
         } else if (isProtectedSlashCommand(command)) {
-          const access = await buildAdminAccessState(interaction.member, client);
+          access = await buildAdminAccessState(interaction.member, client);
 
           if (!access.hasAccess) {
             await interaction.reply({
@@ -145,7 +147,7 @@ module.exports = {
 
         await withScopedAdminAccess(interaction.member, client, async () => {
           await command.executeSlash(interaction, client);
-        });
+        }, access);
       } catch (error) {
         console.error(`Failed to execute slash command "${interaction.commandName}":`, error);
 
