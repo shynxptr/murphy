@@ -1,4 +1,4 @@
-const { PermissionFlagsBits, ChannelType } = require("discord.js");
+const { PermissionFlagsBits, ChannelType, SlashCommandBuilder } = require("discord.js");
 const { resolveTextChannel, resolveLogChannel } = require("../../utils/channelResolver");
 const {
   addBadWord,
@@ -54,11 +54,144 @@ function resolveRole(message, input) {
   return roleId ? message.guild.roles.cache.get(roleId) || null : null;
 }
 
+const slashData = new SlashCommandBuilder()
+  .setName("automod")
+  .setDescription("Kelola Automod Lite (rules, bad words, whitelist, log channel)")
+  .setDMPermission(false)
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .addSubcommand((sub) =>
+    sub.setName("status").setDescription("Lihat status semua rule dan konfigurasi automod")
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("logchannel")
+      .setDescription("Set forum/text channel log untuk kategori pelanggaran tertentu")
+      .addStringOption((opt) =>
+        opt
+          .setName("kategori")
+          .setDescription("Kategori pelanggaran")
+          .setRequired(true)
+          .addChoices(
+            AUTOMOD_LOG_CATEGORIES.map((cat) => ({ name: cat.label, value: cat.key }))
+          )
+      )
+      .addChannelOption((opt) =>
+        opt
+          .setName("channel")
+          .setDescription("Forum/Text channel target (kosongkan untuk clear)")
+          .setRequired(false)
+          .addChannelTypes(ChannelType.GuildForum, ChannelType.GuildText)
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("antiinvite")
+      .setDescription("Toggle rule Anti Invite (blokir discord.gg/xxx)")
+      .addStringOption((opt) =>
+        opt
+          .setName("status")
+          .setDescription("on atau off")
+          .setRequired(true)
+          .addChoices({ name: "on", value: "on" }, { name: "off", value: "off" })
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("antilink")
+      .setDescription("Toggle rule Anti Link (blokir semua link eksternal)")
+      .addStringOption((opt) =>
+        opt
+          .setName("status")
+          .setDescription("on atau off")
+          .setRequired(true)
+          .addChoices({ name: "on", value: "on" }, { name: "off", value: "off" })
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("badwords")
+      .setDescription("Toggle rule Bad Words")
+      .addStringOption((opt) =>
+        opt
+          .setName("status")
+          .setDescription("on atau off")
+          .setRequired(true)
+          .addChoices({ name: "on", value: "on" }, { name: "off", value: "off" })
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("addbadword")
+      .setDescription("Tambah kata/frasa ke daftar bad words")
+      .addStringOption((opt) =>
+        opt.setName("kata").setDescription("Kata atau frasa yang ingin diblokir").setRequired(true)
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("removebadword")
+      .setDescription("Hapus kata/frasa dari daftar bad words")
+      .addStringOption((opt) =>
+        opt.setName("kata").setDescription("Kata atau frasa yang ingin dihapus").setRequired(true)
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("mentionlimit")
+      .setDescription("Atur batas maksimal mention per pesan")
+      .addIntegerOption((opt) =>
+        opt
+          .setName("limit")
+          .setDescription("Angka 1-25, atau 0 untuk off")
+          .setRequired(true)
+          .setMinValue(0)
+          .setMaxValue(25)
+      )
+  )
+  .addSubcommand((sub) =>
+    sub.setName("listbadwords").setDescription("Lihat daftar bad words")
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("whitelistchannel")
+      .setDescription("Tambah/hapus channel dari whitelist automod")
+      .addStringOption((opt) =>
+        opt
+          .setName("mode")
+          .setDescription("add atau remove")
+          .setRequired(true)
+          .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" })
+      )
+      .addChannelOption((opt) =>
+        opt
+          .setName("channel")
+          .setDescription("Channel target")
+          .setRequired(true)
+          .addChannelTypes(ChannelType.GuildText)
+      )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("whitelistrole")
+      .setDescription("Tambah/hapus role dari whitelist automod")
+      .addStringOption((opt) =>
+        opt
+          .setName("mode")
+          .setDescription("add atau remove")
+          .setRequired(true)
+          .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" })
+      )
+      .addRoleOption((opt) =>
+        opt.setName("role").setDescription("Role target").setRequired(true)
+      )
+  );
+
 module.exports = {
   name: "automod",
   description: "Kelola Automod Lite dengan state default off.",
   aliases: ["am"],
   category: "automod",
+  slashData,
   usage: "automod [status|logchannel|antiinvite|antilink|badwords|addbadword|removebadword|mentionlimit|whitelistchannel|whitelistrole|listbadwords]",
   async execute(message, args) {
     if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
@@ -342,5 +475,178 @@ module.exports = {
         "`skautomod whitelistrole add|remove <@role>`"
       ].join("\n")
     );
+  },
+  async executeSlash(interaction) {
+    if (!interaction.inGuild()) {
+      await interaction.reply({ content: "Command ini hanya bisa dipakai di server.", ephemeral: true });
+      return;
+    }
+
+    const sub = interaction.options.getSubcommand();
+    const guildId = interaction.guildId;
+
+    if (sub === "status") {
+      await interaction.reply({
+        embeds: [buildAutomodStatusEmbed(interaction.guild)],
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "logchannel") {
+      const categoryKey = interaction.options.getString("kategori", true);
+      const channel = interaction.options.getChannel("channel");
+
+      // Kalau channel ga diisi → clear log channel kategori itu
+      if (!channel) {
+        setAutomodLogChannelForCategory(guildId, categoryKey, "");
+        const cat = AUTOMOD_LOG_CATEGORIES.find((c) => c.key === categoryKey);
+        await interaction.reply({
+          content: `Log channel untuk **${cat?.label || categoryKey}** dimatikan.`,
+          ephemeral: true
+        });
+        return;
+      }
+
+      setAutomodLogChannelForCategory(guildId, categoryKey, channel.id);
+      const cat = AUTOMOD_LOG_CATEGORIES.find((c) => c.key === categoryKey);
+      const typeLabel = channel.type === ChannelType.GuildForum ? "Forum" : "Text";
+      await interaction.reply({
+        content: `Log **${cat?.label || categoryKey}** diset ke ${channel} (${typeLabel} channel).\nSemua log kategori itu bakal masuk ke thread yang sama di channel itu.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "antiinvite") {
+      const enabled = interaction.options.getString("status", true) === "on";
+      setAutomodRuleEnabled(guildId, "antiInvite", enabled);
+      await interaction.reply({
+        content: `Anti Invite diubah ke \`${enabled ? "on" : "off"}\`.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "antilink") {
+      const enabled = interaction.options.getString("status", true) === "on";
+      setAutomodRuleEnabled(guildId, "antiLink", enabled);
+      await interaction.reply({
+        content: `Anti Link diubah ke \`${enabled ? "on" : "off"}\`.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "badwords") {
+      const enabled = interaction.options.getString("status", true) === "on";
+      setAutomodRuleEnabled(guildId, "badWords", enabled);
+      await interaction.reply({
+        content: `Filter bad words diubah ke \`${enabled ? "on" : "off"}\`.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "addbadword") {
+      const word = interaction.options.getString("kata", true).trim();
+      const result = addBadWord(guildId, word);
+
+      if (!result.ok) {
+        await interaction.reply({ content: result.reason, ephemeral: true });
+        return;
+      }
+
+      await interaction.reply({
+        content: `Bad word \`${word}\` berhasil ditambahkan.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "removebadword") {
+      const word = interaction.options.getString("kata", true).trim();
+      const result = removeBadWord(guildId, word);
+
+      if (!result.ok) {
+        await interaction.reply({ content: result.reason, ephemeral: true });
+        return;
+      }
+
+      await interaction.reply({
+        content: `Bad word \`${word}\` berhasil dihapus.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "mentionlimit") {
+      const limit = interaction.options.getInteger("limit", true);
+      setMentionLimit(guildId, limit);
+      await interaction.reply({
+        content: limit > 0
+          ? `Mention limit diatur ke \`${limit}\`.`
+          : "Mention limit dimatikan.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "listbadwords") {
+      const statusEmbed = buildAutomodStatusEmbed(interaction.guild);
+      const fields = statusEmbed.data.fields?.filter((entry) => entry.name.startsWith("Bad Word List")) || [];
+      const combined = fields.map((entry) => entry.value).join(", ");
+
+      await interaction.reply({
+        content: combined || "`none`",
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "whitelistchannel") {
+      const mode = interaction.options.getString("mode", true);
+      const channel = interaction.options.getChannel("channel", true);
+
+      const result = mode === "add"
+        ? addWhitelistChannel(guildId, channel.id)
+        : removeWhitelistChannel(guildId, channel.id);
+
+      if (!result.ok) {
+        await interaction.reply({ content: result.reason, ephemeral: true });
+        return;
+      }
+
+      await interaction.reply({
+        content: `Channel ${channel} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (sub === "whitelistrole") {
+      const mode = interaction.options.getString("mode", true);
+      const role = interaction.options.getRole("role", true);
+
+      const result = mode === "add"
+        ? addWhitelistRole(guildId, role.id)
+        : removeWhitelistRole(guildId, role.id);
+
+      if (!result.ok) {
+        await interaction.reply({ content: result.reason, ephemeral: true });
+        return;
+      }
+
+      await interaction.reply({
+        content: `Role ${role} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`,
+        ephemeral: true
+      });
+      return;
+    }
+
+    await interaction.reply({
+      content: "Subcommand tidak dikenali.",
+      ephemeral: true
+    });
   }
 };
