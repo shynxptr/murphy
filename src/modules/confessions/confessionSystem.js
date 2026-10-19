@@ -157,6 +157,38 @@ function buildLogEmbed(entry, actionLabel) {
     .setTimestamp(new Date(entry.createdAt));
 }
 
+async function sendConfessionLogToForum(guild, forumChannel, actionLabel, embed) {
+  const threadName = `[${actionLabel}] — Confession Log`;
+
+  const existingThread = forumChannel.threads.cache.find(
+    (thread) => thread.name === threadName && !thread.archived
+  );
+
+  if (existingThread) {
+    await existingThread.send({ embeds: [embed] }).catch(() => null);
+    return;
+  }
+
+  const archivedThreads = await forumChannel.threads.fetchArchived({ limit: 100 }).catch(() => null);
+  const archivedMatch = archivedThreads?.threads.find(
+    (thread) => thread.name === threadName
+  );
+
+  if (archivedMatch) {
+    if (archivedMatch.archived) {
+      await archivedMatch.setArchived(false, "Confession log resume").catch(() => null);
+    }
+    await archivedMatch.send({ embeds: [embed] }).catch(() => null);
+    return;
+  }
+
+  await forumChannel.threads.create({
+    name: threadName,
+    message: { embeds: [embed] },
+    appliedTags: []
+  }).catch(() => null);
+}
+
 async function sendConfessionLog(guild, client, entry, actionLabel) {
   const { confessions } = getEffectiveGuildSettings(guild.id, client);
 
@@ -166,13 +198,22 @@ async function sendConfessionLog(guild, client, entry, actionLabel) {
 
   const logChannel = await guild.channels.fetch(confessions.logChannelId).catch(() => null);
 
-  if (!logChannel || logChannel.type !== ChannelType.GuildText) {
+  if (!logChannel) {
     return;
   }
 
-  await logChannel.send({
-    embeds: [buildLogEmbed(entry, actionLabel)]
-  });
+  const embed = buildLogEmbed(entry, actionLabel);
+
+  // Forum → kirim ke thread per kategori (Confession / Confession Reply)
+  if (logChannel.type === ChannelType.GuildForum) {
+    await sendConfessionLogToForum(guild, logChannel, actionLabel, embed);
+    return;
+  }
+
+  // Text channel → kirim embed langsung (fallback)
+  if (logChannel.type === ChannelType.GuildText) {
+    await logChannel.send({ embeds: [embed] }).catch(() => null);
+  }
 }
 
 async function publishNewConfession(interaction, client) {

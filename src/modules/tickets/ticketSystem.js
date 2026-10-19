@@ -9,6 +9,7 @@ const {
 const { getGuildSettings } = require("../../services/guildConfigService");
 const { getEffectiveGuildSettings } = require("../../utils/guildSettings");
 const { getTicketPriorityFlair } = require("../levels/levelSystem");
+const { buildTicketLogEmbed, sendTicketLog } = require("../../services/ticketLogSystem");
 
 const CLOSE_TICKET_BUTTON_ID = "ticket:close";
 const TICKET_TYPE_PREFIX = "ticket:type:";
@@ -395,6 +396,21 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
     });
   }
 
+  // Log ticket opened
+  await sendTicketLog(interaction.guild, "open", buildTicketLogEmbed({
+    title: "Ticket Opened",
+    description: `Tiket baru dibuka oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
+    color: "#10b981",
+    fields: [
+      { name: "User", value: `${interaction.user} (\`${interaction.user.tag}\`)`, inline: false },
+      { name: "Type", value: `\`${ticketType.label}\``, inline: true },
+      { name: "Channel", value: `${ticketChannel} (\`${ticketChannel.name}\`)`, inline: false },
+      { name: "User ID", value: `\`${interaction.user.id}\``, inline: true },
+      { name: "Channel ID", value: `\`${ticketChannel.id}\``, inline: true }
+    ],
+    footerText: `Ticket type: ${ticketType.key}`
+  }));
+
   return {
     ok: true,
     channel: ticketChannel
@@ -430,13 +446,20 @@ async function closeTicketChannel(interaction, client) {
     };
   }
 
-  const logChannel = tickets.logChannelId
-    ? await interaction.guild.channels.fetch(tickets.logChannelId).catch(() => null)
-    : null;
-
-  if (logChannel && logChannel.type === ChannelType.GuildText) {
-    await logChannel.send(`Ticket closed: ${interaction.channel.name} by ${interaction.user}.`);
-  }
+  // Log ticket closed (via forum-based ticket log system)
+  await sendTicketLog(interaction.guild, "close", buildTicketLogEmbed({
+    title: "Ticket Closed",
+    description: `Tiket ditutup oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
+    color: "#ef4444",
+    fields: [
+      { name: "Closed By", value: `${interaction.user} (\`${interaction.user.tag}\`)`, inline: false },
+      { name: "Channel", value: `\`${interaction.channel.name}\``, inline: true },
+      { name: "Type", value: `\`${ticketTypeKey || "unknown"}\``, inline: true },
+      { name: "Owner ID", value: `\`${ownerTag}\``, inline: true },
+      { name: "Channel ID", value: `\`${interaction.channel.id}\``, inline: true }
+    ],
+    footerText: `Ticket type: ${ticketTypeKey || "unknown"}`
+  }));
 
   await interaction.channel.delete("Ticket closed");
 
@@ -493,6 +516,20 @@ async function handleTicketClaimButton(interaction, client) {
   await interaction.channel.send({
     content: `🧠 Tiket ini telah di-claim oleh ${interaction.user}.`
   });
+
+  // Log ticket claimed
+  await sendTicketLog(interaction.guild, "claim", buildTicketLogEmbed({
+    title: "Ticket Claimed",
+    description: `Tiket di-claim oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
+    color: "#3b82f6",
+    fields: [
+      { name: "Claimed By", value: `${interaction.user} (\`${interaction.user.tag}\`)`, inline: false },
+      { name: "Channel", value: `\`${interaction.channel.name}\``, inline: true },
+      { name: "Ticket Owner", value: `<@${ownerId}>`, inline: true },
+      { name: "Channel ID", value: `\`${interaction.channel.id}\``, inline: true }
+    ],
+    footerText: `Claimed by: ${interaction.user.id}`
+  }));
 }
 
 async function handleTicketApproveButton(interaction, client) {
@@ -617,6 +654,22 @@ async function handleTicketApproveButton(interaction, client) {
     content: `${targetMember}`,
     embeds: [successEmbed]
   });
+
+  // Log ticket approved
+  await sendTicketLog(interaction.guild, "approve", buildTicketLogEmbed({
+    title: "Ticket Approved",
+    description: `Verifikasi girl di-approve oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
+    color: "#22c55e",
+    fields: [
+      { name: "Approved By", value: `${interaction.user} (\`${interaction.user.tag}\`)`, inline: false },
+      { name: "Target", value: `${targetMember} (\`${targetMember.user?.tag || targetMember.user?.id}\`)`, inline: true },
+      { name: "Role Given", value: `<@&${girlRoleId}>`, inline: true },
+      { name: "Unverified Removed", value: unverifiedRemoved ? "Yes" : "No", inline: true },
+      { name: "Channel", value: `\`${interaction.channel.name}\``, inline: true },
+      { name: "Target ID", value: `\`${targetMember.id}\``, inline: true }
+    ],
+    footerText: `Approved by: ${interaction.user.id}`
+  }));
 }
 
 module.exports = {
