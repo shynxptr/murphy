@@ -1,76 +1,44 @@
 const { ChannelType, PermissionFlagsBits, SlashCommandBuilder } = require("discord.js");
-const {
-  TICKET_LOG_CATEGORIES,
-  getTicketLogSettings,
-  setTicketLogChannelForCategory
-} = require("../../services/ticketLogSystem");
+const { getTicketLogSettings, setTicketLogChannel } = require("../../services/ticketLogSystem");
 
-function buildReply(color, title, description) {
-  return {
-    embeds: [
-      {
-        color,
-        title,
-        description,
-        timestamp: new Date().toISOString()
-      }
-    ]
-  };
-}
+const TICKET_LOG_THREAD_NAME = "Ticket Log";
 
 const slashData = new SlashCommandBuilder()
   .setName("ticketlogchannel")
-  .setDescription("Atur forum/text channel log per kategori tiket (open, close, claim, approve)")
+  .setDescription("Atur forum/text channel log untuk tiket")
   .setDMPermission(false)
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
   .addSubcommand((sub) =>
-    sub.setName("status").setDescription("Lihat semua channel log tiket yang sudah diset")
+    sub.setName("status").setDescription("Lihat channel log tiket yang sudah diset")
   )
   .addSubcommand((sub) =>
     sub
       .setName("set")
-      .setDescription("Set channel log untuk kategori tiket tertentu")
-      .addStringOption((opt) =>
-        opt
-          .setName("kategori")
-          .setDescription("Kategori log tiket")
-          .setRequired(true)
-          .addChoices(TICKET_LOG_CATEGORIES.map((cat) => ({ name: cat.label, value: cat.key })))
-      )
+      .setDescription("Set channel log tiket")
       .addChannelOption((opt) =>
         opt
           .setName("channel")
-          .setDescription("Forum/Text channel target (kosongkan untuk clear)")
-          .setRequired(false)
+          .setDescription("Forum/Text channel target")
+          .setRequired(true)
           .addChannelTypes(ChannelType.GuildForum, ChannelType.GuildText)
       )
   )
   .addSubcommand((sub) =>
-    sub
-      .setName("clear")
-      .setDescription("Hapus channel log untuk kategori tiket tertentu")
-      .addStringOption((opt) =>
-        opt
-          .setName("kategori")
-          .setDescription("Kategori log tiket yang ingin di-clear")
-          .setRequired(true)
-          .addChoices(TICKET_LOG_CATEGORIES.map((cat) => ({ name: cat.label, value: cat.key })))
-      )
+    sub.setName("clear").setDescription("Hapus channel log tiket")
   );
 
 function buildStatusEmbed(guild) {
   const settings = getTicketLogSettings(guild.id);
-  const lines = TICKET_LOG_CATEGORIES.map((cat) => {
-    const channelId = settings.channels?.[cat.key];
-    return `${cat.label}: ${channelId ? `<#${channelId}>` : "`none`"}`;
-  }).join("\n");
+  const channelId = settings.channelId;
 
   return {
     embeds: [
       {
         color: 0x111827,
-        title: "Ticket Log Channels",
-        description: lines || "`none`",
+        title: "Ticket Log Channel",
+        description: channelId
+          ? `Channel log tiket: <#${channelId}>\n\nSemua log tiket (open, close, claim, approve) bakal masuk ke thread "${TICKET_LOG_THREAD_NAME}" di forum channel ini, atau langsung ke channel kalau text channel.`
+          : "`Belum diset`\n\nGunakan `/ticketlogchannel set` untuk mengatur channel log tiket.",
         timestamp: new Date().toISOString()
       }
     ]
@@ -79,7 +47,7 @@ function buildStatusEmbed(guild) {
 
 module.exports = {
   name: "ticketlogchannel",
-  description: "Atur channel log per kategori tiket (open, close, claim, approve).",
+  description: "Atur forum/text channel log untuk tiket.",
   category: "admin",
   adminOnly: true,
   slashData,
@@ -99,34 +67,23 @@ module.exports = {
     }
 
     if (sub === "set") {
-      const categoryKey = interaction.options.getString("kategori", true);
-      const channel = interaction.options.getChannel("channel");
+      const channel = interaction.options.getChannel("channel", true);
+      setTicketLogChannel(interaction.guildId, channel.id);
 
-      if (!channel) {
-        setTicketLogChannelForCategory(interaction.guildId, categoryKey, "");
-        const cat = TICKET_LOG_CATEGORIES.find((c) => c.key === categoryKey);
-        await interaction.editReply(
-          `Log channel untuk **${cat?.label || categoryKey}** dimatikan.`
-        );
-        return;
-      }
-
-      setTicketLogChannelForCategory(interaction.guildId, categoryKey, channel.id);
-      const cat = TICKET_LOG_CATEGORIES.find((c) => c.key === categoryKey);
       const typeLabel = channel.type === ChannelType.GuildForum ? "Forum" : "Text";
+      const note = channel.type === ChannelType.GuildForum
+        ? "\nSemua log tiket bakal masuk ke satu thread di forum itu."
+        : "\nLog tiket bakal dikirim langsung ke channel itu.";
+
       await interaction.editReply(
-        `Log **${cat?.label || categoryKey}** diset ke ${channel} (${typeLabel} channel).\nSemua log kategori itu bakal masuk ke thread yang sama di channel itu.`
+        `Ticket log channel diset ke ${channel} (${typeLabel} channel).${note}`
       );
       return;
     }
 
     if (sub === "clear") {
-      const categoryKey = interaction.options.getString("kategori", true);
-      setTicketLogChannelForCategory(interaction.guildId, categoryKey, "");
-      const cat = TICKET_LOG_CATEGORIES.find((c) => c.key === categoryKey);
-      await interaction.editReply(
-        `Log channel untuk **${cat?.label || categoryKey}** berhasil dihapus.`
-      );
+      setTicketLogChannel(interaction.guildId, "");
+      await interaction.editReply("Ticket log channel berhasil dihapus.");
       return;
     }
 

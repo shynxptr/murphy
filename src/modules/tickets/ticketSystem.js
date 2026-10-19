@@ -397,7 +397,7 @@ async function createTicketChannel(interaction, client, ticketTypeKey, options =
   }
 
   // Log ticket opened
-  await sendTicketLog(interaction.guild, "open", buildTicketLogEmbed({
+  await sendTicketLog(interaction.guild, buildTicketLogEmbed({
     title: "Ticket Opened",
     description: `Tiket baru dibuka oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
     color: "#10b981",
@@ -447,7 +447,7 @@ async function closeTicketChannel(interaction, client) {
   }
 
   // Log ticket closed (via forum-based ticket log system)
-  await sendTicketLog(interaction.guild, "close", buildTicketLogEmbed({
+  await sendTicketLog(interaction.guild, buildTicketLogEmbed({
     title: "Ticket Closed",
     description: `Tiket ditutup oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
     color: "#ef4444",
@@ -518,7 +518,7 @@ async function handleTicketClaimButton(interaction, client) {
   });
 
   // Log ticket claimed
-  await sendTicketLog(interaction.guild, "claim", buildTicketLogEmbed({
+  await sendTicketLog(interaction.guild, buildTicketLogEmbed({
     title: "Ticket Claimed",
     description: `Tiket di-claim oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
     color: "#3b82f6",
@@ -656,7 +656,7 @@ async function handleTicketApproveButton(interaction, client) {
   });
 
   // Log ticket approved
-  await sendTicketLog(interaction.guild, "approve", buildTicketLogEmbed({
+  await sendTicketLog(interaction.guild, buildTicketLogEmbed({
     title: "Ticket Approved",
     description: `Verifikasi girl di-approve oleh ${interaction.user} (\`${interaction.user.tag}\`).`,
     color: "#22c55e",

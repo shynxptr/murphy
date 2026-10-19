@@ -1,55 +1,31 @@
 const { ChannelType, EmbedBuilder } = require("discord.js");
-const { getGuildSettings, updateGuildSettings } = require("../services/guildConfigService");
+const { getGuildSettings, updateGuildSettings } = require("./guildConfigService");
 
-// Kategori log tiket yang didukung.
-// key → dipakai sebagai property di settings.ticketLog.channels
-// label → dipakai untuk nama thread di forum + embed title.
-const TICKET_LOG_CATEGORIES = [
-  { key: "open", label: "Ticket Opened" },
-  { key: "close", label: "Ticket Closed" },
-  { key: "claim", label: "Ticket Claimed" },
-  { key: "approve", label: "Ticket Approved" }
-];
-
-const TICKET_LOG_DEFAULTS = TICKET_LOG_CATEGORIES.reduce((acc, cat) => {
-  acc[cat.key] = "";
-  return acc;
-}, {});
+const TICKET_LOG_THREAD_NAME = "Ticket Log";
 
 function getTicketLogSettings(guildId) {
   const settings = getGuildSettings(guildId, {
     ticketLog: {
-      channels: TICKET_LOG_DEFAULTS
+      channelId: ""
     }
   });
 
-  return settings.ticketLog || { channels: TICKET_LOG_DEFAULTS };
+  return settings.ticketLog || { channelId: "" };
 }
 
-function setTicketLogChannelForCategory(guildId, categoryKey, channelId) {
+function setTicketLogChannel(guildId, channelId) {
   return updateGuildSettings(guildId, (current) => ({
     ...current,
     ticketLog: {
       ...(current.ticketLog || {}),
-      channels: {
-        ...TICKET_LOG_DEFAULTS,
-        ...(current.ticketLog?.channels || {}),
-        [categoryKey]: channelId
-      }
+      channelId
     }
   }));
 }
 
-function buildLogThreadName(categoryLabel) {
-  return `[${categoryLabel}] — Ticket Log`;
-}
-
-// Kirim embed ke thread yang sudah ada di forum. Kalau belum ada, buat thread baru.
-async function sendTicketLogToForum(guild, forumChannel, categoryLabel, embed) {
-  const threadName = buildLogThreadName(categoryLabel);
-
+async function sendTicketLogToForum(guild, forumChannel, embed) {
   const existingThread = forumChannel.threads.cache.find(
-    (thread) => thread.name === threadName && !thread.archived
+    (thread) => thread.name === TICKET_LOG_THREAD_NAME && !thread.archived
   );
 
   if (existingThread) {
@@ -59,7 +35,7 @@ async function sendTicketLogToForum(guild, forumChannel, categoryLabel, embed) {
 
   const archivedThreads = await forumChannel.threads.fetchArchived({ limit: 100 }).catch(() => null);
   const archivedMatch = archivedThreads?.threads.find(
-    (thread) => thread.name === threadName
+    (thread) => thread.name === TICKET_LOG_THREAD_NAME
   );
 
   if (archivedMatch) {
@@ -71,16 +47,15 @@ async function sendTicketLogToForum(guild, forumChannel, categoryLabel, embed) {
   }
 
   await forumChannel.threads.create({
-    name: threadName,
+    name: TICKET_LOG_THREAD_NAME,
     message: { embeds: [embed] },
     appliedTags: []
   }).catch(() => null);
 }
 
-// Fungsi utama untuk dispatch log tiket ke channel yang sesuai.
-async function sendTicketLog(guild, categoryKey, embed) {
+async function sendTicketLog(guild, embed) {
   const settings = getTicketLogSettings(guild.id);
-  const channelId = settings.channels?.[categoryKey];
+  const channelId = settings.channelId;
 
   if (!channelId) {
     return;
@@ -93,14 +68,8 @@ async function sendTicketLog(guild, categoryKey, embed) {
     return;
   }
 
-  const category = TICKET_LOG_CATEGORIES.find((cat) => cat.key === categoryKey);
-
-  if (!category) {
-    return;
-  }
-
   if (channel.type === ChannelType.GuildForum) {
-    await sendTicketLogToForum(guild, channel, category.label, embed);
+    await sendTicketLogToForum(guild, channel, embed);
     return;
   }
 
@@ -131,9 +100,8 @@ function buildTicketLogEmbed({ title, description, color = "#111827", fields = [
 }
 
 module.exports = {
-  TICKET_LOG_CATEGORIES,
   buildTicketLogEmbed,
   getTicketLogSettings,
   sendTicketLog,
-  setTicketLogChannelForCategory
+  setTicketLogChannel
 };
