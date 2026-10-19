@@ -482,13 +482,15 @@ module.exports = {
       return;
     }
 
+    // Defer dulu supaya aman dari timeout (>3 detik) kalau proses sync file I/O lambat.
+    await interaction.deferReply({ ephemeral: true });
+
     const sub = interaction.options.getSubcommand();
     const guildId = interaction.guildId;
 
     if (sub === "status") {
-      await interaction.reply({
-        embeds: [buildAutomodStatusEmbed(interaction.guild)],
-        ephemeral: true
+      await interaction.editReply({
+        embeds: [buildAutomodStatusEmbed(interaction.guild)]
       });
       return;
     }
@@ -501,50 +503,45 @@ module.exports = {
       if (!channel) {
         setAutomodLogChannelForCategory(guildId, categoryKey, "");
         const cat = AUTOMOD_LOG_CATEGORIES.find((c) => c.key === categoryKey);
-        await interaction.reply({
-          content: `Log channel untuk **${cat?.label || categoryKey}** dimatikan.`,
-          ephemeral: true
-        });
+        await interaction.editReply(
+          `Log channel untuk **${cat?.label || categoryKey}** dimatikan.`
+        );
         return;
       }
 
       setAutomodLogChannelForCategory(guildId, categoryKey, channel.id);
       const cat = AUTOMOD_LOG_CATEGORIES.find((c) => c.key === categoryKey);
       const typeLabel = channel.type === ChannelType.GuildForum ? "Forum" : "Text";
-      await interaction.reply({
-        content: `Log **${cat?.label || categoryKey}** diset ke ${channel} (${typeLabel} channel).\nSemua log kategori itu bakal masuk ke thread yang sama di channel itu.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Log **${cat?.label || categoryKey}** diset ke ${channel} (${typeLabel} channel).\nSemua log kategori itu bakal masuk ke thread yang sama di channel itu.`
+      );
       return;
     }
 
     if (sub === "antiinvite") {
       const enabled = interaction.options.getString("status", true) === "on";
       setAutomodRuleEnabled(guildId, "antiInvite", enabled);
-      await interaction.reply({
-        content: `Anti Invite diubah ke \`${enabled ? "on" : "off"}\`.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Anti Invite diubah ke \`${enabled ? "on" : "off"}\`.`
+      );
       return;
     }
 
     if (sub === "antilink") {
       const enabled = interaction.options.getString("status", true) === "on";
       setAutomodRuleEnabled(guildId, "antiLink", enabled);
-      await interaction.reply({
-        content: `Anti Link diubah ke \`${enabled ? "on" : "off"}\`.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Anti Link diubah ke \`${enabled ? "on" : "off"}\`.`
+      );
       return;
     }
 
     if (sub === "badwords") {
       const enabled = interaction.options.getString("status", true) === "on";
       setAutomodRuleEnabled(guildId, "badWords", enabled);
-      await interaction.reply({
-        content: `Filter bad words diubah ke \`${enabled ? "on" : "off"}\`.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Filter bad words diubah ke \`${enabled ? "on" : "off"}\`.`
+      );
       return;
     }
 
@@ -553,14 +550,11 @@ module.exports = {
       const result = addBadWord(guildId, word);
 
       if (!result.ok) {
-        await interaction.reply({ content: result.reason, ephemeral: true });
+        await interaction.editReply(result.reason);
         return;
       }
 
-      await interaction.reply({
-        content: `Bad word \`${word}\` berhasil ditambahkan.`,
-        ephemeral: true
-      });
+      await interaction.editReply(`Bad word \`${word}\` berhasil ditambahkan.`);
       return;
     }
 
@@ -569,26 +563,20 @@ module.exports = {
       const result = removeBadWord(guildId, word);
 
       if (!result.ok) {
-        await interaction.reply({ content: result.reason, ephemeral: true });
+        await interaction.editReply(result.reason);
         return;
       }
 
-      await interaction.reply({
-        content: `Bad word \`${word}\` berhasil dihapus.`,
-        ephemeral: true
-      });
+      await interaction.editReply(`Bad word \`${word}\` berhasil dihapus.`);
       return;
     }
 
     if (sub === "mentionlimit") {
       const limit = interaction.options.getInteger("limit", true);
       setMentionLimit(guildId, limit);
-      await interaction.reply({
-        content: limit > 0
-          ? `Mention limit diatur ke \`${limit}\`.`
-          : "Mention limit dimatikan.",
-        ephemeral: true
-      });
+      await interaction.editReply(
+        limit > 0 ? `Mention limit diatur ke \`${limit}\`.` : "Mention limit dimatikan."
+      );
       return;
     }
 
@@ -597,10 +585,7 @@ module.exports = {
       const fields = statusEmbed.data.fields?.filter((entry) => entry.name.startsWith("Bad Word List")) || [];
       const combined = fields.map((entry) => entry.value).join(", ");
 
-      await interaction.reply({
-        content: combined || "`none`",
-        ephemeral: true
-      });
+      await interaction.editReply(combined || "`none`");
       return;
     }
 
@@ -613,14 +598,13 @@ module.exports = {
         : removeWhitelistChannel(guildId, channel.id);
 
       if (!result.ok) {
-        await interaction.reply({ content: result.reason, ephemeral: true });
+        await interaction.editReply(result.reason);
         return;
       }
 
-      await interaction.reply({
-        content: `Channel ${channel} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Channel ${channel} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`
+      );
       return;
     }
 
@@ -633,20 +617,16 @@ module.exports = {
         : removeWhitelistRole(guildId, role.id);
 
       if (!result.ok) {
-        await interaction.reply({ content: result.reason, ephemeral: true });
+        await interaction.editReply(result.reason);
         return;
       }
 
-      await interaction.reply({
-        content: `Role ${role} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`,
-        ephemeral: true
-      });
+      await interaction.editReply(
+        `Role ${role} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`
+      );
       return;
     }
 
-    await interaction.reply({
-      content: "Subcommand tidak dikenali.",
-      ephemeral: true
-    });
+    await interaction.editReply("Subcommand tidak dikenali.");
   }
 };
