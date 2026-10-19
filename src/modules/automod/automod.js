@@ -2,11 +2,15 @@ const { PermissionFlagsBits, ChannelType, SlashCommandBuilder } = require("disco
 const { resolveTextChannel, resolveLogChannel } = require("../../utils/channelResolver");
 const {
   addBadWord,
+  addLinkBypass,
   addWhitelistChannel,
   addWhitelistRole,
   AUTOMOD_LOG_CATEGORIES,
   buildAutomodStatusEmbed,
+  DEFAULT_LINK_BYPASS_DOMAINS,
+  getAutomodSettings,
   removeBadWord,
+  removeLinkBypass,
   removeWhitelistChannel,
   removeWhitelistRole,
   setAutomodLogChannelForCategory,
@@ -184,6 +188,21 @@ const slashData = new SlashCommandBuilder()
       .addRoleOption((opt) =>
         opt.setName("role").setDescription("Role target").setRequired(true)
       )
+  )
+  .addSubcommand((sub) =>
+    sub
+      .setName("linkbypass")
+      .setDescription("Kelola domain yang dibypass Anti Link (streaming, musik, sosmed)")
+      .addStringOption((opt) =>
+        opt
+          .setName("mode")
+          .setDescription("add, remove, atau list")
+          .setRequired(true)
+          .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" }, { name: "list", value: "list" })
+      )
+      .addStringOption((opt) =>
+        opt.setName("domain").setDescription("Domain yang ingin ditambah/dihapus (mis. youtube.com)").setRequired(false)
+      )
   );
 
 module.exports = {
@@ -192,7 +211,7 @@ module.exports = {
   aliases: ["am"],
   category: "automod",
   slashData,
-  usage: "automod [status|logchannel|antiinvite|antilink|badwords|addbadword|removebadword|mentionlimit|whitelistchannel|whitelistrole|listbadwords]",
+  usage: "automod [status|logchannel|antiinvite|antilink|badwords|addbadword|removebadword|mentionlimit|whitelistchannel|whitelistrole|linkbypass|listbadwords]",
   async execute(message, args) {
     if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
       await replyError(message, "Kamu butuh permission Manage Server untuk command ini.");
@@ -457,6 +476,58 @@ module.exports = {
       return;
     }
 
+    if (action === "linkbypass") {
+      const mode = args[1]?.toLowerCase();
+
+      if (!["add", "remove", "list"].includes(mode)) {
+        await replyError(
+          message,
+          "Gunakan `add`, `remove`, atau `list`.\nContoh: `skautomod linkbypass add youtube.com`"
+        );
+        return;
+      }
+
+      if (mode === "list") {
+        const settings = getAutomodSettings(message.guild.id);
+        const builtIn = DEFAULT_LINK_BYPASS_DOMAINS.map((d) => `\`${d}\``).join(", ");
+        const custom = (settings.linkBypassDomains || []).map((d) => `\`${d}\``).join(", ");
+        await message.reply({
+          embeds: [
+            {
+              color: 0x111827,
+              title: "Link Bypass Domains",
+              description: [
+                `**Built-in (${DEFAULT_LINK_BYPASS_DOMAINS.length}):**\n${builtIn}`,
+                "",
+                `**Custom (${(settings.linkBypassDomains || []).length}):**\n${custom || "`none`"}`
+              ].join("\n"),
+              timestamp: new Date().toISOString()
+            }
+          ]
+        });
+        return;
+      }
+
+      const domain = args[2];
+
+      if (!domain) {
+        await replyError(message, `Masukkan domain yang ingin di-${mode}.\nContoh: \`skautomod linkbypass ${mode} youtube.com\``);
+        return;
+      }
+
+      const result = mode === "add"
+        ? addLinkBypass(message.guild.id, domain)
+        : removeLinkBypass(message.guild.id, domain);
+
+      if (!result.ok) {
+        await replyError(message, result.reason);
+        return;
+      }
+
+      await replySuccess(message, `Domain \`${domain}\` berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} link bypass.`);
+      return;
+    }
+
     await replyError(
       message,
       [
@@ -472,7 +543,8 @@ module.exports = {
         "`skautomod listbadwords`",
         "`skautomod mentionlimit <angka|off>`",
         "`skautomod whitelistchannel add|remove [#channel]`",
-        "`skautomod whitelistrole add|remove <@role>`"
+        "`skautomod whitelistrole add|remove <@role>`",
+        "`skautomod linkbypass add|remove|list <domain>`"
       ].join("\n")
     );
   },
@@ -624,6 +696,44 @@ module.exports = {
       await interaction.editReply(
         `Role ${role} berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} whitelist automod.`
       );
+      return;
+    }
+
+    if (sub === "linkbypass") {
+      const mode = interaction.options.getString("mode", true);
+
+      if (mode === "list") {
+        const settings = getAutomodSettings(guildId);
+        const builtIn = DEFAULT_LINK_BYPASS_DOMAINS.map((d) => `\`${d}\``).join(", ");
+        const custom = (settings.linkBypassDomains || []).map((d) => `\`${d}\``).join(", ");
+        await interaction.editReply({
+          embeds: [
+            {
+              color: 0x111827,
+              title: "Link Bypass Domains",
+              description: [
+                `**Built-in (${DEFAULT_LINK_BYPASS_DOMAINS.length}):**\n${builtIn}`,
+                "",
+                `**Custom (${(settings.linkBypassDomains || []).length}):**\n${custom || "`none`"}`
+              ].join("\n"),
+              timestamp: new Date().toISOString()
+            }
+          ]
+        });
+        return;
+      }
+
+      const domain = interaction.options.getString("domain", true);
+      const result = mode === "add"
+        ? addLinkBypass(guildId, domain)
+        : removeLinkBypass(guildId, domain);
+
+      if (!result.ok) {
+        await interaction.editReply(result.reason);
+        return;
+      }
+
+      await interaction.editReply(`Domain \`${domain}\` berhasil ${mode === "add" ? "ditambahkan ke" : "dihapus dari"} link bypass.`);
       return;
     }
 

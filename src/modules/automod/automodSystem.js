@@ -3,6 +3,35 @@ const { getGuildSettings, updateGuildSettings } = require("../../services/guildC
 
 const INVITE_REGEX = /\b(?:https?:\/\/)?(?:www\.)?(?:discord\.gg|discord(?:app)?\.com\/invite)\/[A-Za-z0-9-]+\b/i;
 const LINK_REGEX = /\b(?:(?:https?:\/\/)|(?:www\.))[^\s<]+/i;
+
+// Domain yang otomatis dibypass oleh Anti Link (streaming, musik, sosmed).
+// Match berdasarkan hostname, jadi semua subdomain juga ikut bypass.
+const DEFAULT_LINK_BYPASS_DOMAINS = [
+  "youtube.com",
+  "youtu.be",
+  "music.youtube.com",
+  "spotify.com",
+  "soundcloud.com",
+  "bandcamp.com",
+  "deezer.com",
+  "tidal.com",
+  "apple.com",
+  "instagram.com",
+  "facebook.com",
+  "tiktok.com",
+  "twitter.com",
+  "x.com",
+  "reddit.com",
+  "twitch.tv",
+  "vimeo.com",
+  "dailymotion.com",
+  "pinterest.com",
+  "linkedin.com",
+  "snapchat.com",
+  "threads.net",
+  "bsky.app",
+  "bluesky.social"
+];
 const AUTOMOD_NOTICE_TTL_MS = 8000;
 const STAFF_EXEMPT_PERMISSIONS = [
   PermissionFlagsBits.Administrator,
@@ -39,6 +68,7 @@ function getAutomodSettings(guildId) {
       },
       whitelistChannelIds: [],
       whitelistRoleIds: [],
+      linkBypassDomains: [],
       antiInvite: {
         enabled: false
       },
@@ -97,6 +127,106 @@ function setAutomodRuleEnabled(guildId, ruleKey, enabled) {
       enabled
     }
   }));
+}
+
+// Ambil hostname dari sebuah URL mentah. Return lowercase tanpa path/port.
+// Kalau ga bisa di-parse, return string kosong.
+function extractHostname(rawUrl) {
+  try {
+    const withScheme = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+    const url = new URL(withScheme);
+    return url.hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+// Cek apakah link boleh dibypass (domainnya streaming/musik/sosmed atau custom).
+function isLinkBypassed(rawUrl, settings) {
+  const hostname = extractHostname(rawUrl);
+  if (!hostname) {
+    return false;
+  }
+
+  // Cek domain + semua parent domain-nya.
+  // Mis. "music.youtube.com" → cek "music.youtube.com", "youtube.com".
+  const parts = hostname.split(".");
+  const candidates = [];
+  for (let i = 0; i < parts.length - 1; i++) {
+    candidates.push(parts.slice(i).join("."));
+  }
+
+  const allBypass = [...DEFAULT_LINK_BYPASS_DOMAINS, ...(settings.linkBypassDomains || [])];
+
+  return candidates.some((candidate) => allBypass.includes(candidate));
+}
+
+function normalizeDomain(value) {
+  return value?.toLowerCase().trim().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "").trim() || "";
+}
+
+function addLinkBypass(guildId, domain) {
+  const normalized = normalizeDomain(domain);
+
+  if (!normalized || !normalized.includes(".")) {
+    return {
+      ok: false,
+      reason: "Domain tidak valid. Contoh yang valid: `youtube.com`, `spotify.com`."
+    };
+  }
+
+  const settings = getAutomodSettings(guildId);
+  const currentList = settings.linkBypassDomains || [];
+
+  if (currentList.includes(normalized) || DEFAULT_LINK_BYPASS_DOMAINS.includes(normalized)) {
+    return {
+      ok: false,
+      reason: `Domain \`${normalized}\` sudah ada di daftar bypass (built-in atau custom).`
+    };
+  }
+
+  return {
+    ok: true,
+    settings: updateAutomodSettings(guildId, (current) => ({
+      ...current,
+      linkBypassDomains: [...(current.linkBypassDomains || []), normalized].sort((a, b) => a.localeCompare(b))
+    }))
+  };
+}
+
+function removeLinkBypass(guildId, domain) {
+  const normalized = normalizeDomain(domain);
+
+  if (!normalized) {
+    return {
+      ok: false,
+      reason: "Domain tidak valid."
+    };
+  }
+
+  if (DEFAULT_LINK_BYPASS_DOMAINS.includes(normalized)) {
+    return {
+      ok: false,
+      reason: `Domain \`${normalized}\` adalah built-in bypass dan tidak bisa dihapus.`
+    };
+  }
+
+  const settings = getAutomodSettings(guildId);
+
+  if (!(settings.linkBypassDomains || []).includes(normalized)) {
+    return {
+      ok: false,
+      reason: `Domain \`${normalized}\` tidak ada di daftar bypass custom.`
+    };
+  }
+
+  return {
+    ok: true,
+    settings: updateAutomodSettings(guildId, (current) => ({
+      ...current,
+      linkBypassDomains: (current.linkBypassDomains || []).filter((entry) => entry !== normalized)
+    }))
+  };
 }
 
 function setMentionLimit(guildId, limit) {
@@ -297,15 +427,21 @@ function detectAutomodViolation(message, settings) {
   }
 
   if (settings.antiLink.enabled) {
-    const linkMatch = content.match(LINK_REGEX);
+    const linkMatches = content.match(new RegExp(LINK_REGEX.source, "gi"));
 
-    if (linkMatch) {
-      return {
-        ruleKey: "antiLink",
-        ruleLabel: "Anti Link",
-        reason: "Link tidak diizinkan di channel ini.",
-        details: linkMatch[0]
-      };
+    if (linkMatches) {
+      // Cek semua link di pesan. Kalau semua link ternyata bypass (streaming/musik/sosmed),
+      // ga dianggap pelanggaran. Tapi kalau ada minimal satu link non-bypass → trigger.
+      const blockedLink = linkMatches.find((link) => !isLinkBypassed(link, settings));
+
+      if (blockedLink) {
+        return {
+          ruleKey: "antiLink",
+          ruleLabel: "Anti Link",
+          reason: "Link tidak diizinkan di channel ini.",
+          details: blockedLink
+        };
+      }
     }
   }
 
@@ -609,6 +745,16 @@ function buildAutomodStatusEmbed(guild) {
         ].join("\n"),
         inline: true
       },
+      {
+        name: "Link Bypass (Anti Link)",
+        value: [
+          `Built-in: \`${DEFAULT_LINK_BYPASS_DOMAINS.length} domains\` (YouTube, Spotify, IG, TikTok, dll)`,
+          `Custom: ${(settings.linkBypassDomains || []).length
+            ? settings.linkBypassDomains.map((d) => `\`${d}\``).join(", ")
+            : "`none`"}`
+        ].join("\n"),
+        inline: false
+      },
       ...buildBadWordFields(settings.badWords.words)
     )
     .setFooter({
@@ -622,13 +768,16 @@ function buildAutomodStatusEmbed(guild) {
 
 module.exports = {
   addBadWord,
+  addLinkBypass,
   addWhitelistChannel,
   addWhitelistRole,
   AUTOMOD_LOG_CATEGORIES,
+  DEFAULT_LINK_BYPASS_DOMAINS,
   buildAutomodStatusEmbed,
   getAutomodSettings,
   handleAutomodMessage,
   removeBadWord,
+  removeLinkBypass,
   removeWhitelistChannel,
   removeWhitelistRole,
   setAutomodLogChannel,
