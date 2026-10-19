@@ -9,7 +9,7 @@ const {
 const { getGuildSettings } = require("../../services/guildConfigService");
 const { getEffectiveGuildSettings } = require("../../utils/guildSettings");
 const { getTicketPriorityFlair } = require("../levels/levelSystem");
-const { buildTicketLogEmbed, sendTicketLog } = require("../../services/ticketLogSystem");
+const { buildTicketLogEmbed, sendTicketArchive, sendTicketLog } = require("../../services/ticketLogSystem");
 
 const CLOSE_TICKET_BUTTON_ID = "ticket:close";
 const TICKET_TYPE_PREFIX = "ticket:type:";
@@ -460,6 +460,18 @@ async function closeTicketChannel(interaction, client) {
     ],
     footerText: `Ticket type: ${ticketTypeKey || "unknown"}`
   }));
+
+  // Generate arsip transcript .txt sebelum channel dihapus.
+  const ticketType = getTicketType(ticketTypeKey);
+  await sendTicketArchive(interaction.guild, {
+    channel: interaction.channel,
+    closedBy: interaction.user,
+    ownerId: ownerTag,
+    ticketTypeKey,
+    ticketTypeLabel: ticketType?.label || ticketTypeKey
+  }).catch((error) => {
+    console.error("Failed to send ticket archive:", error);
+  });
 
   await interaction.channel.delete("Ticket closed");
 
