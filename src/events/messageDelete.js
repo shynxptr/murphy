@@ -43,7 +43,12 @@ module.exports = {
       // Bot ga punya View Audit Log permission
     }
 
-    const actionSource = isBotAction ? "Bot" : executorId ? "User" : "Unknown";
+    // Skip jika pesan dihapus oleh bot sendiri (misal automod badword).
+    if (isBotAction) {
+      return;
+    }
+
+    const actionSource = executorId ? "User" : "Unknown";
 
     const fields = [];
 
@@ -56,8 +61,7 @@ module.exports = {
     }
 
     fields.push(
-      { name: "Deleted By", value: `${executorTag}${isBotAction ? " (Bot)" : ""}`, inline: true },
-      { name: "Source", value: actionSource, inline: true }
+      { name: "Deleted By", value: executorTag, inline: true }
     );
 
     if (message.attachments && message.attachments.size > 0) {
