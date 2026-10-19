@@ -12,6 +12,7 @@ const {
 } = require("discord.js");
 const { getGuildSettings, updateGuildSettings } = require("../../services/guildConfigService");
 const { createCase, listCases, updateCases } = require("../../services/moderationStore");
+const { sendModLog } = require("./modLogSystem");
 
 const MOD_PANEL_PREFIX = "mod:panel:";
 const MOD_MODAL_PREFIX = "mod:modal:";
@@ -635,6 +636,9 @@ function buildConfirmationEmbed(pending) {
 }
 
 async function sendModerationLog(guild, client, embed) {
+  // Deprecated: diganti oleh sendModLog (per kategori).
+  // Dipertahankan untuk backward compat command lama yang belum diupdate.
+  // Untuk log ke forum per kategori, pakai sendModLog(guild, categoryKey, embed).
   const settings = getModerationSettings(guild.id);
 
   if (!settings.logChannelId) {
@@ -685,7 +689,7 @@ async function warnMember(targetMember, moderatorUser, reason, client) {
     avatarUrl: targetMember.displayAvatarURL({ size: 256 })
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "warn", embed);
 
   return {
     caseEntry: createdCase,
@@ -731,7 +735,7 @@ async function clearWarnings(targetMember, moderatorUser, reason, client) {
     avatarUrl: targetMember.displayAvatarURL({ size: 256 })
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "warn", embed);
 
   return {
     ok: true,
@@ -780,7 +784,7 @@ async function timeoutMember(targetMember, moderatorUser, durationMs, reason, cl
     ]
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "mute", embed);
 
   return {
     caseEntry: createdCase,
@@ -817,7 +821,7 @@ async function removeTimeout(targetMember, moderatorUser, reason, client) {
     avatarUrl: targetMember.displayAvatarURL({ size: 256 })
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "mute", embed);
 
   return {
     caseEntry: createdCase,
@@ -855,7 +859,7 @@ async function kickMember(targetMember, moderatorUser, reason, client) {
     avatarUrl
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "kick", embed);
 
   return {
     caseEntry: createdCase,
@@ -896,7 +900,7 @@ async function banMember(targetMember, moderatorUser, reason, client) {
     avatarUrl
   });
 
-  await sendModerationLog(targetMember.guild, client, embed);
+  await sendModLog(targetMember.guild, "ban", embed);
 
   return {
     caseEntry: createdCase,
@@ -948,7 +952,7 @@ async function unbanUser(guild, userId, moderatorUser, reason, client) {
     avatarUrl: banEntry.user.displayAvatarURL({ size: 256 })
   });
 
-  await sendModerationLog(guild, client, embed);
+  await sendModLog(guild, "ban", embed);
 
   return {
     ok: true,
