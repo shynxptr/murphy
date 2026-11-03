@@ -118,9 +118,12 @@ async function syncVoiceAutoRolesForGuild(guild, client, targetUserId) {
   let checked = 0;
   let changed = 0;
 
+  const fetchedMembers = targetUserId
+    ? null
+    : await guild.members.fetch().catch(() => guild.members.cache);
   const members = targetUserId
     ? [await guild.members.fetch(targetUserId).catch(() => null)].filter(Boolean)
-    : [...(await guild.members.fetch().catch(() => null)).values()];
+    : [...(fetchedMembers?.values?.() || [])];
 
   for (const member of members) {
     if (member.user?.bot) {

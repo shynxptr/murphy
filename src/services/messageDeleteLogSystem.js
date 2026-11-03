@@ -78,7 +78,7 @@ async function sendMsgDeleteLog(guild, embed) {
   }
 }
 
-function buildMsgDeleteLogEmbed({ author, content, channel, deletedAt, fields = [] }) {
+function buildMsgDeleteLogEmbed({ author, content, channel, messageId, deletedAt, fields = [] }) {
   const embed = new EmbedBuilder()
     .setColor("#ef4444")
     .setTitle("Message Deleted")
@@ -106,7 +106,9 @@ function buildMsgDeleteLogEmbed({ author, content, channel, deletedAt, fields = 
   }
 
   if (author) {
-    embed.setFooter({ text: `User ID: ${author.id}` });
+    embed.setFooter({ text: `User ID: ${author.id}${messageId ? ` • Message ID: ${messageId}` : ""}` });
+  } else if (messageId) {
+    embed.setFooter({ text: `Message ID: ${messageId}` });
   }
 
   return embed;

@@ -80,7 +80,9 @@ function getActiveAttendance(guildId, userId) {
   const key = getUserKey(guildId, userId);
   const userRecords = store.attendance[key] || [];
   const today = getTodayKey(getSettings(guildId).timezone);
-  return userRecords.find((r) => r.dateKey === today && !r.checkoutAt) || null;
+  return userRecords.find((r) => r.dateKey === today && !r.checkoutAt)
+    || [...userRecords].reverse().find((r) => !r.checkoutAt)
+    || null;
 }
 
 function checkIn(guildId, userId) {
@@ -125,7 +127,7 @@ function checkOut(guildId, userId) {
 
   const record = store.attendance[key].find(
     (r) => r.dateKey === today && !r.checkoutAt
-  );
+  ) || [...store.attendance[key]].reverse().find((r) => !r.checkoutAt);
 
   if (!record) {
     return { ok: false, reason: "Kamu belum check-in hari ini." };

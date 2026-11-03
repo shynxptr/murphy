@@ -12,14 +12,8 @@ module.exports = {
       return;
     }
 
-    // Fetch message untuk dapat author kalau partial.
-    if (message.partial) {
-      message = await message.fetch().catch(() => null);
-
-      if (!message) {
-        return;
-      }
-    }
+    // Catatan: pesan yang sudah dihapus tidak bisa di-fetch dari Discord API (10008 Unknown Message).
+    // Jika message.partial bernilai true, tetap lanjutkan logging dengan informasi yang tersedia.
 
     // Cari audit log untuk siapa yang hapus.
     let executorTag = "Unknown";
@@ -32,9 +26,12 @@ module.exports = {
         limit: 1
       });
       const entry = logs.entries.first();
+      const isRecent = entry && Date.now() - entry.createdTimestamp < 5000;
+      const matchesTarget = message.author?.id
+        ? entry?.target?.id === message.author.id
+        : (!entry?.extra?.channel?.id || entry.extra.channel.id === message.channel?.id);
 
-      if (entry && entry.target?.id === message.author?.id
-        && Date.now() - entry.createdTimestamp < 5000) {
+      if (isRecent && matchesTarget) {
         executorTag = entry.executor?.tag || "Unknown";
         executorId = entry.executor?.id || "";
         isBotAction = executorId === client.user?.id;
@@ -48,14 +45,18 @@ module.exports = {
       return;
     }
 
-    const actionSource = executorId ? "User" : "Unknown";
-
     const fields = [];
 
     if (message.author) {
       fields.push({
         name: "Author",
         value: `<@${message.author.id}> (\`${message.author.tag}\`)`,
+        inline: true
+      });
+    } else {
+      fields.push({
+        name: "Author",
+        value: "Unknown (pesan lama / tidak ada di cache)",
         inline: true
       });
     }
@@ -75,6 +76,7 @@ module.exports = {
       author: message.author,
       content: message.content,
       channel: message.channel,
+      messageId: message.id,
       deletedAt: new Date(),
       fields
     });

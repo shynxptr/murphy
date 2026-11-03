@@ -65,7 +65,7 @@ function getDayName(dayKey) {
 function getCurrentDayKey(timezone = 7) {
   const now = new Date();
   const local = new Date(now.getTime() + timezone * 3600000);
-  const dayIndex = local.getDay(); // 0=Sunday
+  const dayIndex = local.getUTCDay(); // 0=Sunday
   const dayMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   return dayMap[dayIndex];
 }
@@ -141,7 +141,6 @@ const slashData = new SlashCommandBuilder()
   .setName("staff")
   .setDescription("Sistem staff: setup, duty, absen, schedule")
   .setDMPermission(false)
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
   // Setup
   .addSubcommandGroup((group) =>
     group
@@ -267,7 +266,14 @@ async function executeSlash(interaction, client) {
 
   // === SETUP ===
   if (subcommandGroup === "setup") {
-    // Admin only — sudah di-filter oleh defaultMemberPermissions
+    if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+      await interaction.reply({
+        content: "Kamu butuh permission Manage Server untuk mengatur konfigurasi staff.",
+        flags: MessageFlags.Ephemeral
+      }).catch(() => null);
+      return;
+    }
+
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
 
     if (subcommand === "roles") {
@@ -366,8 +372,11 @@ async function executeSlash(interaction, client) {
 
   // === ABSEN ===
   if (subcommandGroup === "absen") {
-    // Cek apakah user adalah staff
-    if (!isStaffMember(interaction.member, settings)) {
+    const canAdminReport = subcommand === "report"
+      && interaction.member.permissions.has(PermissionFlagsBits.ManageGuild);
+
+    // Cek apakah user adalah staff (atau admin yang melihat report)
+    if (!isStaffMember(interaction.member, settings) && !canAdminReport) {
       await interaction.reply({
         content: "Kamu bukan staff. Hanya staff yang bisa absen.",
         flags: MessageFlags.Ephemeral

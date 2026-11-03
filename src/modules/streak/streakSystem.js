@@ -558,52 +558,19 @@ async function clearPendingInviteReaction(message, client) {
   await reaction.users.remove(client.user.id).catch(() => null);
 }
 
-async function reactMessagesWithTierEmoji(messages, pair) {
+async function reactMessagesWithStreakEmoji(messages) {
   const uniqueMessages = [...new Set(messages.filter(Boolean))];
 
   if (!uniqueMessages.length) {
     return;
   }
 
-  const guildEmoji = await resolveTierEmoji(uniqueMessages[0].guild, pair);
-
-  if (!guildEmoji) {
-    console.warn(
-      `Streak tier emoji not found for tier "${getStreakTier(Math.max(pair.currentStreak, 1)).key}" (${pair.currentStreak}).`
-    );
-    return;
-  }
-
-  const emojiIdentifier = guildEmoji.identifier || guildEmoji.toString();
-
   await Promise.allSettled(uniqueMessages.map(async (message) => {
-    const me = message.guild.members.me || await message.guild.members.fetchMe().catch(() => null);
-    const permissions = me ? message.channel.permissionsFor(me) : null;
-
-    if (!permissions?.has(PermissionFlagsBits.AddReactions)) {
-      console.warn(`Missing AddReactions permission for streak reaction in channel ${message.channel.id}.`);
-      return null;
-    }
-
-    if (!permissions.has(PermissionFlagsBits.ReadMessageHistory)) {
-      console.warn(`Missing ReadMessageHistory permission for streak reaction in channel ${message.channel.id}.`);
-      return null;
-    }
-
-    if (!permissions.has(PermissionFlagsBits.UseExternalEmojis)) {
-      console.warn(`Missing UseExternalEmojis permission for streak reaction in channel ${message.channel.id}.`);
-      return null;
-    }
-
-    return message.react(emojiIdentifier).catch((error) => {
-      console.error(
-        `Failed to react with streak tier emoji ${emojiIdentifier} on message ${message.id}:`,
-        error
-      );
-      return null;
-    });
+    return message.react("🔥").catch(() => null);
   }));
 }
+
+const reactMessagesWithTierEmoji = reactMessagesWithStreakEmoji;
 
 async function sendStreakNotificationToChannel(channel, pair, client = null) {
   const settings = getStreakSettings(channel.guild.id, client);
@@ -652,6 +619,7 @@ async function sendStreakNotification(message, pair, client = null) {
 }
 
 async function buildStreakInfoData(guild, client, targetMember, requestedPage = 1) {
+  decayStaleStreaks(guild, client);
   const settings = getStreakSettings(guild.id, client);
   const todayDateKey = getTodayDateKey(settings.timezone);
   const allPairs = listPairs((pair) =>
@@ -985,12 +953,15 @@ function startStreakTopBoardScheduler(client) {
   }
 }
 
-function getMentionTargetId(message) {
-  if (message.mentions.users.size !== 1) {
-    return null;
-  }
+function getMentionTargetIds(message) {
+  return [...message.mentions.users.keys()].filter(
+    (id) => id !== message.author?.id && !message.mentions.users.get(id)?.bot
+  );
+}
 
-  return message.mentions.users.first()?.id || null;
+function getMentionTargetId(message) {
+  const targetIds = getMentionTargetIds(message);
+  return targetIds[0] || null;
 }
 
 async function getReplyTargetId(message) {
@@ -1065,41 +1036,64 @@ async function completePairStreak(message, pair, options = {}) {
   const client = options.client || null;
 
   await Promise.allSettled([
-    reactMessagesWithTierEmoji([message, ...additionalMessages], pair),
+    reactMessagesWithStreakEmoji([message, ...additionalMessages]),
     sendStreakNotification(message, pair, client)
   ]);
 }
 
 async function handleActivePairInteraction(message, client, settings, pair, partnerId, source) {
   const dateKey = getTodayDateKey(settings.timezone);
+  const yesterdayKey = shiftDateKey(dateKey, -1);
 
-  // Gunakan upsertPair untuk merekam interaksi pada data TERKINI dari store,
-  // bukan snapshot `pair` yang mungkin sudah stale akibat async fetch di caller.
+  // Jika streak kemarin bolong, decay ke 0
+  const isStale = pair.lastCompletedDate
+    && pair.lastCompletedDate !== dateKey
+    && pair.lastCompletedDate !== yesterdayKey;
+
+  // Cek apakah streak hari ini sudah selesai
+  const isCompletedToday = (pair.dailyState?.dateKey === dateKey && Boolean(pair.dailyState.completedAt))
+    || pair.lastCompletedDate === dateKey;
+
+  if (isCompletedToday) {
+    if (source === "command") {
+      await replyWithTemporaryMessage(message, "Streak hari ini selesai.", client);
+      return true;
+    }
+    // Jika hanya chat reply/mention biasa, jangan spam bot reply
+    return false;
+  }
+
+  // Rekam interaksi user pada store terkini
   const updatedPair = upsertPair(
     message.guild.id,
     pair.userIds[0],
     pair.userIds[1],
     (current) => {
       const dailyState = recordDailyInteraction(current, message.author.id, source, message.id, dateKey);
-      return { ...current, dailyState };
+      return {
+        ...current,
+        currentStreak: isStale ? 0 : current.currentStreak,
+        dailyState
+      };
     }
   );
 
   const dailyState = updatedPair.dailyState || {};
-  const alreadyCompletedToday = Boolean(dailyState.completedAt) || updatedPair.lastCompletedDate === dateKey;
-
-  if (alreadyCompletedToday) {
-    await replyWithTemporaryMessage(message, "Streak hari ini selesai.", client);
-    return true;
-  }
-
   const partnerInteracted = Boolean(dailyState.participants?.[partnerId]);
 
   if (!partnerInteracted) {
-    // Partner belum interact hari ini — react pesan dengan emoji tier streak
-    // supaya user tahu interaksinya tercatat tapi menunggu partner.
-    await reactMessagesWithTierEmoji([message], updatedPair);
-    return false;
+    // Partner belum interact hari ini — react pesan dengan emoji 🔥
+    // supaya user tahu interaksinya tercatat tapi sedang menunggu partner.
+    await reactMessagesWithStreakEmoji([message]);
+    return true;
+  }
+
+  // Partner sudah interact — streak hari ini selesai!
+  // Cari pesan partner untuk diberi reaksi 🔥 juga
+  const partnerMessageId = dailyState.participants?.[partnerId]?.messageId;
+  let partnerMessage = null;
+  if (partnerMessageId && message.channel?.messages?.fetch) {
+    partnerMessage = await message.channel.messages.fetch(partnerMessageId).catch(() => null);
   }
 
   const completedPair = upsertPair(
@@ -1107,21 +1101,25 @@ async function handleActivePairInteraction(message, client, settings, pair, part
     pair.userIds[0],
     pair.userIds[1],
     (current) => {
-      // Ambil ulang dailyState dari store agar tidak menimpa data partner yang baru saja disimpan
       const freshDailyState = recordDailyInteraction(current, message.author.id, source, message.id, dateKey);
       return finalizeDailyCompletion(current, dateKey, message.id, freshDailyState);
     }
   );
 
-  await completePairStreak(message, completedPair, { client });
+  await completePairStreak(message, completedPair, {
+    client,
+    additionalMessages: partnerMessage ? [partnerMessage] : []
+  });
   await awardStreakXp(message.guild, completedPair.userIds, client, message.channel.id);
   await replyWithTemporaryMessage(message, "Streak hari ini selesai.", client);
   return true;
 }
 
 async function handlePendingAcceptance(message, client, settings, pendingTargetId) {
-  const mentionTargetId = getMentionTargetId(message);
+  const mentionTargetIds = getMentionTargetIds(message);
   const replyTargetId = await getReplyTargetId(message);
+  const candidateIds = replyTargetId ? [replyTargetId, ...mentionTargetIds] : mentionTargetIds;
+
   const relevantPairs = listPairs((pair) =>
     pair.guildId === message.guild.id
     && pair.pendingInvite
@@ -1136,9 +1134,8 @@ async function handlePendingAcceptance(message, client, settings, pendingTargetI
       return false;
     }
 
-    return pending.requesterId === pendingTargetId
-      || pending.requesterId === mentionTargetId
-      || pending.requesterId === replyTargetId;
+    return (pendingTargetId && pending.requesterId === pendingTargetId)
+      || candidateIds.includes(pending.requesterId);
   });
 
   if (!pendingPair) {
@@ -1284,27 +1281,31 @@ async function handleDailyInteraction(message, client) {
   }
 
   const replyTargetId = await getReplyTargetId(message);
-  const mentionTargetId = getMentionTargetId(message);
-  const partnerId = replyTargetId || mentionTargetId;
+  const mentionTargetIds = getMentionTargetIds(message);
+  const candidateIds = [...new Set(replyTargetId ? [replyTargetId, ...mentionTargetIds] : mentionTargetIds)];
 
-  if (!partnerId || partnerId === message.author.id) {
+  if (!candidateIds.length) {
     return false;
   }
 
-  const pair = await findActivePairForInteraction(message, partnerId);
-
-  if (!pair) {
-    return false;
+  for (const partnerId of candidateIds) {
+    const pair = await findActivePairForInteraction(message, partnerId);
+    if (pair) {
+      const handled = await handleActivePairInteraction(
+        message,
+        client,
+        settings,
+        pair,
+        partnerId,
+        replyTargetId === partnerId ? "reply" : "mention"
+      );
+      if (handled) {
+        return true;
+      }
+    }
   }
 
-  return handleActivePairInteraction(
-    message,
-    client,
-    settings,
-    pair,
-    partnerId,
-    replyTargetId ? "reply" : "mention"
-  );
+  return false;
 }
 
 async function handleStreakMessage(message, client, options = {}) {

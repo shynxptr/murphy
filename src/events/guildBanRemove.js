@@ -5,6 +5,7 @@ module.exports = {
   async execute(ban, client) {
     let moderatorTag = "Unknown";
     let reason = "No reason provided";
+    let isBotAction = false;
 
     try {
       const logs = await ban.guild.fetchAuditLogs({
@@ -17,9 +18,15 @@ module.exports = {
         && Date.now() - entry.createdTimestamp < 5000) {
         moderatorTag = entry.executor?.tag || "Unknown";
         reason = entry.reason || "No reason provided";
+        isBotAction = entry.executor?.id === client.user?.id;
       }
     } catch {
       // Bot ga punya View Audit Log permission
+    }
+
+    // Skip jika unban dilakukan lewat command bot (sudah dicatat oleh moderationSystem)
+    if (isBotAction) {
+      return;
     }
 
     const embed = buildModLogEmbed({

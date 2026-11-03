@@ -11,7 +11,7 @@ function createBotClient() {
       GatewayIntentBits.GuildInvites,
       GatewayIntentBits.MessageContent
     ],
-    partials: [Partials.Channel]
+    partials: [Partials.Channel, Partials.Message]
   });
 
   client.commands = new Collection();
