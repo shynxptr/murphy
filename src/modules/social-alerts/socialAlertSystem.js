@@ -17,11 +17,14 @@ const {
 const TIKTOK_COLOR = "#ff0050";
 const TIKTOK_LIVE_COLOR = "#ef4444";
 const INSTAGRAM_COLOR = "#e1306c";
-const SCHEDULER_INTERVAL_MS = 3 * 60 * 1000; // 3 menit
+const SCHEDULER_INTERVAL_MS = 90 * 1000; // 1.5 menit (90 detik)
+const RECENT_POST_WINDOW_MS = 12 * 60 * 60 * 1000; // 12 jam
 const BRIDGE_PREFIX = "[MURPHY_IG]";
 
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const CRAWLER_USER_AGENT =
+  "Mozilla/5.0 (compatible; DuckDuckBot-Https/1.1; https://duckduckgo.com/duckduckbot)";
+const BROWSER_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 function formatCompactNumber(num) {
   const n = Number(num || 0);
@@ -43,6 +46,35 @@ function truncateText(text, maxLength = 300) {
   const cleaned = String(text || "").trim();
   if (!cleaned) return "";
   return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength - 1)}…` : cleaned;
+}
+
+function extractSnowflakeTimestampSec(videoId) {
+  try {
+    const idStr = String(videoId || "").trim();
+    if (!/^\d{15,22}$/.test(idStr)) {
+      return 0;
+    }
+    const sec = Number(BigInt(idStr) >> 32n);
+    return Number.isFinite(sec) && sec > 1_400_000_000 ? sec : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function compareVideoNewestFirst(a, b) {
+  const timeDiff = Number(b.createTimeSec || 0) - Number(a.createTimeSec || 0);
+  if (timeDiff !== 0) {
+    return timeDiff;
+  }
+  try {
+    const idA = BigInt(String(a.id || "0").replace(/\D/g, "") || "0");
+    const idB = BigInt(String(b.id || "0").replace(/\D/g, "") || "0");
+    if (idB > idA) return 1;
+    if (idB < idA) return -1;
+  } catch {
+    // Abaikan jika bukan BigInt
+  }
+  return 0;
 }
 
 function buildRoleMentionText(feed, defaultActionText, postUrl = "") {
@@ -79,7 +111,244 @@ function buildAllowedMentions(feed) {
   return { parse: [] };
 }
 
-// === TikTok Fetchers ===
+// === TikTok Fetchers (Multi-Layer Direct TikTok + Fallback) ===
+
+async function fetchTikTokViaCreatorApi(cleanUsername, signal) {
+  const profileUrl = `https://www.tiktok.com/@${encodeURIComponent(cleanUsername)}`;
+  const profileRes = await fetch(profileUrl, {
+    headers: {
+      "User-Agent": CRAWLER_USER_AGENT,
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7"
+    },
+    signal
+  });
+
+  if (!profileRes.ok) {
+    return { ok: false, reason: `HTTP ${profileRes.status} saat membaca profil TikTok.` };
+  }
+
+  const profileHtml = await profileRes.text();
+  const rehydMatch = profileHtml.match(
+    /<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)<\/script>/
+  );
+
+  if (!rehydMatch) {
+    return { ok: false, reason: "Data rehydration profil TikTok tidak ditemukan." };
+  }
+
+  const rehydJson = JSON.parse(rehydMatch[1]);
+  const scope = rehydJson?.__DEFAULT_SCOPE__ || {};
+  const userDetail = scope["webapp.user-detail"];
+  const user = userDetail?.userInfo?.user;
+  const secUid = user?.secUid;
+  const wid = scope["webapp.app-context"]?.wid || "7400000000000000000";
+
+  if (!secUid) {
+    return {
+      ok: false,
+      reason: `Akun TikTok @${cleanUsername} tidak ditemukan (statusCode: ${userDetail?.statusCode ?? "unknown"}).`
+    };
+  }
+
+  const creatorApiUrl =
+    `https://www.tiktok.com/api/creator/item_list/?aid=1988&app_name=tiktok_web&device_platform=web_pc` +
+    `&device_id=${encodeURIComponent(wid)}&region=ID&priority_region=ID&os=windows&referer=` +
+    `&cookie_enabled=true&screen_width=1920&screen_height=1080&browser_language=id-ID` +
+    `&browser_platform=Win32&browser_name=Mozilla&browser_version=5.0&browser_online=true` +
+    `&app_language=id&timezone_name=Asia%2FJakarta&is_page_visible=true&focus_state=true` +
+    `&is_fullscreen=false&history_len=2&secUid=${encodeURIComponent(secUid)}` +
+    `&count=15&cursor=${Date.now()}&type=1`;
+
+  const listRes = await fetch(creatorApiUrl, {
+    headers: {
+      "User-Agent": CRAWLER_USER_AGENT,
+      Accept: "application/json, text/plain, */*",
+      Referer: profileUrl
+    },
+    signal
+  });
+
+  if (!listRes.ok) {
+    return { ok: false, reason: `HTTP ${listRes.status} dari TikTok Creator API.` };
+  }
+
+  const listJson = await listRes.json();
+  const rawItems = Array.isArray(listJson?.itemList) ? listJson.itemList : [];
+
+  if (!rawItems.length) {
+    return { ok: false, reason: "Belum ada video publik pada akun TikTok tersebut." };
+  }
+
+  const normalizedVideos = rawItems
+    .map((item) => {
+      const id = String(item.id || "").trim();
+      const createTimeSec = Number(item.createTime || 0) || extractSnowflakeTimestampSec(id);
+      const itemAuthor = item.author || user || {};
+      const uniqueId = itemAuthor.uniqueId || user?.uniqueId || cleanUsername;
+      return {
+        id,
+        createTimeSec,
+        caption: String(item.desc || "").trim(),
+        coverUrl: item.video?.originCover || item.video?.cover || item.video?.dynamicCover || "",
+        playUrl: item.video?.playAddr || "",
+        duration: Number(item.video?.duration || 0),
+        views: Number(item.stats?.playCount || 0),
+        likes: Number(item.stats?.diggCount || 0),
+        comments: Number(item.stats?.commentCount || 0),
+        shares: Number(item.stats?.shareCount || 0),
+        createdAt: createTimeSec ? new Date(createTimeSec * 1000).toISOString() : new Date().toISOString(),
+        url: `https://www.tiktok.com/@${uniqueId}/video/${id}`
+      };
+    })
+    .filter((v) => Boolean(v.id))
+    .sort(compareVideoNewestFirst);
+
+  if (!normalizedVideos.length) {
+    return { ok: false, reason: "Daftar video TikTok kosong." };
+  }
+
+  const latest = normalizedVideos[0];
+  return {
+    ok: true,
+    author: {
+      username: user?.uniqueId || cleanUsername,
+      displayName: user?.nickname || cleanUsername,
+      avatarUrl: user?.avatarLarger || user?.avatarMedium || user?.avatarThumb || ""
+    },
+    latestVideo: latest,
+    videos: normalizedVideos
+  };
+}
+
+async function fetchTikTokViaEmbedPage(cleanUsername, signal) {
+  const embedUrl = `https://www.tiktok.com/embed/@${encodeURIComponent(cleanUsername)}`;
+  const res = await fetch(embedUrl, {
+    headers: {
+      "User-Agent": CRAWLER_USER_AGENT,
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    },
+    signal
+  });
+
+  if (!res.ok) {
+    return { ok: false, reason: `HTTP ${res.status} dari TikTok Embed.` };
+  }
+
+  const html = await res.text();
+  const stateMatch = html.match(
+    /<script[^>]*id="__FRONTITY_CONNECT_STATE__"[^>]*>([\s\S]*?)<\/script>/
+  );
+
+  if (!stateMatch) {
+    return { ok: false, reason: "State TikTok Embed tidak ditemukan." };
+  }
+
+  const stateJson = JSON.parse(stateMatch[1]);
+  const dataMap = stateJson?.source?.data || {};
+  const routeKey = Object.keys(dataMap).find((k) => k.toLowerCase().includes(cleanUsername.toLowerCase()))
+    || Object.keys(dataMap)[0];
+  const pageData = dataMap[routeKey] || {};
+  const videoList = Array.isArray(pageData.videoList) ? pageData.videoList : [];
+  const userInfo = pageData.userInfo || {};
+
+  if (!videoList.length) {
+    return { ok: false, reason: "Tidak ada video di TikTok Embed." };
+  }
+
+  const normalizedVideos = videoList
+    .map((v) => {
+      const id = String(v.id || "").trim();
+      const createTimeSec = extractSnowflakeTimestampSec(id);
+      const uniqueId = v.authorUniqueId || userInfo.uniqueId || cleanUsername;
+      return {
+        id,
+        createTimeSec,
+        caption: String(v.desc || "").trim(),
+        coverUrl: v.originCoverUrl || v.coverUrl || v.dynamicCoverUrl || "",
+        playUrl: v.playAddr || "",
+        duration: 0,
+        views: Number(v.playCount || 0),
+        likes: Number(v.diggCount || 0),
+        comments: Number(v.commentCount || 0),
+        shares: Number(v.shareCount || 0),
+        createdAt: createTimeSec ? new Date(createTimeSec * 1000).toISOString() : new Date().toISOString(),
+        url: `https://www.tiktok.com/@${uniqueId}/video/${id}`
+      };
+    })
+    .filter((v) => Boolean(v.id))
+    .sort(compareVideoNewestFirst);
+
+  if (!normalizedVideos.length) {
+    return { ok: false, reason: "Video TikTok Embed kosong." };
+  }
+
+  return {
+    ok: true,
+    author: {
+      username: userInfo.uniqueId || cleanUsername,
+      displayName: userInfo.nickname || userInfo.uniqueId || cleanUsername,
+      avatarUrl: userInfo.avatarUrl || ""
+    },
+    latestVideo: normalizedVideos[0],
+    videos: normalizedVideos
+  };
+}
+
+async function fetchTikTokViaTikwmFallback(cleanUsername, signal) {
+  const url = `https://www.tikwm.com/api/user/posts?unique_id=${encodeURIComponent(cleanUsername)}&count=10`;
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": BROWSER_USER_AGENT,
+      Accept: "application/json"
+    },
+    signal
+  });
+
+  if (!response.ok) {
+    return { ok: false, reason: `HTTP ${response.status} dari server TikTok feed.` };
+  }
+
+  const payload = await response.json();
+  const videos = Array.isArray(payload?.data?.videos) ? payload.data.videos : [];
+
+  if (!videos.length) {
+    return {
+      ok: false,
+      reason: payload?.msg || "Belum ada video publik yang ditemukan untuk akun tersebut."
+    };
+  }
+
+  const sorted = [...videos].sort((a, b) => Number(b.create_time || 0) - Number(a.create_time || 0));
+  const latest = sorted[0];
+  const author = latest.author || {};
+  const id = String(latest.video_id || latest.id || "");
+  const createTimeSec = Number(latest.create_time || 0) || extractSnowflakeTimestampSec(id);
+
+  return {
+    ok: true,
+    author: {
+      username: author.unique_id || cleanUsername,
+      displayName: author.nickname || cleanUsername,
+      avatarUrl: author.avatar || ""
+    },
+    latestVideo: {
+      id,
+      createTimeSec,
+      caption: String(latest.title || "").trim(),
+      coverUrl: latest.origin_cover || latest.cover || "",
+      playUrl: latest.play || "",
+      duration: Number(latest.duration || 0),
+      views: Number(latest.play_count || 0),
+      likes: Number(latest.digg_count || 0),
+      comments: Number(latest.comment_count || 0),
+      shares: Number(latest.share_count || 0),
+      createdAt: createTimeSec ? new Date(createTimeSec * 1000).toISOString() : new Date().toISOString(),
+      url: `https://www.tiktok.com/@${author.unique_id || cleanUsername}/video/${id}`
+    },
+    videos: sorted
+  };
+}
 
 async function fetchTikTokLatestPosts(username) {
   const clean = normalizeUsername(username);
@@ -88,63 +357,46 @@ async function fetchTikTokLatestPosts(username) {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const errors = [];
 
   try {
-    const url = `https://www.tikwm.com/api/user/posts?unique_id=${encodeURIComponent(clean)}&count=10`;
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "application/json"
-      },
-      signal: controller.signal
-    });
-
-    if (!response.ok) {
-      return { ok: false, reason: `HTTP ${response.status} dari server TikTok feed.` };
+    // Layer 1: Direct TikTok Profile SSR + Creator Item List API
+    try {
+      const res1 = await fetchTikTokViaCreatorApi(clean, controller.signal);
+      if (res1.ok && res1.latestVideo?.id) {
+        return res1;
+      }
+      if (res1.reason) errors.push(res1.reason);
+    } catch (err1) {
+      errors.push(err1?.message || "Creator API error");
     }
 
-    const payload = await response.json();
-    const videos = Array.isArray(payload?.data?.videos) ? payload.data.videos : [];
-
-    if (!videos.length) {
-      return {
-        ok: false,
-        reason: payload?.msg || "Belum ada video publik yang ditemukan untuk akun tersebut."
-      };
+    // Layer 2: Direct TikTok Creator Embed Page
+    try {
+      const res2 = await fetchTikTokViaEmbedPage(clean, controller.signal);
+      if (res2.ok && res2.latestVideo?.id) {
+        return res2;
+      }
+      if (res2.reason) errors.push(res2.reason);
+    } catch (err2) {
+      errors.push(err2?.message || "Embed page error");
     }
 
-    // Urutkan berdasarkan create_time terbaru agar video lama yang di-pin tidak mengacaukan deteksi video baru
-    const sorted = [...videos].sort((a, b) => Number(b.create_time || 0) - Number(a.create_time || 0));
-    const latest = sorted[0];
-    const author = latest.author || {};
+    // Layer 3: TikWM API Fallback
+    try {
+      const res3 = await fetchTikTokViaTikwmFallback(clean, controller.signal);
+      if (res3.ok && res3.latestVideo?.id) {
+        return res3;
+      }
+      if (res3.reason) errors.push(res3.reason);
+    } catch (err3) {
+      errors.push(err3?.message || "TikWM fallback error");
+    }
 
-    return {
-      ok: true,
-      author: {
-        username: author.unique_id || clean,
-        displayName: author.nickname || clean,
-        avatarUrl: author.avatar || ""
-      },
-      latestVideo: {
-        id: String(latest.video_id || latest.id || ""),
-        caption: String(latest.title || "").trim(),
-        coverUrl: latest.origin_cover || latest.cover || "",
-        playUrl: latest.play || "",
-        duration: Number(latest.duration || 0),
-        views: Number(latest.play_count || 0),
-        likes: Number(latest.digg_count || 0),
-        comments: Number(latest.comment_count || 0),
-        shares: Number(latest.share_count || 0),
-        createdAt: latest.create_time ? new Date(Number(latest.create_time) * 1000).toISOString() : new Date().toISOString(),
-        url: `https://www.tiktok.com/@${author.unique_id || clean}/video/${latest.video_id || latest.id}`
-      },
-      videos: sorted
-    };
-  } catch (error) {
     return {
       ok: false,
-      reason: error?.name === "AbortError" ? "Request ke TikTok timeout." : (error?.message || "Gagal mengambil data TikTok.")
+      reason: errors[0] || "Gagal mengambil data video TikTok."
     };
   } finally {
     clearTimeout(timeout);
@@ -164,7 +416,7 @@ async function fetchTikTokLiveStatus(username) {
     const apiUrl = `https://www.tiktok.com/api-live/user/room/?aid=1988&sourceType=54&uniqueId=${encodeURIComponent(clean)}`;
     const response = await fetch(apiUrl, {
       headers: {
-        "User-Agent": USER_AGENT,
+        "User-Agent": CRAWLER_USER_AGENT,
         Accept: "application/json, text/plain, */*",
         Referer: `https://www.tiktok.com/@${encodeURIComponent(clean)}/live`
       },
@@ -477,6 +729,17 @@ async function sendTestSocialAlert(client, feed, type = "post") {
       const author = postResult.ok ? postResult.author : {};
       const payload = buildTikTokVideoPayload(guild, feed, sampleVideo, author);
       const message = await channel.send(payload);
+
+      if (postResult.ok && postResult.latestVideo?.id) {
+        updateFeed(feed.id, {
+          displayName: author.displayName || feed.displayName,
+          avatarUrl: author.avatarUrl || feed.avatarUrl,
+          lastPostId: postResult.latestVideo.id,
+          lastPostUrl: postResult.latestVideo.url,
+          lastPostAt: postResult.latestVideo.createdAt
+        });
+      }
+
       return { ok: true, message };
     }
 
@@ -514,21 +777,55 @@ async function checkSingleTikTokFeed(client, feed) {
   if (postResult.ok && postResult.latestVideo?.id) {
     const latest = postResult.latestVideo;
     const author = postResult.author || {};
+    const videoCreatedMs = latest.createdAt ? new Date(latest.createdAt).getTime() : 0;
+    const feedCreatedMs = feed.createdAt ? new Date(feed.createdAt).getTime() : 0;
 
     if (!feed.lastPostId) {
-      // Inisialisasi pertama kali: simpan ID terbaru agar tidak spam video lama
-      updateFeed(feed.id, {
-        displayName: author.displayName || feed.displayName,
-        avatarUrl: author.avatarUrl || feed.avatarUrl,
-        lastPostId: latest.id,
-        lastPostUrl: latest.url,
-        lastPostAt: latest.createdAt
-      });
+      // Jika saat pendaftaran sebelumnya gagal fetch (lastPostId kosong),
+      // tetapi video terbaru ini baru diupload (< 12 jam terakhir atau setelah feed dibuat),
+      // langsung kirim notifikasinya agar konten baru tidak terlewat!
+      const isRecentlyUploaded =
+        videoCreatedMs > 0
+        && (Date.now() - videoCreatedMs <= RECENT_POST_WINDOW_MS || (feedCreatedMs > 0 && videoCreatedMs >= feedCreatedMs - 60 * 60 * 1000));
+
+      if (isRecentlyUploaded) {
+        const payload = buildTikTokVideoPayload(guild, feed, latest, author);
+        const sent = await channel.send(payload).catch((error) => {
+          console.error(`[SocialAlert] Failed to send initial recent TikTok video alert for @${feed.username}:`, error);
+          return null;
+        });
+
+        if (sent) {
+          updateFeed(feed.id, {
+            displayName: author.displayName || feed.displayName,
+            avatarUrl: author.avatarUrl || feed.avatarUrl,
+            lastPostId: latest.id,
+            lastPostUrl: latest.url,
+            lastPostAt: latest.createdAt
+          });
+        }
+      } else {
+        // Video lama: simpan ID terbaru tanpa mengirim spam video arsip
+        updateFeed(feed.id, {
+          displayName: author.displayName || feed.displayName,
+          avatarUrl: author.avatarUrl || feed.avatarUrl,
+          lastPostId: latest.id,
+          lastPostUrl: latest.url,
+          lastPostAt: latest.createdAt
+        });
+      }
     } else if (feed.lastPostId !== latest.id) {
       // Pastikan video ini benar-benar lebih baru daripada video terakhir yang tercatat
-      const isNewer = !feed.lastPostAt || new Date(latest.createdAt).getTime() >= new Date(feed.lastPostAt).getTime();
+      const lastRecordedMs = feed.lastPostAt ? new Date(feed.lastPostAt).getTime() : 0;
+      const isNewerByTime = !lastRecordedMs || !videoCreatedMs || videoCreatedMs >= lastRecordedMs;
+      let isNewerById = false;
+      try {
+        isNewerById = BigInt(latest.id) > BigInt(feed.lastPostId);
+      } catch {
+        isNewerById = true;
+      }
 
-      if (isNewer) {
+      if (isNewerByTime && isNewerById) {
         const payload = buildTikTokVideoPayload(guild, feed, latest, author);
         const sent = await channel.send(payload).catch((error) => {
           console.error(`[SocialAlert] Failed to send TikTok video alert for @${feed.username}:`, error);
@@ -546,6 +843,8 @@ async function checkSingleTikTokFeed(client, feed) {
         }
       }
     }
+  } else if (!postResult.ok) {
+    console.warn(`[SocialAlert] Gagal mengecek video TikTok @${feed.username}: ${postResult.reason}`);
   }
 
   // 2. Cek status LIVE jika diaktifkan
@@ -605,7 +904,7 @@ function startSocialAlertScheduler(client) {
     runSocialAlertCheckCycle(client).catch((error) => {
       console.error("[SocialAlert] Initial check failed:", error);
     });
-  }, 15000);
+  }, 5000);
 
   client.socialAlertScheduler = setInterval(() => {
     runSocialAlertCheckCycle(client).catch((error) => {

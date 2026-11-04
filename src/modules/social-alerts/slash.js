@@ -12,6 +12,7 @@ const {
   upsertFeed
 } = require("../../services/socialAlertStore");
 const {
+  buildTikTokVideoPayload,
   ensureDiscordBridgeWebhook,
   fetchTikTokLatestPosts,
   fetchTikTokLiveStatus,
@@ -57,6 +58,12 @@ const slashData = new SlashCommandBuilder()
         opt
           .setName("pantau_live")
           .setDescription("Aktifkan notifikasi saat akun sedang LIVE di TikTok? (default: Ya)")
+          .setRequired(false)
+      )
+      .addBooleanOption((opt) =>
+        opt
+          .setName("kirim_sekarang")
+          .setDescription("Langsung kirim video terakhir saat ini ke channel? (default: Otomatis jika < 2 jam)")
           .setRequired(false)
       )
       .addStringOption((opt) =>
@@ -149,6 +156,7 @@ async function handleAddTikTok(interaction) {
   const role = interaction.options.getRole("role");
   const displayName = interaction.options.getString("nama_tampilan") || "Murphy Official";
   const watchLive = interaction.options.getBoolean("pantau_live") ?? true;
+  const sendNowOpt = interaction.options.getBoolean("kirim_sekarang");
   const customMessage = interaction.options.getString("pesan_custom") || "";
 
   if (!username) {
@@ -160,6 +168,7 @@ async function handleAddTikTok(interaction) {
 
   let initialVideo = null;
   let initialAuthor = null;
+  let fetchErrorReason = "";
   let liveInfo = null;
 
   try {
@@ -167,9 +176,11 @@ async function handleAddTikTok(interaction) {
     if (postResult.ok && postResult.latestVideo) {
       initialVideo = postResult.latestVideo;
       initialAuthor = postResult.author || null;
+    } else if (postResult.reason) {
+      fetchErrorReason = postResult.reason;
     }
-  } catch {
-    // Tetap simpan meskipun gagal fetch awal
+  } catch (err) {
+    fetchErrorReason = err?.message || "";
   }
 
   if (watchLive) {
@@ -197,11 +208,25 @@ async function handleAddTikTok(interaction) {
     lastLiveRoomId: liveInfo?.roomId || ""
   });
 
+  // Jika video terakhir baru saja diupload (< 2 jam yang lalu) atau user memilih kirim_sekarang: true,
+  // langsung kirimkan ke channel tujuan agar video baru yang baru di-post langsung terumumkan!
+  let sentInitialAlert = false;
+  if (initialVideo && channel?.isTextBased?.()) {
+    const videoAgeMs = initialVideo.createdAt ? Date.now() - new Date(initialVideo.createdAt).getTime() : Infinity;
+    const shouldSendNow = sendNowOpt === true || (sendNowOpt === null && videoAgeMs >= 0 && videoAgeMs <= 2 * 60 * 60 * 1000);
+
+    if (shouldSendNow) {
+      const payload = buildTikTokVideoPayload(interaction.guild, saved, initialVideo, initialAuthor || {});
+      const sent = await channel.send(payload).catch(() => null);
+      sentInitialAlert = Boolean(sent);
+    }
+  }
+
   const embed = new EmbedBuilder()
     .setColor(0x00f2fe)
     .setTitle("✅ Notifikasi TikTok Berhasil Diaktifkan")
     .setDescription(
-      `Bot sekarang memantau akun TikTok **@${saved.username}** setiap **3 menit** secara otomatis.`
+      `Bot sekarang memantau akun TikTok **@${saved.username}** setiap **1.5 menit** secara otomatis.`
     )
     .addFields(
       { name: "ID Koneksi", value: `\`#${saved.id}\``, inline: true },
@@ -212,12 +237,14 @@ async function handleAddTikTok(interaction) {
       {
         name: "Status Sinkronisasi Awal",
         value: initialVideo
-          ? `Terhubung! Video terakhir terdeteksi (\`${initialVideo.id}\`). Video baru berikutnya akan langsung diumumkan.`
-          : "Tersimpan! Saat ini belum ada video publik yang terbaca atau akun masih baru.",
+          ? sentInitialAlert
+            ? `✅ Terhubung & video terbaru (\`${initialVideo.id}\`) **langsung dikirim** ke <#${saved.channelId}>!`
+            : `✅ Terhubung! Video terakhir terdeteksi (\`${initialVideo.id}\`). Video baru berikutnya akan langsung diumumkan.`
+          : `⚠️ Tersimpan, namun gagal membaca video saat ini (${fetchErrorReason || "belum ada video publik"}). Bot akan otomatis mengecek ulang setiap 1.5 menit.`,
         inline: false
       }
     )
-    .setFooter({ text: `Gunakan /sosmed test id:${saved.id} untuk mencoba tampilan notifikasi sekarang.` });
+    .setFooter({ text: `Gunakan /sosmed test id:${saved.id} untuk langsung mengirim video terbaru ke channel.` });
 
   await interaction.editReply({ embeds: [embed] });
 }
@@ -379,7 +406,7 @@ async function handleTestFeed(interaction) {
   }
 
   await interaction.editReply({
-    content: `✅ Notifikasi tes (**${feed.platform.toUpperCase()} - ${type.toUpperCase()}**) untuk **@${feed.username}** berhasil dikirim ke <#${feed.channelId}>!`
+    content: `✅ Notifikasi (**${feed.platform.toUpperCase()} - ${type.toUpperCase()}**) untuk **@${feed.username}** berhasil dikirim ke <#${feed.channelId}>!`
   });
 }
 
