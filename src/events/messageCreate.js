@@ -24,6 +24,7 @@ const { awardTrackedChatCoins } = require("../modules/shop/shopSystem");
 const { touchPrivateRoomActivity } = require("../modules/private-rooms/privateRoomSystem");
 const { awardTrackedChatXp } = require("../modules/levels/levelSystem");
 const { handleAutoThreadMessage } = require("../modules/autothread/autoThreadSystem");
+const { handleSocialWebhookBridgeMessage } = require("../modules/social-alerts/socialAlertSystem");
 
 module.exports = {
   name: "messageCreate",
@@ -33,6 +34,13 @@ module.exports = {
     }
 
     if (message.author.bot) {
+      if (message.webhookId) {
+        const handledWebhook = await handleSocialWebhookBridgeMessage(message, client);
+        if (handledWebhook) {
+          return;
+        }
+      }
+
       await handleStickyMessage(message, client);
       return;
     }

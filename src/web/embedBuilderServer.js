@@ -25,6 +25,7 @@ const {
   sendBuilderMessage
 } = require("../modules/embed-builder/embedBuilderSystem");
 const { createExpCard } = require("../modules/levels/expCard");
+const { handleSocialHttpWebhook } = require("../modules/social-alerts/socialAlertSystem");
 const { createLevelUpCard } = require("../modules/levels/levelUpCard");
 const {
   DEFAULT_EXP_CARD_CONFIG,
@@ -720,6 +721,10 @@ function startEmbedBuilderServer(client) {
           ok: true,
           ready: client.isReady?.() || false
         });
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/webhooks/social") {
+        return handleSocialHttpWebhook(request, response, client, sendJson, readJsonBody);
       }
 
       if (!requireAuth(request, response, serverConfig)) {

@@ -13,6 +13,7 @@ const { reconcileLevelState, startLevelProgressionScheduler } = require("../modu
 const { initInviteTracker } = require("../modules/invites/inviteTracker");
 const { startVoiceAutoRoleScheduler } = require("../modules/voice-roles/voiceAutoRoleSystem");
 const { startStaffDutyScheduler } = require("../modules/staff-duty/scheduler");
+const { startSocialAlertScheduler } = require("../modules/social-alerts/socialAlertSystem");
 
 module.exports = {
   name: "clientReady",
@@ -73,7 +74,8 @@ module.exports = {
     startPrivateRoomScheduler(client);
     startLevelProgressionScheduler(client);
     startVoiceAutoRoleScheduler(client);
-  startStaffDutyScheduler(client);
+    startStaffDutyScheduler(client);
+    startSocialAlertScheduler(client);
     await refreshAllMusicBoards(client).catch((error) => {
       console.error("Failed to refresh music boards:", error);
     });
